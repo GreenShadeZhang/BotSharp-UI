@@ -288,3 +288,109 @@ body[data-layout="horizontal"] {
         }    
     }
 }
+
+// Material Design Topbar Overrides for better integration
+#page-topbar.md-top-app-bar {
+  height: $header-height;
+  background-color: var(--md-sys-color-surface);
+  border-bottom: 1px solid var(--md-sys-color-outline-variant);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+  
+  .navbar-header {
+    height: $header-height;
+    padding: 0 $md-spacing-4;
+    
+    .navbar-brand-box {
+      width: $navbar-brand-box-width;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 $md-spacing-4;
+      
+      .logo {
+        line-height: normal;
+        
+        .logo-sm,
+        .logo-lg {
+          img {
+            border-radius: $md-shape-corner-small;
+          }
+        }
+      }
+    }
+    
+    .md-icon-button {
+      width: 48px;
+      height: 48px;
+      border-radius: $md-shape-corner-medium;
+      background: transparent;
+      border: none;
+      color: var(--md-sys-color-on-surface);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: $md-spacing-3;
+      cursor: pointer;
+      
+      &:hover {
+        background-color: var(--md-sys-color-surface-container-highest);
+      }
+      
+      &:active {
+        background-color: var(--md-sys-color-surface-container-high);
+      }
+      
+      i {
+        font-size: 1.25rem;
+      }
+    }
+    
+    .app-search {
+      .md-text-field {
+        background-color: var(--md-sys-color-surface-container-highest);
+        border-radius: $md-shape-corner-large;
+        min-width: 240px;
+        
+        .md-text-field__input {
+          background: transparent;
+          border: none;
+          outline: none;
+          padding: $md-spacing-3 $md-spacing-4;
+          color: var(--md-sys-color-on-surface);
+          font-family: var(--md-sys-typescale-body-large-font);
+          font-size: var(--md-sys-typescale-body-large-size);
+          
+          &::placeholder {
+            color: var(--md-sys-color-on-surface-variant);
+          }
+        }
+        
+        .md-search-icon {
+          position: absolute;
+          right: $md-spacing-3;
+          top: 50%;
+          transform: translateY(-50%);
+          color: var(--md-sys-color-on-surface-variant);
+        }
+      }
+    }
+    
+    .d-flex {
+      gap: $md-spacing-2;
+      
+      .dropdown {
+        .dropdown-toggle {
+          background: transparent;
+          border: none;
+          color: var(--md-sys-color-on-surface);
+          padding: $md-spacing-2;
+          border-radius: $md-shape-corner-medium;
+          
+          &:hover {
+            background-color: var(--md-sys-color-surface-container-highest);
+          }
+        }
+      }
+    }
+  }
+}

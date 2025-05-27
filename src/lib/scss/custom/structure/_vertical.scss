@@ -721,3 +721,105 @@ body[data-sidebar="colored"] {
         }
     }
 }
+
+// Material Design Navigation Overrides for better integration
+.vertical-menu.md-navigation-drawer {
+  // Ensure proper positioning and dimensions
+  width: $sidebar-width;
+  top: $header-height;
+  background-color: var(--md-sys-color-surface);
+  border-right: 1px solid var(--md-sys-color-outline-variant);
+  
+  #sidebar-menu {
+    .metismenu {
+      .md-navigation-item {
+        // Override conflicting styles from legacy navigation
+        &.has-arrow {
+          &::after {
+            content: "\F0140";
+            font-family: 'Material Design Icons';
+            margin-left: auto;
+            font-size: 1rem;
+            transition: transform 0.2s;
+          }
+          
+          &.mm-active::after,
+          &.revert-arrow::after {
+            transform: rotate(-180deg);
+          }
+        }
+        
+        // Ensure Material Design spacing and colors override legacy styles
+        height: 56px;
+        padding: 0 $md-spacing-4;
+        margin: 0 $md-spacing-3 $md-spacing-1;
+        color: var(--md-sys-color-on-surface-variant);
+        
+        &:hover {
+          background-color: var(--md-sys-color-surface-container-highest);
+          color: var(--md-sys-color-on-surface);
+          
+          .md-navigation-icon i {
+            color: var(--md-sys-color-on-surface);
+          }
+        }
+        
+        &.mm-active,
+        &.active {
+          background-color: var(--md-sys-color-secondary-container);
+          color: var(--md-sys-color-on-secondary-container);
+          
+          .md-navigation-icon i {
+            color: var(--md-sys-color-on-secondary-container);
+          }
+        }
+      }
+    }
+  }
+}
+
+// Fix main content margin for Material Design layout
+.main-content {
+  margin-left: $sidebar-width;
+  padding-top: $header-height;
+  min-height: 100vh;
+  background-color: var(--md-sys-color-surface-container-lowest);
+  
+  .content {
+    padding: $md-spacing-4;
+    margin-top: 0; // Remove duplicate top margin
+  }
+}
+
+// Ensure topbar has proper Material Design styling
+#page-topbar.md-top-app-bar {
+  height: $header-height;
+  background-color: var(--md-sys-color-surface);
+  border-bottom: 1px solid var(--md-sys-color-outline-variant);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+  
+  .navbar-header {
+    height: $header-height;
+    padding: 0 $md-spacing-4;
+    
+    .navbar-brand-box {
+      width: $navbar-brand-box-width;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .md-icon-button {
+      width: 48px;
+      height: 48px;
+      border-radius: $md-shape-corner-medium;
+      background: transparent;
+      box-shadow: none;
+      transition: background 0.3s;
+      
+      &:hover {
+        background: rgba(255, 255, 255, 0.08);
+      }
+    }
+  }
+}

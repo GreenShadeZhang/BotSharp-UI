@@ -13,12 +13,18 @@ File: Main Css File
 // Material Design Variables (must be imported first)
 @import "_material-variables";
 
+// Material Design Theme (must be imported before components)
+@import "_material-theme";
+
 //Core files
 @import "../../../node_modules/bootstrap/scss/functions";
 @import "../../../node_modules/bootstrap/scss/variables";
 @import "_variables";
 @import "_variables-dark";
 @import "../../../node_modules/bootstrap/scss/mixins";
+
+// Material Design Components (import after Bootstrap core)
+@import "_material-components";
 
 // Structure
 @import "custom/structure/_general";
