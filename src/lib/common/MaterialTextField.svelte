@@ -8,8 +8,7 @@
   
   /** @type {string} */
   export let placeholder = '';
-  
-  /** @type {string} */
+    /** @type {'text' | 'password' | 'email' | 'number' | 'tel' | 'url' | 'search'} */
   export let type = 'text';
   
   /** @type {string} */
@@ -60,17 +59,25 @@
     disabled && 'md-text-field--disabled',
     className
   ].filter(Boolean).join(' ');
-  
+  /**
+   * @param {FocusEvent} e
+   */
   function handleFocus(e) {
     focused = true;
     onFocus(e);
   }
   
+  /**
+   * @param {FocusEvent} e
+   */
   function handleBlur(e) {
     focused = false;
     onBlur(e);
   }
   
+  /**
+   * @param {Event} e
+   */
   function handleInput(e) {
     value = e.target.value;
     onInput(e);
@@ -78,24 +85,160 @@
 </script>
 
 <div class={fieldClass}>
-  <input
-    {id}
-    {type}
-    {placeholder}
-    {disabled}
-    {required}
-    {maxlength}
-    {readonly}
-    class="md-text-field__input md-typescale-body-large"
-    bind:value
-    on:input={handleInput}
-    on:focus={handleFocus}
-    on:blur={handleBlur}
-    on:keydown={onKeydown}
-    aria-label={label || placeholder}
-    aria-describedby={helpText ? `${id}-help` : undefined}
-    aria-invalid={error ? 'true' : 'false'}
-  />
+  {#if type === 'text'}
+    <input
+      {id}
+      type="text"
+      {placeholder}
+      {disabled}
+      {required}
+      {maxlength}
+      {readonly}
+      class="md-text-field__input md-typescale-body-large"
+      bind:value
+      on:input={handleInput}
+      on:focus={handleFocus}
+      on:blur={handleBlur}
+      on:keydown={onKeydown}
+      aria-label={label || placeholder}
+      aria-describedby={helpText ? `${id}-help` : undefined}
+      aria-invalid={error ? 'true' : 'false'}
+    />
+  {:else if type === 'password'}
+    <input
+      {id}
+      type="password"
+      {placeholder}
+      {disabled}
+      {required}
+      {maxlength}
+      {readonly}
+      class="md-text-field__input md-typescale-body-large"
+      bind:value
+      on:input={handleInput}
+      on:focus={handleFocus}
+      on:blur={handleBlur}
+      on:keydown={onKeydown}
+      aria-label={label || placeholder}
+      aria-describedby={helpText ? `${id}-help` : undefined}
+      aria-invalid={error ? 'true' : 'false'}
+    />
+  {:else if type === 'email'}
+    <input
+      {id}
+      type="email"
+      {placeholder}
+      {disabled}
+      {required}
+      {maxlength}
+      {readonly}
+      class="md-text-field__input md-typescale-body-large"
+      bind:value
+      on:input={handleInput}
+      on:focus={handleFocus}
+      on:blur={handleBlur}
+      on:keydown={onKeydown}
+      aria-label={label || placeholder}
+      aria-describedby={helpText ? `${id}-help` : undefined}
+      aria-invalid={error ? 'true' : 'false'}
+    />
+  {:else if type === 'number'}
+    <input
+      {id}
+      type="number"
+      {placeholder}
+      {disabled}
+      {required}
+      {maxlength}
+      {readonly}
+      class="md-text-field__input md-typescale-body-large"
+      bind:value
+      on:input={handleInput}
+      on:focus={handleFocus}
+      on:blur={handleBlur}
+      on:keydown={onKeydown}
+      aria-label={label || placeholder}
+      aria-describedby={helpText ? `${id}-help` : undefined}
+      aria-invalid={error ? 'true' : 'false'}
+    />
+  {:else if type === 'tel'}
+    <input
+      {id}
+      type="tel"
+      {placeholder}
+      {disabled}
+      {required}
+      {maxlength}
+      {readonly}
+      class="md-text-field__input md-typescale-body-large"
+      bind:value
+      on:input={handleInput}
+      on:focus={handleFocus}
+      on:blur={handleBlur}
+      on:keydown={onKeydown}
+      aria-label={label || placeholder}
+      aria-describedby={helpText ? `${id}-help` : undefined}
+      aria-invalid={error ? 'true' : 'false'}
+    />
+  {:else if type === 'url'}
+    <input
+      {id}
+      type="url"
+      {placeholder}
+      {disabled}
+      {required}
+      {maxlength}
+      {readonly}
+      class="md-text-field__input md-typescale-body-large"
+      bind:value
+      on:input={handleInput}
+      on:focus={handleFocus}
+      on:blur={handleBlur}
+      on:keydown={onKeydown}
+      aria-label={label || placeholder}
+      aria-describedby={helpText ? `${id}-help` : undefined}
+      aria-invalid={error ? 'true' : 'false'}
+    />
+  {:else if type === 'search'}
+    <input
+      {id}
+      type="search"
+      {placeholder}
+      {disabled}
+      {required}
+      {maxlength}
+      {readonly}
+      class="md-text-field__input md-typescale-body-large"
+      bind:value
+      on:input={handleInput}
+      on:focus={handleFocus}
+      on:blur={handleBlur}
+      on:keydown={onKeydown}
+      aria-label={label || placeholder}
+      aria-describedby={helpText ? `${id}-help` : undefined}
+      aria-invalid={error ? 'true' : 'false'}
+    />
+  {:else}
+    <!-- Fallback to text input for unknown types -->
+    <input
+      {id}
+      type="text"
+      {placeholder}
+      {disabled}
+      {required}
+      {maxlength}
+      {readonly}
+      class="md-text-field__input md-typescale-body-large"
+      bind:value
+      on:input={handleInput}
+      on:focus={handleFocus}
+      on:blur={handleBlur}
+      on:keydown={onKeydown}
+      aria-label={label || placeholder}
+      aria-describedby={helpText ? `${id}-help` : undefined}
+      aria-invalid={error ? 'true' : 'false'}
+    />
+  {/if}
   
   {#if label}
     <label class="md-text-field__label md-typescale-body-large" for={id}>

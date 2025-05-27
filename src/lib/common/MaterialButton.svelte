@@ -17,8 +17,7 @@
   
   /** @type {string} */
   export let trailingIcon = '';
-  
-  /** @type {string} */
+    /** @type {'button' | 'submit' | 'reset'} */
   export let type = 'button';
   
   /** @type {string} */
@@ -64,85 +63,73 @@
 </button>
 
 <style lang="scss">
-  @import '$lib/scss/material-variables';
-  
-  .md-button {
-    &--small {
-      height: 32px;
-      padding: 0 $md-spacing-4;
-      font-size: map-get($md-typography-label-medium, font-size);
-    }
-    
-    &--large {
-      height: 48px;
-      padding: 0 $md-spacing-8;
-      font-size: map-get($md-typography-label-large, font-size);
-    }
-    
-    &--disabled {
-      opacity: 0.38;
-      cursor: not-allowed;
-      pointer-events: none;
-    }
-    
-    &--loading {
-      pointer-events: none;
-    }
+.md-button {
+  &--small {
+    height: 32px;
+    padding: 0 16px;
+    font-size: 12px;
   }
-  
-  .md-button__icon,
-  .md-button__trailing-icon {
-    width: 18px;
-    height: 18px;
-    font-size: 18px;
+  &--large {
+    height: 48px;
+    padding: 0 32px;
+    font-size: 14px;
   }
-  
-  .md-button__icon {
-    margin-right: $md-spacing-2;
+  &--disabled {
+    opacity: 0.38;
+    cursor: not-allowed;
+    pointer-events: none;
   }
-  
-  .md-button__trailing-icon {
-    margin-left: $md-spacing-2;
+  &--loading {
+    pointer-events: none;
   }
-  
-  .md-button__spinner {
-    margin-right: $md-spacing-2;
-    width: 18px;
-    height: 18px;
+}
+
+.md-button__icon,
+.md-button__trailing-icon {
+  width: 18px;
+  height: 18px;
+  font-size: 18px;
+}
+.md-button__icon {
+  margin-right: 8px;
+}
+.md-button__trailing-icon {
+  margin-left: 8px;
+}
+.md-button__spinner {
+  margin-right: 8px;
+  width: 18px;
+  height: 18px;
+}
+.md-spinner {
+  width: 100%;
+  height: 100%;
+  animation: md-spin 1s linear infinite;
+}
+.md-spinner__circle {
+  fill: none;
+  stroke: currentColor;
+  stroke-dasharray: 62.83;
+  stroke-dashoffset: 62.83;
+  animation: md-spinner-dash 1.5s ease-in-out infinite;
+}
+@keyframes md-spin {
+  to {
+    transform: rotate(360deg);
   }
-  
-  .md-spinner {
-    width: 100%;
-    height: 100%;
-    animation: md-spin 1s linear infinite;
+}
+@keyframes md-spinner-dash {
+  0% {
+    stroke-dasharray: 1, 200;
+    stroke-dashoffset: 0;
   }
-  
-  .md-spinner__circle {
-    fill: none;
-    stroke: currentColor;
-    stroke-dasharray: 62.83;
-    stroke-dashoffset: 62.83;
-    animation: md-spinner-dash 1.5s ease-in-out infinite;
+  50% {
+    stroke-dasharray: 89, 200;
+    stroke-dashoffset: -35px;
   }
-  
-  @keyframes md-spin {
-    to {
-      transform: rotate(360deg);
-    }
+  100% {
+    stroke-dasharray: 89, 200;
+    stroke-dashoffset: -124px;
   }
-  
-  @keyframes md-spinner-dash {
-    0% {
-      stroke-dasharray: 1, 200;
-      stroke-dashoffset: 0;
-    }
-    50% {
-      stroke-dasharray: 89, 200;
-      stroke-dashoffset: -35px;
-    }
-    100% {
-      stroke-dasharray: 89, 200;
-      stroke-dashoffset: -124px;
-    }
-  }
+}
 </style>

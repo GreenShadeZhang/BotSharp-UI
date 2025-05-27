@@ -5,7 +5,7 @@
 //
 
 // Vertical Sidebar with Material Design
-$sidebar-bg:                                          var(--md-sys-color-surface);
+$sidebar-bg:                                          $md-light-surface;
 $sidebar-menu-item-color:                             var(--md-sys-color-on-surface-variant);
 $sidebar-menu-sub-item-color:                         var(--md-sys-color-on-surface-variant);
 $sidebar-menu-item-icon-color:                        var(--md-sys-color-on-surface-variant);
@@ -16,7 +16,7 @@ $sidebar-collapsed-width:                             80px;
 $sidebar-width-sm:                                    240px;
 
 // Vertical Sidebar - Dark
-$sidebar-dark-bg:                                     var(--md-sys-color-surface);
+$sidebar-dark-bg:                                     $md-dark-surface;
 $sidebar-dark-menu-item-color:                        var(--md-sys-color-on-surface-variant);
 $sidebar-dark-menu-sub-item-color:                    var(--md-sys-color-on-surface-variant);
 $sidebar-dark-menu-item-icon-color:                   var(--md-sys-color-on-surface-variant);
@@ -66,27 +66,27 @@ $table-dark-border-color:                           var(--md-sys-color-outline-v
 // Material Design Color System for Bootstrap Override
 
 // Primary colors using Material Design palette
-$primary:       #{$md-primary-40};
-$secondary:     #{$md-secondary-40};
-$success:       #{$md-tertiary-40};
-$info:          #{$md-primary-60};
-$warning:       #{$md-secondary-50};
-$danger:        #{$md-error-40};
-$light:         #{$md-neutral-95};
-$dark:          #{$md-neutral-20};
+$primary:       $md-primary-40;
+$secondary:     $md-secondary-40;
+$success:       $md-tertiary-40;
+$info:          $md-primary-60;
+$warning:       $md-secondary-50;
+$danger:        $md-error-40;
+$light:         $md-neutral-95;
+$dark:          $md-neutral-20;
 
 // Gray scale using Material Design neutral palette
-$white:    #{$md-neutral-100};
-$gray-100: #{$md-neutral-95};
-$gray-200: #{$md-neutral-90};
-$gray-300: #{$md-neutral-80};
-$gray-400: #{$md-neutral-70};
-$gray-500: #{$md-neutral-60};
-$gray-600: #{$md-neutral-50};
-$gray-700: #{$md-neutral-40};
-$gray-800: #{$md-neutral-30};
-$gray-900: #{$md-neutral-20};
-$black:    #{$md-neutral-0};
+$white:    $md-neutral-100;
+$gray-100: $md-neutral-95;
+$gray-200: $md-neutral-90;
+$gray-300: $md-neutral-80;
+$gray-400: $md-neutral-70;
+$gray-500: $md-neutral-60;
+$gray-600: $md-neutral-50;
+$gray-700: $md-neutral-40;
+$gray-800: $md-neutral-30;
+$gray-900: $md-neutral-20;
+$black:    $md-neutral-0;
 // scss-docs-end gray-color-variables
 
 // fusv-disable
@@ -137,17 +137,7 @@ $colors: (
 );
 // scss-docs-end colors-map
 
-// scss-docs-start theme-color-variables
-$primary:       $purple;
-$secondary:     $gray-600;
-$success:       $green;
-$info:          $cyan;
-$warning:       $yellow;
-$danger:        $red;
-$light:         $gray-200;
-$dark:          $gray-800;
-// scss-docs-end theme-color-variables
-
+// Material Design theme colors are already defined above
 // scss-docs-start theme-colors-map
 $theme-colors: (
     "primary":    $primary,
@@ -1813,3 +1803,7 @@ $faded-color: #BCBCBC;
 $log-sec-height-lg:                    400px;
 $log-sec-height-md:                    280px;
 $log-sec-height-sm:                    150px;
+
+// Display variables
+$display-none:                         none;
+$display-block:                        block;

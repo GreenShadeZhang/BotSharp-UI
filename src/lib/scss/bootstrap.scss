@@ -11,24 +11,24 @@ Features modern, elegant, and accessible UI components
 @import "material-variables";
 
 //Core Bootstrap files
-@import "./node_modules/bootstrap/scss/functions";
-@import "./node_modules/bootstrap/scss/variables";
-@import "variables";
-@import "variables-dark";
-@import "./node_modules/bootstrap/scss/bootstrap";
+@import "../../../node_modules/bootstrap/scss/functions";
+@import "../../../node_modules/bootstrap/scss/variables";
+@import "_variables";
+@import "_variables-dark";
+@import "../../../node_modules/bootstrap/scss/bootstrap";
 
 // Material Design Components
-@import "material-components";
-@import "material-theme";
+@import "_material-components";
+@import "_material-theme";
 
-@import "custom/components/root";
-@import "custom/components/reboot";
-@import "custom/components/badge";
-@import "custom/components/buttons";
-@import "custom/components/breadcrumb";
-@import "custom/components/card";
-@import "custom/components/dropdown";
-@import "custom/components/nav";
-@import "custom/components/table";
-@import "custom/components/pagination";
-@import "custom/components/progress";
+@import "custom/components/_root";
+@import "custom/components/_reboot";
+@import "custom/components/_badge";
+@import "custom/components/_buttons";
+@import "custom/components/_breadcrumb";
+@import "custom/components/_card";
+@import "custom/components/_dropdown";
+@import "custom/components/_nav";
+@import "custom/components/_table";
+@import "custom/components/_pagination";
+@import "custom/components/_progress";

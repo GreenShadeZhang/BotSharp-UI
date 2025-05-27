@@ -103,12 +103,7 @@
 					<span class="md-search-icon">
 						<i class="bx bx-search-alt" />
 					</span>
-				</div>
-			</form>
-					/>
-					<span class="bx bx-search-alt" />
-				</div>
-			</form>
+				</div>			</form>
 		</div>
 		<div class="d-flex">
 			<LanguageDropdown />
