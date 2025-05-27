@@ -1,15 +1,8 @@
 <script>
   import Link from "svelte-link";
-  import {
-    Card,
-    CardBody,
-    Collapse,
-    DropdownMenu,
-    DropdownToggle,
-    Alert,
-    Dropdown,
-    Button,
-  } from "@sveltestrap/sveltestrap";
+  import { Collapse } from "@sveltestrap/sveltestrap";
+  import MaterialCard from '$lib/common/MaterialCard.svelte';
+  import MaterialButton from '$lib/common/MaterialButton.svelte';
   import { _ } from 'svelte-i18n';
 
   let isOpen = true;
@@ -19,33 +12,30 @@
   };
 </script>
 
-<Card class="filemanager-sidebar me-md-2">
-  <CardBody>
-    <div class="d-flex flex-column h-100">
-      <div class="mb-4">
-        <ul class="list-unstyled categories-list">
-          <li>
-            <div class="custom-accordion">
+<MaterialCard variant="outlined" className="material-file-sidebar">
+  <div class="material-card-content">
+    <div class="material-sidebar-container">
+      <div class="material-navigation">
+        <ul class="material-nav-list">
+          <li class="material-nav-item">
+            <div class="material-nav-accordion">
               <Link
-                style="cursor:pointer"
-                class="text-body fw-medium py-1 d-flex align-items-center"
+                class="material-nav-link"
                 on:click={handleOnClick}
                 id="toggler"
               >
-                <i class="mdi mdi-folder font-size-16 text-warning me-2" />{" "}
-                {$_('Files')}{" "}
+                <i class="mdi mdi-folder material-nav-icon" />
+                <span class="material-nav-text">{$_('Files')}</span>
                 <i
-                  class={isOpen
-                    ? "mdi mdi-chevron-up accor-down-icon ms-auto"
-                    : "mdi mdi-chevron-down accor-down-icon ms-auto"}
+                  class={`mdi ${isOpen ? 'mdi-chevron-up' : 'mdi-chevron-down'} material-nav-chevron`}
                 />
               </Link>
               <Collapse {isOpen} toggler="#toggler">
-                <div class="card border-0 shadow-none ps-2 mb-0">
-                  <ul class="list-unstyled mb-0">
-                    <li>
-                      <Link href="#" class="d-flex align-items-center">
-                        <span class="me-auto">{$_('Design')}</span>
+                <div class="material-nav-submenu">
+                  <ul class="material-nav-sublist">
+                    <li class="material-nav-subitem">
+                      <Link href="#" class="material-nav-sublink">
+                        <span>{$_('Design')}</span>
                       </Link>
                     </li>
                   </ul>
@@ -53,64 +43,61 @@
               </Collapse>
             </div>
           </li>
-          <li>
-            <Link href="#" class="text-body d-flex align-items-center">
-              <i
-                class="mdi mdi-google-drive font-size-16 text-muted me-2"
-              />{" "}
-              <span class="me-auto">{$_('Google Drive')}</span>
+          <li class="material-nav-item">
+            <Link href="#" class="material-nav-link">
+              <i class="mdi mdi-google-drive material-nav-icon material-muted" />
+              <span class="material-nav-text">{$_('Google Drive')}</span>
             </Link>
           </li>
-          <li>
-            <Link href="#" class="text-body d-flex align-items-center">
-              <i class="mdi mdi-dropbox font-size-16 me-2 text-primary" />{" "}
-              <span class="me-auto">{$_('Dropbox')}</span>
+          <li class="material-nav-item">
+            <Link href="#" class="material-nav-link">
+              <i class="mdi mdi-dropbox material-nav-icon material-primary" />
+              <span class="material-nav-text">{$_('Dropbox')}</span>
             </Link>
           </li>
-          <li>
-            <Link href="#" class="text-body d-flex align-items-center">
-              <i
-                class="mdi mdi-star-outline text-muted font-size-16 me-2"
-              />{" "}
-              <span class="me-auto">{$_('Starred')}</span>
+          <li class="material-nav-item">
+            <Link href="#" class="material-nav-link">
+              <i class="mdi mdi-star-outline material-nav-icon material-muted" />
+              <span class="material-nav-text">{$_('Starred')}</span>
             </Link>
           </li>
-          <li>
-            <Link href="#" class="text-body d-flex align-items-center">
-              <i class="mdi mdi-trash-can text-danger font-size-16 me-2" />{" "}
-              <span class="me-auto">{$_('Trash')}</span>
+          <li class="material-nav-item">
+            <Link href="#" class="material-nav-link">
+              <i class="mdi mdi-delete material-nav-icon material-error" />
+              <span class="material-nav-text">{$_('Trash')}</span>
             </Link>
           </li>
-          <li>
-            <Link href="#" class="text-body d-flex align-items-center">
-              <i class="mdi mdi-cog text-muted font-size-16 me-2" />{" "}
-              <span class="me-auto">{$_('Setting')}</span>
-              <span class="badge bg-success rounded-pill ms-2"> 01 </span>
+          <li class="material-nav-item">
+            <Link href="#" class="material-nav-link">
+              <i class="mdi mdi-cog material-nav-icon material-muted" />
+              <span class="material-nav-text">{$_('Setting')}</span>
+              <span class="material-badge">01</span>
             </Link>
           </li>
         </ul>
       </div>
 
-      <div class="mt-auto">
-        <Alert color="success" dismissible class="px-3 mb-0">
-          <div class="mb-3">
-            <i class="bx bxs-folder-open h1 text-success" />
+      <div class="material-sidebar-footer">
+        <div class="material-upgrade-card">
+          <div class="material-upgrade-icon">
+            <i class="mdi mdi-folder-open" />
           </div>
-
-          <div>
-            <h5 class="text-success">{$_('Upgrade Features')}</h5>
-            <p>{$_('Cum sociis natoque penatibus et')}</p>
-            <div class="text-center">
-              <button
-                type="button"
-                class="btn btn-link text-decoration-none text-success"
+          <div class="material-upgrade-content">
+            <h6 class="material-heading-small">{$_('Upgrade Features')}</h6>
+            <p class="material-body-medium">{$_('Cum sociis natoque penatibus et')}</p>
+            <div class="material-upgrade-action">
+              <MaterialButton
+                variant="text"
+                size="small"
+                className="material-upgrade-btn"
               >
-                {$_('Upgrade')} <i class="mdi mdi-arrow-right" />
-              </button>
+                {$_('Upgrade')}
+                <i class="mdi mdi-arrow-right" />
+              </MaterialButton>
             </div>
           </div>
-        </Alert>
+        </div>
       </div>
     </div>
-  </CardBody>
-</Card>
+  </div>
+</MaterialCard>

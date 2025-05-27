@@ -2,7 +2,8 @@
     import { onMount } from 'svelte';
     import { fly } from 'svelte/transition';
 	import { _ } from 'svelte-i18n';
-	import util from "lodash";
+	import lodash from "lodash";
+	const util = lodash;
 	import { Button, Card, CardBody, Col, Row } from '@sveltestrap/sveltestrap';
 	import LoadingDots from '$lib/common/LoadingDots.svelte';
 	import HeadTitle from '$lib/common/HeadTitle.svelte';

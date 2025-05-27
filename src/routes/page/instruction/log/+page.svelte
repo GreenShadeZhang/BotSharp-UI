@@ -1,7 +1,8 @@
 <script>
     import { onMount } from 'svelte';
 	import { _ } from 'svelte-i18n';
-    import util from "lodash";
+    import lodash from "lodash";
+    const util = lodash;
 	import { Button, Card, CardBody, Col, Input, Row, Table } from '@sveltestrap/sveltestrap';
 	import HeadTitle from '$lib/common/HeadTitle.svelte';
     import Breadcrumb from '$lib/common/Breadcrumb.svelte';

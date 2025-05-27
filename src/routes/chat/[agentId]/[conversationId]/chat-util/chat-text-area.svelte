@@ -1,6 +1,7 @@
 <script>
 	import { clickoutsideDirective } from "$lib/helpers/directives";
-    import _ from "lodash";
+    import lodash from "lodash";
+    const _ = lodash;
 
     /** @type {string} */
     export let className = '';

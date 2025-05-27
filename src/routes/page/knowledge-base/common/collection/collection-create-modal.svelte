@@ -1,17 +1,15 @@
 <script>
-    import { onMount } from "svelte";
-	import {
-        Button,
-        Form,
-        FormGroup,
-        Input,
+    import { onMount } from "svelte";	import {
         Modal,
         ModalBody,
         ModalFooter,
         ModalHeader,
         Row
     } from "@sveltestrap/sveltestrap";
-    import _ from "lodash";
+    import MaterialButton from '$lib/common/MaterialButton.svelte';
+    import MaterialTextField from '$lib/common/MaterialTextField.svelte';
+    import lodash from "lodash";
+    const _ = lodash;
 	import { existVectorCollection } from "$lib/services/knowledge-base-service";
 
     
@@ -49,29 +47,23 @@
     let collection;
 
     /** @type {boolean} */
-    let isValidCollection = true;
-
-    /** @type {number} */
+    let isValidCollection = true;    /** @type {string} */
     let dimension;
 
     /** @type {string} */
     let provider;
 
     /** @type {string} */
-    let model;
-
-    $: disableConfirmBtn = (!_.trim(collection) || collection.length > maxLength) ||
+    let model;    $: disableConfirmBtn = (!_.trim(collection) || collection.length > maxLength) ||
                             (!_.trim(provider) || provider.length > maxLength) ||
                             (!_.trim(model) || model.length > maxLength) ||
-                            dimension <= 0;
+                            parseInt(dimension) <= 0;
 
     onMount(() => {
         reset();
-    });
-
-    function reset() {
+    });    function reset() {
         collection = '';
-        dimension = 3072;
+        dimension = '3072';
         provider = 'openai';
         model = 'text-embedding-3-large';
     }
@@ -138,84 +130,59 @@
     <ModalHeader>
         <div>{title}</div>
     </ModalHeader>
-    <ModalBody>
-        <Form>
-            <Row>
-                <FormGroup class="collection-input">
-                    <label class="fw-bold" for="collection">{`Collection name: `}</label>
-                    <Input
-                        type="text"
-                        class={`text-center ${!isValidCollection ? 'invalid-input' : ''}`}
+    <ModalBody>        <div class="material-form">            <Row>
+                <div class="collection-input">
+                    <MaterialTextField                        label="Collection name"
+                        error={!isValidCollection ? "The collection already exists." : ""}
                         maxlength={maxLength}
                         value={collection}
                         on:input={(e) => changeCollectionText(e)}
+                        helpText={!isValidCollection ? "The collection already exists." : `${collection?.length || 0}/${maxLength}`}
                     />
-                    <div class={`text-secondary text-count collection-note ${isValidCollection ? 'valid' : 'invalid'}`}>
-                        {#if !isValidCollection}
-                            <div style="color: var(--bs-danger);">{'* The collection already exists.'}</div>
-                        {/if}
-                        <div>{collection?.length || 0}/{maxLength}</div>
-                    </div>
-                </FormGroup>
+                </div>
             </Row>
             <Row>
-                <FormGroup>
-                    <label class="fw-bold" for="provider">{`Embedding provider: `}</label>
-                    <Input
-                        type="text"
-                        class="text-center"
+                <div>                    <MaterialTextField
+                        label="Embedding provider"
                         maxlength={maxLength}
                         bind:value={provider}
+                        helpText="{provider?.length || 0}/{maxLength}"
                     />
-                    <div class="text-secondary text-end text-count">
-                        {provider?.length || 0}/{maxLength}
-                    </div>
-                </FormGroup>
+                </div>
             </Row>
             <Row>
-                <FormGroup>
-                    <label class="fw-bold" for="model">{`Embedding model: `}</label>
-                    <Input
-                        type="text"
-                        class="text-center"
+                <div>                    <MaterialTextField
+                        label="Embedding model"
                         maxlength={maxLength}
                         bind:value={model}
+                        helpText="{model?.length || 0}/{maxLength}"
                     />
-                    <div class="text-secondary text-end text-count">
-                        {model?.length || 0}/{maxLength}
-                    </div>
-                </FormGroup>
+                </div>
             </Row>
             <Row>
-                <FormGroup>
-                    <label class="fw-bold" for="dimension">{`Vector dimension: `}</label>
-                    <Input
+                <div>                    <MaterialTextField
+                        label="Vector dimension"
                         type="number"
-                        class="text-center"
                         bind:value={dimension}
                         min={minDimension}
                         step={step}
+                        helpText="The value must be larger than 0."
                     />
-                    <div class="text-secondary text-count">
-                        {'* The value must be larger than 0.'}
-                    </div>
-                </FormGroup>
-            </Row>
-        </Form>
-    </ModalBody>
-    <ModalFooter>
-        <Button
-            color="primary"
+                </div>
+            </Row>        </div>
+    </ModalBody><ModalFooter>
+        <MaterialButton
+            variant="filled"
             disabled={disableConfirmBtn}
             on:click={(e) => handleConfirm(e)}
         >
             Confirm
-        </Button>
-        <Button
-            color="secondary"
+        </MaterialButton>
+        <MaterialButton
+            variant="outlined"
             on:click={(e) => handleCancel(e)}
         >
             Cancel
-        </Button>
+        </MaterialButton>
     </ModalFooter>
 </Modal>

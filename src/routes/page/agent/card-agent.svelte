@@ -1,10 +1,12 @@
 <script>
   import Link from "svelte-link";
-  import { Badge, Card, CardBody, Col } from '@sveltestrap/sveltestrap';
+  import { Col } from '@sveltestrap/sveltestrap';
   import { utcToLocal } from '$lib/helpers/datetime';
   import { _ } from 'svelte-i18n';
 	import { LEARNER_ID } from "$lib/helpers/constants";
 	import { AgentExtensions } from "$lib/helpers/utils/agent";
+	import MaterialCard from '$lib/common/MaterialCard.svelte';
+	import MaterialButton from '$lib/common/MaterialButton.svelte';
 
   /** @type {import('$agentTypes').AgentModel[]} */
   export let agents;
@@ -12,102 +14,114 @@
 
 {#each agents as agent}
   <Col xl="4" sm="6">
-    <Card style={"height: 95%;"}>
-      <CardBody>
-        <div class="d-flex">
-          <div class="avatar-md me-4">
-            <span class="avatar-title rounded-circle bg-light text-danger font-size-16">
-              {#if agent.icon_url}
-              <img src={agent.icon_url} alt="" height="60" />
-              {:else}
-              <img src="images/users/bot.png" alt="" height="60" />
-              {/if}
-            </span>
-          </div>
-
-          <div class="flex-grow-1 overflow-hidden">
-            <div class="agent-card-header">
-              <h5 class="text-truncate font-size-15 line-align-center mb-0">
-                <Link href= "page/agent/{agent.id}" class="text-dark">
-                  {agent.name}
-                </Link>
-              </h5>
-              {#if agent.is_router}
-              <div
-                class="font-size-15 line-align-center"
-                data-bs-toggle="tooltip"
-                data-bs-placement="bottom"
-                title="Go to flowchart"
-              >
-                <Link href={`page/agent/router?agent_id=${agent.id}`} target="_blank">
-                  <i class="mdi mdi-sitemap" />
-                </Link>
-              </div>
-              {/if}
-            </div>
-            {#if agent.labels?.length > 0}
-              <div class="agent-label-container">
-                {#each agent.labels as label}
-                  <Badge color={"info"}>{label}</Badge>
-                {/each}
-              </div>
+    <MaterialCard variant="outlined" clickable className="material-agent-card">
+      <div class="material-agent-content">
+        <div class="material-agent-avatar">
+          <div class="material-avatar-container">
+            {#if agent.icon_url}
+            <img src={agent.icon_url} alt="" class="material-avatar-image" />
             {:else}
-              <p>Provided by {agent.plugin.name}</p>
+            <img src="images/users/bot.png" alt="" class="material-avatar-image" />
             {/if}
-            <p class="text-muted mb-4" style="height: 35px;">{agent.description}</p>
-            <div class="avatar-group" style="height:35px;">
-              {#if agent.is_router}
-              <div class="avatar-group-item me-3">
-                <img src="icons/router.png" class="rounded-circle avatar-xs" alt="routing"/>
-              </div>
-              {/if}
-              {#if agent.allow_routing}
-              <div class="avatar-group-item me-3">
-                <img src="icons/routing-2.png" class="rounded-circle avatar-xs" alt="routing"/>
-              </div>
-              {/if}
-              {#each agent.functions as fn}
-                <div class="avatar-group-item">
-                  <Link href="#" class="d-inline-block" id={"member" + fn.name}>
-                    <img src="images/function.png" class="rounded-circle avatar-xs" alt={fn.name}/>
-                  </Link>
-                </div>
-              {/each}
-            </div>
           </div>
         </div>
-      </CardBody>
-      <div class="px-4 py-3 border-top">
-        <ul class="list-inline mb-0">
-          <li class="list-inline-item me-1 mt-1 mb-1">
-            <Badge color={agent.disabled ? "warning" : "success"}>{agent.disabled ? $_('Disabled') : $_('Enabled')}</Badge>
-          </li>
-          <li class="list-inline-item me-1 mt-1 mb-1">
-            <Badge color={agent.is_public ? "success" : "warning"}>{agent.is_public ? $_('Public') : $_('Private')}</Badge>
-          </li>
-          <li class="list-inline-item me-1 mt-1 mb-1" id="dueDate">
-            <i class="bx bx-calendar me-1" />
-            {utcToLocal(agent.updated_datetime, 'MMM D, YYYY')}
-          </li>
-          <li class="list-inline-item me-1 mt-1 mb-1">
-            <Link href="page/agent/{agent.id}/build" class="btn btn-primary btn-sm" target="_blank" disabled>
-              <i class="bx bx-wrench" /> {$_('Build')}
-            </Link>
-          </li>
-          {#if agent.is_public }      
-          <li class="list-inline-item me-1 mt-1 mb-1">
-            <Link href={`/chat/${LEARNER_ID}`} class="btn btn-primary btn-sm" target="_blank" disabled>
-              <i class="bx bx-book-open" /> {$_('Train')}
-            </Link>
-          </li>
-          <li class="list-inline-item me-1 mt-1 mb-1">
-            <Link href= "chat/{agent.id}" class="btn btn-primary btn-sm" target="_blank" disabled={!AgentExtensions.chatable(agent)}>
-              <i class="bx bx-chat" /> {$_('Test')}
-            </Link>
-          </li>
+
+        <div class="material-agent-info">
+          <div class="material-agent-header">
+            <h5 class="material-agent-name">
+              <Link href= "page/agent/{agent.id}" class="material-link">
+                {agent.name}
+              </Link>
+            </h5>
+            {#if agent.is_router}
+            <div class="material-router-indicator">
+              <Link href={`page/agent/router?agent_id=${agent.id}`} target="_blank">
+                <i class="mdi mdi-sitemap" />
+              </Link>
+            </div>
+            {/if}
+          </div>
+          
+          {#if agent.labels?.length > 0}
+            <div class="material-agent-labels">
+              {#each agent.labels as label}
+                <span class="md-chip md-chip--outlined">{label}</span>
+              {/each}
+            </div>
+          {:else}
+            <p class="material-agent-provider">Provided by {agent.plugin.name}</p>
           {/if}
-        </ul>
+          
+          <p class="material-agent-description">{agent.description}</p>
+          
+          <div class="material-agent-features">
+            {#if agent.is_router}
+            <div class="material-feature-icon" title="Router Agent">
+              <img src="icons/router.png" class="feature-icon" alt="routing"/>
+            </div>
+            {/if}
+            {#if agent.allow_routing}
+            <div class="material-feature-icon" title="Routing Enabled">
+              <img src="icons/routing-2.png" class="feature-icon" alt="routing"/>
+            </div>
+            {/if}
+            {#each agent.functions as fn}
+              <div class="material-feature-icon" title={fn.name}>
+                <img src="images/function.png" class="feature-icon" alt={fn.name}/>
+              </div>
+            {/each}
+          </div>
+        </div>
       </div>
-    </Card>
+      
+      <div class="material-agent-footer">
+        <div class="material-agent-status">
+          <span class="md-chip {agent.disabled ? 'md-chip--warning' : 'md-chip--success'}">
+            {agent.disabled ? $_('Disabled') : $_('Enabled')}
+          </span>
+          <span class="md-chip {agent.is_public ? 'md-chip--success' : 'md-chip--warning'}">
+            {agent.is_public ? $_('Public') : $_('Private')}
+          </span>
+          <span class="material-date-info">
+            <i class="bx bx-calendar" />
+            {utcToLocal(agent.updated_datetime, 'MMM D, YYYY')}
+          </span>
+        </div>
+        
+        <div class="material-agent-actions">
+          <MaterialButton
+            variant="text"
+            icon="bx bx-wrench"
+            size="small"
+          >
+            <Link href="page/agent/{agent.id}/build" target="_blank" class="material-link">
+              {$_('Build')}
+            </Link>
+          </MaterialButton>
+          
+          {#if agent.is_public}      
+          <MaterialButton
+            variant="text"
+            icon="bx bx-book-open"
+            size="small"
+          >
+            <Link href={`/chat/${LEARNER_ID}`} target="_blank" class="material-link">
+              {$_('Train')}
+            </Link>
+          </MaterialButton>
+          <MaterialButton
+            variant="outlined"
+            icon="bx bx-chat"
+            size="small"
+            disabled={!AgentExtensions.chatable(agent)}
+          >
+            <Link href= "chat/{agent.id}" target="_blank" class="material-link">
+              {$_('Test')}
+            </Link>
+          </MaterialButton>
+          {/if}
+        </div>
+      </div>
+    </MaterialCard>
   </Col>
 {/each}

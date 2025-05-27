@@ -56,49 +56,55 @@
 	}
 </script>
 
-<header id="page-topbar">
+<header id="page-topbar" class="md-top-app-bar">
 	<div class="navbar-header">
 		<div class="d-flex">
 			<!-- LOGO -->
 			<div class="navbar-brand-box">
 				<a href="page/dashboard" class="logo logo-dark">
 					<span class="logo-sm">
-						<img src={PUBLIC_LOGO_URL} alt="" height="25" />
+						<img src={PUBLIC_LOGO_URL} alt="" height="28" class="md-shape-small" />
 					</span>
 					<span class="logo-lg">
-						<img src={PUBLIC_LOGO_URL} alt="" height="40" />
+						<img src={PUBLIC_LOGO_URL} alt="" height="32" class="md-shape-small" />
 					</span>
 				</a>
 
 				<a href="page/dashboard" class="logo logo-light">
 					<span class="logo-sm">
-						<img src={PUBLIC_LOGO_URL} alt="" height="25" />
+						<img src={PUBLIC_LOGO_URL} alt="" height="28" class="md-shape-small" />
 					</span>
 					<span class="logo-lg">
-						<img src={PUBLIC_LOGO_URL} alt="" height="40" />
+						<img src={PUBLIC_LOGO_URL} alt="" height="32" class="md-shape-small" />
 					</span>
 				</a>
 			</div>
 
 			<button
 				type="button"
-				class="btn btn-sm px-3 font-size-16 header-item waves-effect"
+				class="md-icon-button"
 				id="vertical-menu-btn"
 				on:click={() => toggleSideBar()}
 			>
 				<i class="fa fa-fw fa-bars" />
 			</button>
 
-			<!-- App Search-->
+			<!-- App Search with Material Design -->
 			<form class="app-search d-none d-lg-block">
-				<div class="position-relative">
-					<Input
+				<div class="md-text-field position-relative">
+					<input
 						type="text"
-						class="form-control"
+						class="md-text-field__input"
 						placeholder="{$_('Search')}..."
 						maxlength={100}
 						bind:value={searchText}
 						on:keydown={e => search(e)}
+					/>
+					<span class="md-search-icon">
+						<i class="bx bx-search-alt" />
+					</span>
+				</div>
+			</form>
 					/>
 					<span class="bx bx-search-alt" />
 				</div>

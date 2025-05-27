@@ -1,6 +1,6 @@
 <script>
     import { onMount } from 'svelte';
-    import { Card, CardBody } from '@sveltestrap/sveltestrap';
+    import MaterialCard from '$lib/common/MaterialCard.svelte';
 	import NavBar from "$lib/common/nav-bar/NavBar.svelte";
 	import NavItem from '$lib/common/nav-bar/NavItem.svelte';
 	import AgentLlmConfig from './agent-components/agent-llm-config.svelte';
@@ -88,11 +88,11 @@
     }
 </script>
 
-<Card>
-    <CardBody>
+<MaterialCard variant="outlined" className="material-agent-tabs">
+    <div class="material-card-content">
         <NavBar
             disableDefaultStyles
-            containerClasses={'nav-tabs-secondary'}
+            containerClasses={'material-nav-tabs'}
         >
             {#each tabs as tab, idx (idx) }
             <NavItem
@@ -108,23 +108,25 @@
             {/each}
         </NavBar>
 
-        <div class:hide={selectedTab !== 'agent-llm-config'}>
-            <AgentLlmConfig agent={agent} bind:this={agentLlmConfigCmp} {handleAgentChange} />
+        <div class="material-tab-content">
+            <div class:hide={selectedTab !== 'agent-llm-config'}>
+                <AgentLlmConfig agent={agent} bind:this={agentLlmConfigCmp} {handleAgentChange} />
+            </div>
+            <div class:hide={selectedTab !== 'agent-routing-rule'}>
+                <AgentRouting agent={agent} />
+            </div>
+            <div class:hide={selectedTab !== 'agent-utility'}>
+                <AgentUtility agent={agent} bind:this={agentUtilityCmp} {handleAgentChange} />
+            </div>
+            <div class:hide={selectedTab !== 'agent-knowledgebase'}>
+                <AgentKnowledgeBase agent={agent} bind:this={agentKnowledgeBaseCmp} {handleAgentChange} />
+            </div>
+            <div class:hide={selectedTab !== 'agent-event-rule'}>
+                <AgentEventRule agent={agent} bind:this={agentEventRuleCmp} {handleAgentChange} />
+            </div>
+            <div class:hide={selectedTab !== 'agent-mcp-tool'}>
+                <AgentMcpTool agent={agent} bind:this={agentMcpToolCmp} {handleAgentChange} />
+            </div>
         </div>
-        <div class:hide={selectedTab !== 'agent-routing-rule'}>
-            <AgentRouting agent={agent} />
-        </div>
-        <div class:hide={selectedTab !== 'agent-utility'}>
-            <AgentUtility agent={agent} bind:this={agentUtilityCmp} {handleAgentChange} />
-        </div>
-        <div class:hide={selectedTab !== 'agent-knowledgebase'}>
-            <AgentKnowledgeBase agent={agent} bind:this={agentKnowledgeBaseCmp} {handleAgentChange} />
-        </div>
-        <div class:hide={selectedTab !== 'agent-event-rule'}>
-            <AgentEventRule agent={agent} bind:this={agentEventRuleCmp} {handleAgentChange} />
-        </div>
-        <div class:hide={selectedTab !== 'agent-mcp-tool'}>
-            <AgentMcpTool agent={agent} bind:this={agentMcpToolCmp} {handleAgentChange} />
-        </div>
-    </CardBody>
-</Card>
+    </div>
+</MaterialCard>

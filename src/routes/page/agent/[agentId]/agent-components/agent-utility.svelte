@@ -1,8 +1,8 @@
-<script>
-    import { onMount } from 'svelte';
-    import { Card, CardBody, Input, Button } from '@sveltestrap/sveltestrap';
+<script>    import { onMount } from 'svelte';
     import { getAgentUtilityOptions } from '$lib/services/agent-service';
 	import { truncateByPrefix } from '$lib/helpers/utils/common';
+    import MaterialCard from '$lib/common/MaterialCard.svelte';
+    import MaterialButton from '$lib/common/MaterialButton.svelte';
 
     const limit = 5;
     const prefix = "util-";
@@ -269,43 +269,45 @@
     }
 </script>
 
-<Card>
-    <CardBody>
-        <div class="text-center">
-            <h5 class="mt-1 mb-3">Utilities</h5>
-            <h6 class="mt-1 mb-3">Tools shared across plugins</h6>
+<MaterialCard variant="outlined" className="agent-utility-card">
+    <div class="material-card-content">
+        <div class="text-center mb-4">
+            <h5 class="material-heading">Utilities</h5>
+            <h6 class="material-body-medium text-outline">Tools shared across plugins</h6>
         </div>
 
-        <div class="agent-utility-container">
+        <div class="material-utility-container">
             {#if !agent?.is_router}
-                <div class="merge-utility">
-                    <Input
+                <div class="material-checkbox-container mb-3">
+                    <input
+                        class="material-checkbox"
                         type="checkbox"
                         checked={agent?.merge_utility || false}
                         on:change={e => { toggleMergeUtility(e);}}
+                        id="merge-utility"
                     />
-                    <div class="fw-bold">
+                    <label class="material-checkbox-label" for="merge-utility">
                         Merge utilities
-                    </div>
+                    </label>
                     <div
-                        class="line-align-center"
+                        class="ms-2"
                         data-bs-toggle="tooltip"
                         data-bs-placement="top"
                         title="Merge with entry agent utilities"
                     >
-                        <i class="bx bx-info-circle" />
+                        <i class="mdi mdi-information-outline text-outline" />
                     </div>
                 </div>
             {/if}
 
             {#each innerUtilities as utility, uid (uid)}
                 <div class="utility-wrapper">
-                    <div class="utility-row utility-row-primary">
-                        <div class="utility-label fw-bold">
+                    <div class="utility-row utility-row-primary">                        <div class="utility-label fw-bold">
                             <div class="line-align-center">{`Utility #${uid + 1}`}</div>
                             <div class="utility-tooltip">
                                 <div class="line-align-center">
-                                    <Input
+                                    <input
+                                        class="material-checkbox"
                                         type="checkbox"
                                         checked={!utility.disabled}
                                         on:change={e => { toggleUtility(e, uid); }}
@@ -317,14 +319,14 @@
                                     data-bs-placement="top"
                                     title="Uncheck to disable utility"
                                 >
-                                    <i class="bx bx-info-circle" />
+                                    <i class="mdi mdi-information-outline text-outline" />
                                 </div>
                             </div>
                         </div>
                         <div class="utility-value">
                             <div class="utility-input line-align-center">
-                                <Input
-                                    type="select"
+                                <select
+                                    class="material-select"
                                     value={utility.name}
                                     disabled={utility.disabled}
                                     on:change={e => { changeUtility(e, uid); }}
@@ -332,11 +334,11 @@
                                     {#each utilityOptions as option}
                                         <option value={option} selected={option == utility.name}>{option}</option>
                                     {/each}
-                                </Input>
+                                </select>
                             </div>
                             <div class="utility-delete line-align-center">
                                 <i
-                                    class="bx bxs-no-entry text-danger clickable"
+                                    class="mdi mdi-close-circle text-danger clickable"
                                     role="link"
                                     tabindex="0"
                                     on:keydown={() => {}}
@@ -352,22 +354,21 @@
                                 <div class="utility-list-item">
                                     <div class="utility-label line-align-center">
                                         {fid === 0 ? 'Functions' : ''}
-                                    </div>
-                                    <div class="utility-value">
+                                    </div>                                    <div class="utility-value">
                                         <div class="utility-input line-align-center">
-                                            <Input
-                                                type="select"
+                                            <select
+                                                class="material-select"
                                                 disabled={utility.disabled}
                                                 on:change={e => { selectContent(e, uid, fid, 'function'); }}
                                             >
                                                 {#each (utilityMapper[utility.name]?.functions || []) as option}
                                                     <option value={`${option.name}#${option.displayName}`} selected={option.name == fn.name}>{option.displayName}</option>
                                                 {/each}
-                                            </Input>
+                                            </select>
                                         </div>
                                         <div class="utility-delete line-align-center">
                                             <i
-                                                class="bx bxs-no-entry text-danger clickable"
+                                                class="mdi mdi-close-circle text-danger clickable"
                                                 role="link"
                                                 tabindex="0"
                                                 on:keydown={() => {}}
@@ -382,10 +383,9 @@
                                 <div class="utility-list-item">
                                     <div class="utility-label">
                                         {utility.functions.length === 0 ? 'Functions' : ''}
-                                    </div>
-                                    <div class="utility-value">
+                                    </div>                                    <div class="utility-value">
                                         <i
-                                            class="bx bx-list-plus add-list clickable"
+                                            class="mdi mdi-plus-circle add-list clickable"
                                             role="link"
                                             tabindex="0"
                                             on:keydown={() => {}}
@@ -401,11 +401,10 @@
                                 <div class="utility-list-item">
                                     <div class="utility-label line-align-center">
                                         {tid === 0 ? 'Templates' : ''}
-                                    </div>
-                                    <div class="utility-value">
+                                    </div>                                    <div class="utility-value">
                                         <div class="utility-input line-align-center">
-                                            <Input
-                                                type="select"
+                                            <select
+                                                class="material-select"
                                                 disabled={utility.disabled}
                                                 on:change={e => { selectContent(e, uid, tid, 'template'); }}
                                             >
@@ -414,11 +413,11 @@
                                                         {option.displayName || option.name}
                                                     </option>
                                                 {/each}
-                                            </Input>
+                                            </select>
                                         </div>
                                         <div class="utility-delete line-align-center">
                                             <i
-                                                class="bx bxs-no-entry text-danger clickable"
+                                                class="mdi mdi-close-circle text-danger clickable"
                                                 role="link"
                                                 tabindex="0"
                                                 on:keydown={() => {}}
@@ -433,10 +432,9 @@
                                 <div class="utility-list-item">
                                     <div class="utility-label">
                                         {utility.templates.length === 0 ? 'Templates' : ''}
-                                    </div>
-                                    <div class="utility-value">
+                                    </div>                                    <div class="utility-value">
                                         <i
-                                            class="bx bx-list-plus add-list clickable"
+                                            class="mdi mdi-plus-circle add-list clickable"
                                             role="link"
                                             tabindex="0"
                                             on:keydown={() => {}}
@@ -447,19 +445,19 @@
                             {/if}
                         </div>
                     </div>
-                </div>
-            {/each}
+                </div>            {/each}
 
             {#if innerUtilities.length < limit}
-                <div class="add-utility">
-                    <Button color="primary" on:click={() => addUtility()}>
-                        <span>
-                            <i class="bx bx-plus" />
-                            <span>Add utility</span>
-                        </span>
-                    </Button>
+                <div class="material-add-utility mt-3">
+                    <MaterialButton 
+                        variant="filled" 
+                        icon="mdi mdi-plus"
+                        on:click={() => addUtility()}
+                    >
+                        Add utility
+                    </MaterialButton>
                 </div>
             {/if}
         </div>
-    </CardBody>
-</Card>
+    </div>
+</MaterialCard>

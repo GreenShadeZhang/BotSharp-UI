@@ -1,8 +1,9 @@
 <script>
     import { onMount, onDestroy, createEventDispatcher  } from 'svelte';
-    import { fly } from 'svelte/transition';
-    import { Input, Tooltip } from '@sveltestrap/sveltestrap';
-    import util from "lodash";
+    import { fly } from 'svelte/transition';    import { Tooltip } from '@sveltestrap/sveltestrap';
+    import MaterialTextField from '$lib/common/MaterialTextField.svelte';
+    import lodash from "lodash";
+    const util = lodash;
 
     const svelteDispatch = createEventDispatcher();
     
@@ -107,22 +108,23 @@
     class="knowledge-adv-search-container mt-5"
     in:fly={{ y: -10, duration: 500 }}
     out:fly={{ y: -10, duration: 200 }}
->
-    <div class="knowledge-adv-search-btn text-primary fw-bold">
+>    <div class="knowledge-adv-search-btn text-primary fw-bold">
         <div class="line-align-center">
-            <Input
-                type="switch"
-                disabled={disabled}
-                checked={showAdvSearch}
-                on:change={e => toggleAdvSearch(e)}
-            />
+            <div class="material-switch">
+                <input
+                    type="checkbox"
+                    class="material-switch-input"
+                    disabled={disabled}
+                    checked={showAdvSearch}
+                    on:change={e => toggleAdvSearch(e)}
+                />
+            </div>
         </div>
         <div class="line-align-center">
             <div>{'Advance Search'}</div>
-        </div>
-        {#if showAdvSearch}
+        </div>{#if showAdvSearch}
             <div class="line-align-center" id="adv-search-tooltip">
-                <i class="bx bx-info-circle" />
+                <i class="mdi mdi-information-outline" />
             </div>
             <Tooltip target="adv-search-tooltip" placement="top" class="demo-tooltip-note">
                 <ul>
@@ -139,22 +141,24 @@
             in:fly={{ y: -10, duration: 500 }}
             out:fly={{ y: -10, duration: 200 }}
         >
-            {#each innerItems as item, idx (idx)}
-                <div class="knowledge-adv-search-item">
+            {#each innerItems as item, idx (idx)}                <div class="knowledge-adv-search-item">
                     <div class="search-item-cb line-align-center">
-                        <Input
-                            type="checkbox"
-                            disabled={disabled}
-                            checked={item.checked}
-                            on:change={e => toggleItemCheckbox(idx, e)}
-                        />
+                        <div class="material-checkbox-container">
+                            <input
+                                type="checkbox"
+                                class="material-checkbox"
+                                disabled={disabled}
+                                checked={item.checked}
+                                on:change={e => toggleItemCheckbox(idx, e)}
+                                id="adv-search-{idx}"
+                            />
+                            <label class="material-checkbox-label" for="adv-search-{idx}"></label>
+                        </div>
                     </div>
                     <div class="search-item-name fw-bold line-align-center">
                         <div>{`${item.displayName}:`}</div>
-                    </div>
-                    <div class="search-item-content line-align-center">
-                        <Input
-                            type="text"
+                    </div>                    <div class="search-item-content line-align-center">
+                        <MaterialTextField
                             disabled={!item.checked || disabled}
                             maxlength={maxLength}
                             value={item.value}

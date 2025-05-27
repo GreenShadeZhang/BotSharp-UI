@@ -1,17 +1,16 @@
 <script>
-    import { onMount } from "svelte";
-	import {
-        Button,
-        Form,
-        FormGroup,
+    import { onMount } from "svelte";	import {
         Modal,
         ModalBody,
         ModalFooter,
         ModalHeader,
         Row
     } from "@sveltestrap/sveltestrap";
+    import MaterialButton from "$lib/common/MaterialButton.svelte";
+    import MaterialTextField from "$lib/common/MaterialTextField.svelte";
     import { KnowledgeCollectionType } from "$lib/helpers/enums";
-    import _ from "lodash";
+    import lodash from "lodash";
+    const _ = lodash;
 	
 
     /** @type {import('$knowledgeTypes').KnowledgeSearchViewModel | null} */
@@ -116,78 +115,51 @@
             <span class="text-primary collection-value">{collection}</span>
         </div>
     </ModalHeader>
-    <ModalBody>
-        <Form>
+    <ModalBody>        <div class="material-form">
             {#if isQuestionAnswerCollection}
-            <Row>
-                <FormGroup class="edit-group">
-                    <label class="fw-bold textarea-label" for="question">
-                        {`Question: `}
-                    </label>
-                    <textarea
-                        class={'form-control knowledge-textarea'}
+            <Row>                <div class="edit-group">                    <MaterialTextField
+                        label="Question"
+                        maxlength={question.maxLength}
                         placeholder="Enter question..."
-                        rows={question.rows}
-                        maxlength={question.maxLength}
                         bind:value={question.text}
-                        on:input={() => {}}
+                        helpText="{question.text?.length || 0}/{question.maxLength}"
                     />
-                    <div class="text-secondary text-end text-count">
-                        {question.text?.length || 0}/{question.maxLength}
-                    </div>
-                </FormGroup>
-            </Row>
-            <Row>
-                <FormGroup class="edit-group">
-                    <label class="fw-bold textarea-label" for="answer">
-                        {`Answer: `}
-                    </label>
-                    <textarea
-                        class={'form-control knowledge-textarea'}
-                        placeholder="Enter answer..."
-                        rows={answer.rows}
+                </div>
+            </Row>            <Row>
+                <div class="edit-group">                    <MaterialTextField
+                        label="Answer"
                         maxlength={answer.maxLength}
+                        placeholder="Enter answer..."
                         bind:value={answer.text}
+                        helpText="{answer.text?.length || 0}/{answer.maxLength}"
                     />
-                    <div class="text-secondary text-end text-count">
-                        {answer.text?.length || 0}/{answer.maxLength}
-                    </div>
-                </FormGroup>
-            </Row>
-            {:else if isDocumentCollection}
+                </div>
+            </Row>            {:else if isDocumentCollection}
             <Row>
-                <FormGroup class="edit-group">
-                    <label class="fw-bold textarea-label" for="text">
-                        {`Text: `}
-                    </label>
-                    <textarea
-                        class={'form-control knowledge-textarea'}
-                        placeholder="Enter text..."
-                        rows={question.rows}
+                <div class="edit-group">                    <MaterialTextField
+                        label="Text"
                         maxlength={question.maxLength}
+                        placeholder="Enter text..."
                         bind:value={question.text}
+                        helpText="{question.text?.length || 0}/{question.maxLength}"
                     />
-                    <div class="text-secondary text-end text-count">
-                        {question.text?.length || 0}/{question.maxLength}
-                    </div>
-                </FormGroup>
+                </div>
             </Row>
             {/if}
-        </Form>
-    </ModalBody>
-    <ModalFooter>
-        <Button
-            color="primary"
+        </div>
+    </ModalBody>    <ModalFooter>
+        <MaterialButton
+            variant="filled"
             disabled={disableConfirmBtn}
             on:click={(e) => handleConfirm(e)}
         >
             Confirm
-        </Button>
-        <Button
-            color="secondary"
+        </MaterialButton>
+        <MaterialButton
+            variant="outlined"
             on:click={(e) => handleCancel(e)}
         >
             Cancel
-        </Button>
+        </MaterialButton>
     </ModalFooter>
 </Modal>

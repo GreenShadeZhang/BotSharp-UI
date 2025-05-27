@@ -2,16 +2,15 @@
 	import { onMount } from 'svelte';
     import { fly } from 'svelte/transition';
 	import { _ } from 'svelte-i18n';
-	import util from "lodash";
-	import Swal from 'sweetalert2';
-	import {
+	import lodash from "lodash";
+	const util = lodash;
+	import Swal from 'sweetalert2';	import {
         Button,
-        Card,
-        CardBody,
-        Input,
-        Table,
         Tooltip
     } from '@sveltestrap/sveltestrap';
+    import MaterialCard from '$lib/common/MaterialCard.svelte';
+    import MaterialButton from '$lib/common/MaterialButton.svelte';
+    import MaterialTextField from '$lib/common/MaterialTextField.svelte';
     import {
         getVectorKnowledgeCollections,
         getVectorKnowledgePageList,
@@ -751,155 +750,153 @@
 	cancel={() => toggleCollectionCreate()}
 />
 
-<div class="knowledge-demo-btn mb-4">
-	<div class="demo-btn">
-		<Button
-			color={`${showDemo ? 'danger' : 'primary'}`}
-			on:click={() => toggleDemo()}
-		>
-			{#if !showDemo}
-				<div class="btn-content">
-					<div class="knowledge-btn-icon"><i class="bx bx-search-alt" /></div>
-					<div>{'Start Search'}</div>
-				</div>
-			{:else}
-				<div class="btn-content">
-					<div class="knowledge-btn-icon"><i class="bx bx-hide" /></div>
-					<div>{'Hide Search'}</div>
-				</div>
-			{/if}
-		</Button>
+<div class="material-knowledge-container">
+	<div class="material-knowledge-header">
+		<MaterialCard variant="outlined" className="material-search-card">
+			<div class="material-card-content">
+				<div class="knowledge-demo-btn">
+					<div class="demo-btn">
+						<MaterialButton
+							variant={showDemo ? 'filled' : 'outlined'}
+							on:click={() => toggleDemo()}
+						>
+							{#if !showDemo}
+								<div class="btn-content">
+									<div class="knowledge-btn-icon"><i class="mdi mdi-magnify" /></div>
+									<div>{'Start Search'}</div>
+								</div>
+							{:else}
+								<div class="btn-content">
+									<div class="knowledge-btn-icon"><i class="mdi mdi-eye-off" /></div>
+									<div>{'Hide Search'}</div>
+								</div>
+							{/if}
+						</MaterialButton>
 
-		{#if showDemo}
-			<div class="knowledge-btn-icon demo-tooltip-icon line-align-center" id="demo-tooltip">
-				<i class="bx bx-info-circle" />
-			</div>
-			<Tooltip target="demo-tooltip" placement="top" class="demo-tooltip-note">
-				<ul>
-					<li>Click "Search" or press "Enter" to search knowledge</li>
-					<li>Switch collection will not search</li>
-				</ul>
-			</Tooltip>
-		{/if}
-	</div>
-	
-	<div class="reset-btn">
-		<Button
-			on:click={() => reset()}
-		>
-			<div class="btn-content">
-				<div class="knowledge-btn-icon"><i class="bx bx-reset" /></div>
-				<div>{'Reset'}</div>
-			</div>
-		</Button>
-	</div>
-</div>
-
-<div class="d-xl-flex">
-	<div class="w-100">
-		{#if showDemo}
-			<div
-				in:fly={{ y: -10, duration: 500 }}
-				out:fly={{ y: -10, duration: 200 }}
-			>
-				<div class="knowledge-search-container mb-4">
-					<textarea
-						class='form-control knowledge-textarea'
-						rows={5}
-						maxlength={maxLength}
-						disabled={isSearching}
-						placeholder={'Start searching here...'}
-						bind:value={text}
-						on:keydown={(e) => pressKey(e)}
-					/>
-					<div class="text-secondary text-end text-count">
-						{text?.length || 0}/{maxLength}
+						{#if showDemo}
+							<div class="knowledge-btn-icon demo-tooltip-icon line-align-center" id="demo-tooltip">
+								<i class="mdi mdi-information" />
+							</div>
+							<Tooltip target="demo-tooltip" placement="top" class="demo-tooltip-note">
+								<ul>
+									<li>Click "Search" or press "Enter" to search knowledge</li>
+									<li>Switch collection will not search</li>
+								</ul>
+							</Tooltip>
+						{/if}
 					</div>
-				
-                    <div class="mt-3 knowledge-search-footer">
-                        <div class="search-input">
-                            <div class="line-align-center input-text fw-bold">
-                                <span>{'Confidence:'}</span>
-                            </div>
-							<div style="display: flex; gap: 5px;">
-								<div class="line-align-center confidence-box">
-									<Input
-										type="text"
-										class="text-center"
-										disabled={textSearch}
-										bind:value={confidence}
-										on:keydown={(e) => validateConfidenceInput(e)}
-										on:blur={(e) => changeConfidence(e)}
-									/>
-								</div>
-								<div class="step-btn-group">
-									<Button
-										class="btn btn-sm"
-										color="link"
-										on:click={() => stepChangeConfidence('plus', step)}
-									>
-										<i class="mdi mdi-chevron-up" />
-									</Button>
-									<Button
-										class="btn btn-sm"
-										color="link"
-										on:click={() => stepChangeConfidence('minus', step)}
-									>
-										<i class="mdi mdi-chevron-down" />
-									</Button>
-								</div>
+					
+					<div class="reset-btn">
+						<MaterialButton
+							variant="text"
+							on:click={() => reset()}
+						>
+							<div class="btn-content">
+								<div class="knowledge-btn-icon"><i class="mdi mdi-refresh" /></div>
+								<div>{'Reset'}</div>
 							</div>
-                        </div>
-						<div class="search-input">
-							<div class="line-align-center input-text fw-bold">
-								<span>{'Similarity search'}</span>
-							</div>
-							<div class="line-align-center input-text search-toggle">
-								<Input
-									type="switch"
-									checked={textSearch}
-									on:change={e => toggleTextSearch()}
-								/>
-							</div>
-							<div class="line-align-center input-text fw-bold">
-								<span>{'Keyword search'}</span>
-							</div>
-						</div>
-                        <div class="line-align-center">
-							<Button
-								color="primary"
-								disabled={disableSearchBtn}
-								on:click={() => search()}
-							>
-								{'Search'}
-							</Button>
-                        </div>
-                    </div>
+						</MaterialButton>
+					</div>
+				</div>
 
-					{#if textSearch}
-						<AdvancedSearch
-							on:changeitems={e => onSearchItemsChanged(e)}
-							disabled={disabled}
-							items={[
-								{ key: KnowledgePayloadName.FileName, displayName: "File name" },
-								{ key: KnowledgePayloadName.FileSource, displayName: "File source" }
-							]}
-						/>
-					{/if}
-				
-					{#if isSearching}
-						<div class="knowledge-loader mt-5">
-							<LoadingDots duration={'1s'} size={12} gap={5} color={'var(--bs-primary)'} />
+				{#if showDemo}
+					<div
+						class="material-search-section"
+						in:fly={{ y: -10, duration: 500 }}
+						out:fly={{ y: -10, duration: 200 }}
+					>						<div class="knowledge-search-container">
+							<MaterialTextField
+								label="Search Knowledge"
+								helpText={`${text?.length || 0}/${maxLength} characters`}
+								bind:value={text}
+								disabled={isSearching}
+								maxlength={maxLength}
+								on:keydown={(e) => pressKey(e)}
+							/>
+						
+							<div class="material-search-controls">
+								<div class="search-input-group">
+									<div class="material-confidence-control">
+										<MaterialTextField
+											label="Confidence"
+											type="text"
+											class="text-center"
+											disabled={textSearch}
+											bind:value={confidence}
+											on:keydown={(e) => validateConfidenceInput(e)}
+											on:blur={(e) => changeConfidence(e)}
+										/>
+										<div class="confidence-step-controls">
+											<MaterialButton
+												variant="text"
+												size="small"
+												on:click={() => stepChangeConfidence('plus', step)}
+											>
+												<i class="mdi mdi-chevron-up" />
+											</MaterialButton>
+											<MaterialButton
+												variant="text"
+												size="small"
+												on:click={() => stepChangeConfidence('minus', step)}
+											>
+												<i class="mdi mdi-chevron-down" />
+											</MaterialButton>
+										</div>
+									</div>
+								</div>
+								<div class="search-mode-toggle">
+									<div class="material-search-mode">
+										<span class="search-mode-label">Similarity search</span>
+										<div class="material-switch">
+											<input
+												type="checkbox"
+												class="material-switch-input"
+												checked={textSearch}
+												on:change={e => toggleTextSearch()}
+											/>
+										</div>
+										<span class="search-mode-label">Keyword search</span>
+									</div>
+								</div>
+								<div class="search-action">
+									<MaterialButton
+										variant="filled"
+										disabled={disableSearchBtn}
+										on:click={() => search()}
+									>
+										{'Search'}
+									</MaterialButton>
+								</div>
+							</div>
+
+							{#if textSearch}
+								<AdvancedSearch
+									on:changeitems={e => onSearchItemsChanged(e)}
+									disabled={disabled}
+									items={[
+										{ key: KnowledgePayloadName.FileName, displayName: "File name" },
+										{ key: KnowledgePayloadName.FileSource, displayName: "File source" }
+									]}
+								/>
+							{/if}
+						
+							{#if isSearching}
+								<div class="knowledge-loader mt-5">
+									<LoadingDots duration={'1s'} size={12} gap={5} color={'var(--md-sys-color-primary)'} />
+								</div>
+							{:else if searchDone && (!items || items.length === 0)}
+								<div class="material-empty-state">
+									<i class="mdi mdi-database-search material-empty-icon"></i>
+									<h4 class="material-heading-small">{"No knowledge found"}</h4>
+									<p class="material-body-medium">{"Try adjusting your search criteria"}</p>
+								</div>
+							{/if}
 						</div>
-					{:else if searchDone && (!items || items.length === 0)}
-						<div class="mt-5 text-center">
-							<h4 class="text-secondary">{"Ehhh, no idea..."}</h4>
-						</div>
-					{/if}
-			  	</div>
+					</div>
+				{/if}
 			</div>
-		{/if}
-        
+		</MaterialCard>
+	</div>        
         {#if selectedCollection}
             <KnowledgeDocumentUpload
                 collection={selectedCollection}
@@ -911,126 +908,104 @@
             />
         {/if}
 
-		<div class="d-md-flex mt-5">
-			<div class="w-100">
-				<Card>
-					<CardBody>
-						<div class="mt-2">
-							<div class="d-flex flex-wrap mb-3 knowledge-table-header">
-								<div class="d-flex" style="gap: 5px;">
-									<h5 class="font-size-16 knowledge-header-text">
-										<div>{$_('Knowledges')}</div>
-									</h5>
-									<div
-										class="line-align-center"
-										data-bs-toggle="tooltip"
-										data-bs-placement="top"
-										title="Add knowledge"
-									>
-                                        <Button
-                                            class="btn btn-sm btn-soft-primary knowledge-btn-icon"
-                                            on:click={() => onKnowledgeCreate()}
-                                        >
-                                            <i class="mdi mdi-plus" />
-                                        </Button>
-									</div>
-									<div
-										class="line-align-center"
-										data-bs-toggle="tooltip"
-										data-bs-placement="top"
-										title="Delete all data"
-									>
-                                        <Button
-                                            class="btn btn-sm btn-soft-danger knowledge-btn-icon"
-                                            on:click={() => onKnowledgeDeleteAll()}
-                                        >
-                                            <i class="mdi mdi-minus" />
-                                        </Button>
-									</div>
-								</div>
-								<div class="collection-dropdown-container">
-									<div class="line-align-center collection-dropdown">
-										<Input
-											type="select"
-											on:change={(e) => changeCollection(e)}
-										>
-											{#each collections as option, idx (idx)}
-												<option value={option} selected={option === selectedCollection}>{option}</option>
-											{/each}
-										</Input>
-									</div>
-									<div
-										class="line-align-center"
-										data-bs-toggle="tooltip"
-										data-bs-placement="top"
-										title="Add collection"
-									>
-										<Button
-											class="btn btn-sm btn-soft-primary collection-action-btn"
-											on:click={() => toggleCollectionCreate()}
-										>
-											<i class="mdi mdi-plus" />
-										</Button>
-									</div>
-									<div
-										class="line-align-center"
-										data-bs-toggle="tooltip"
-										data-bs-placement="top"
-										title="Delete collection"
-									>
-										<Button
-											class="btn btn-sm btn-soft-danger collection-action-btn"
-											on:click={() => deleteCollection()}
-										>
-											<i class="mdi mdi-minus" />
-										</Button>
-									</div>
-								</div>
-							</div>
-						  
-							<hr class="mt-2" />
-						  
-							<div class="table-responsive knowledge-table">
-								<Table class="table align-middle table-nowrap table-hover mb-0">
-									<thead>
-										<tr>
-											<th scope="col">{$_('Text')}</th>
-											<th></th>
-										</tr>
-									</thead>
-									<tbody>
-										{#each items as item, idx (idx)}
-                                            <VectorItem
-												collection={selectedCollection}
-                                                collectionType={collectionType}
-												item={item}
-												open={isFromSearch && idx === 0}
-												on:delete={(e) => onKnowledgeDelete(e)}
-												on:update={(e) => onKnowledgeUpdate(e)}
-											/>
-										{/each}
-									</tbody>
-								</Table>
-						  
-								{#if isLoadingMore}
-									<div class="knowledge-loader mt-4">
-										<Loader size={25} disableDefaultStyles />
-									</div>
-								{:else if !!nextId}
-									<div class="mt-4 text-center">
-										<Button
-											class="btn btn-soft-primary"
-											on:click={() => loadMore()}
-										>
-											{'Load more'}
-										</Button>
-									</div>
-								{/if}
+		<div class="material-knowledge-table-section">
+			<MaterialCard variant="outlined" className="material-knowledge-card">
+				<div class="material-card-content">
+					<div class="material-knowledge-header">
+						<div class="knowledge-actions">
+							<h6 class="material-heading">{$_('Knowledge Database')}</h6>
+							<div class="header-actions">
+								<MaterialButton
+									variant="text"
+									size="small"
+									on:click={() => onKnowledgeCreate()}
+									className="material-action-btn"
+								>
+									<i class="mdi mdi-plus" />
+									<span>Add</span>
+								</MaterialButton>
+								<MaterialButton
+									variant="text"
+									size="small"
+									on:click={() => onKnowledgeDeleteAll()}
+									className="material-action-btn material-danger-text"
+								>
+									<i class="mdi mdi-delete-sweep" />
+									<span>Clear All</span>
+								</MaterialButton>
 							</div>
 						</div>
-					</CardBody>
-				</Card>
-			</div>
+						<div class="collection-controls">
+							<div class="material-select-wrapper">
+								<select 
+									class="material-select"
+									value={selectedCollection}
+									on:change={(e) => changeCollection(e)}
+								>
+									{#each collections as option, idx (idx)}
+										<option value={option}>{option}</option>
+									{/each}
+								</select>
+								<label class="material-select-label">Collection</label>
+							</div>
+							<div class="collection-actions">
+								<MaterialButton
+									variant="text"
+									size="small"
+									on:click={() => toggleCollectionCreate()}
+									className="material-action-btn"
+								>
+									<i class="mdi mdi-plus" />
+								</MaterialButton>
+								<MaterialButton
+									variant="text"
+									size="small"
+									on:click={() => deleteCollection()}
+									className="material-action-btn material-danger-text"
+								>
+									<i class="mdi mdi-delete" />
+								</MaterialButton>
+							</div>
+						</div>
+					</div>
+				  
+					<div class="material-table-container">
+						<div class="material-table">
+							<div class="material-table-header">
+								<div class="material-table-cell material-table-header-cell">{$_('Text')}</div>
+								<div class="material-table-cell material-table-header-cell">Actions</div>
+							</div>
+							<div class="material-table-body">
+								{#each items as item, idx (idx)}
+									<VectorItem
+										collection={selectedCollection}
+										collectionType={collectionType}
+										item={item}
+										open={isFromSearch && idx === 0}
+										on:delete={(e) => onKnowledgeDelete(e)}
+										on:update={(e) => onKnowledgeUpdate(e)}
+									/>
+								{/each}
+							</div>
+						</div>
+				  
+						{#if isLoadingMore}
+							<div class="knowledge-loader mt-4">
+								<LoadingDots duration={'1s'} size={12} gap={5} color={'var(--md-sys-color-primary)'} />
+							</div>
+						{:else if !!nextId}
+							<div class="material-load-more">
+								<MaterialButton
+									variant="outlined"
+									on:click={() => loadMore()}
+								>
+									{'Load more'}
+								</MaterialButton>
+							</div>
+						{/if}
+					</div>
+				</div>
+			</MaterialCard>
 		</div>
 	</div>
 </div>

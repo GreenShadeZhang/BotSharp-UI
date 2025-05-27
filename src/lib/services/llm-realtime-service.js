@@ -9,10 +9,9 @@ export const llmRealtime = {
     /** 
      * @param {string} agentId 
      * @param {function} onMessageReceived
-    */
-    async start(agentId, onMessageReceived) {
+    */    async start(agentId, onMessageReceived) {
         const session = await initRealtimeSession(agentId);
-        const EPHEMERAL_KEY = session.client_secret.value;
+        const EPHEMERAL_KEY = session.clientSecret?.value || session.client_secret?.value;
 
         this.pc = new RTCPeerConnection();
 
@@ -97,10 +96,12 @@ export async function initRealtimeSession(agentId) {
  * @param {Object} data
  * @param {RTCDataChannel} dc
  */
-async function handleServerEvents(agentId, data, dc) {
-    // for each response.output, do something with it
-    data.response.output.forEach(async completion => {
-        if (completion.type === "function_call") {
+async function handleServerEvents(agentId, data, dc) {    // for each response.output, do something with it
+    /** @type {any} */
+    const response = data.response;
+    if (response && response.output) {
+        response.output.forEach(async (/** @type {any} */ completion) => {
+            if (completion.type === "function_call") {
             const result = await callFunction(agentId, completion.name, completion.arguments);
             console.log(result);
 

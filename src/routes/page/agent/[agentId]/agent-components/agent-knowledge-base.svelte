@@ -1,9 +1,10 @@
-<script>
-    import { onMount } from 'svelte';
-    import { Card, CardBody, Input, Button } from '@sveltestrap/sveltestrap';
+<script>    import { onMount } from 'svelte';
 	import { getVectorKnowledgeCollections } from '$lib/services/knowledge-base-service';
 	import { KnowledgeCollectionDisplayType } from '$lib/helpers/enums';
 	import { DECIMAL_REGEX } from '$lib/helpers/constants';
+    import MaterialCard from '$lib/common/MaterialCard.svelte';
+    import MaterialButton from '$lib/common/MaterialButton.svelte';
+    import MaterialTextField from '$lib/common/MaterialTextField.svelte';
 
     const limit = 5;
     const confidLowerBound = 0;
@@ -186,41 +187,43 @@
 
 </script>
 
-<Card>
-    <CardBody>
-        <div class="text-center">
-            <h5 class="mt-1 mb-3">Knowledge Base</h5>
-            <h6 class="mt-1 mb-3">Make your Agent have memory</h6>
+<MaterialCard variant="outlined" className="agent-knowledge-base-card">
+    <div class="material-card-content">
+        <div class="text-center mb-4">
+            <h5 class="material-heading">Knowledge Base</h5>
+            <h6 class="material-body-medium text-outline">Make your Agent have memory</h6>
         </div>
 
-        <div class="agent-utility-container">
+        <div class="material-knowledge-container">
             {#each innerKnowledgeBases as knowledge, uid (uid)}
-                <div class="utility-wrapper">
-                    <div class="utility-row utility-row-primary">
-                        <div class="utility-label fw-bold">
-                            <div class="line-align-center">{`Collection #${uid + 1}`}</div>
-                            <div class="utility-tooltip">
-                                <div class="line-align-center">
-                                    <Input
+                <div class="material-knowledge-item">
+                    <div class="material-knowledge-header">
+                        <div class="material-knowledge-label">
+                            <div class="material-heading-small">Collection #{uid + 1}</div>
+                            <div class="material-knowledge-controls">
+                                <div class="material-checkbox-container">
+                                    <input
+                                        class="material-checkbox"
                                         type="checkbox"
                                         checked={!knowledge.disabled}
                                         on:change={e => toggleKnowledgeBase(e, uid)}
+                                        id="knowledge-{uid}"
                                     />
+                                    <label class="material-checkbox-label" for="knowledge-{uid}">Enabled</label>
                                 </div>
                                 <div
-                                    class="line-align-center"
+                                    class="ms-2"
                                     data-bs-toggle="tooltip"
                                     data-bs-placement="top"
                                     title="Uncheck to disable knowledgebase"
                                 >
-                                    <i class="bx bx-info-circle" />
+                                    <i class="mdi mdi-information-outline text-outline" />
                                 </div>
                             </div>
-                        </div>
-                        <div class="utility-value">
+                        </div>                        <div class="material-knowledge-actions">
                             <div class="utility-input line-align-center">
-                                <Input
-                                    type="select"
+                                <select
+                                    class="material-select"
                                     disabled={knowledge.disabled}
                                     on:change={e => changeKnowledgeBase(e, uid)}
                                 >
@@ -229,11 +232,11 @@
                                             {option.displayName || option.name}
                                         </option>
                                     {/each}
-                                </Input>
+                                </select>
                             </div>
                             <div class="utility-delete line-align-center">
                                 <i
-                                    class="bx bxs-no-entry text-danger clickable"
+                                    class="mdi mdi-close-circle text-danger clickable"
                                     role="link"
                                     tabindex="0"
                                     on:keydown={() => {}}
@@ -247,14 +250,13 @@
                             <div class="utility-list-item">
                                 <div class="utility-label line-align-center">
                                     {'Confidence'}
-                                </div>
-                                <div class="utility-value">
-                                    <div class="utility-input line-align-center">
-                                        <Input
+                                </div>                                <div class="utility-value">
+                                    <div class="utility-input line-align-center">                                        <MaterialTextField
                                             type="text"
-                                            class="text-center"
-                                            bind:value={knowledge.confidence}
+                                            value={knowledge.confidence?.toString() || "0.0"}
                                             disabled={knowledge.disabled}
+                                            placeholder="0.0"
+                                            className="text-center"
                                             on:keydown={e => validateConfidenceInput(e)}
                                             on:blur={e => changeConfidence(e, uid)}
                                         />
@@ -265,18 +267,17 @@
                         </div>
                     </div>
                 </div>
-            {/each}
-
-            {#if innerKnowledgeBases.length < limit}
-                <div class="add-utility">
-                    <Button color="primary" on:click={() => addKnowledgeBase()}>
-                        <span>
-                            <i class="bx bx-plus" />
-                            <span>Add Knowledge Base</span>
-                        </span>
-                    </Button>
+            {/each}            {#if innerKnowledgeBases.length < limit}
+                <div class="material-add-knowledge mt-3">
+                    <MaterialButton 
+                        variant="filled" 
+                        icon="mdi mdi-plus"
+                        on:click={() => addKnowledgeBase()}
+                    >
+                        Add Knowledge Base
+                    </MaterialButton>
                 </div>
             {/if}
         </div>
-    </CardBody>
-</Card>
+    </div>
+</MaterialCard>

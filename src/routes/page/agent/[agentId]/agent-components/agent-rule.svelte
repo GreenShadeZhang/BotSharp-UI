@@ -1,7 +1,9 @@
 <script>
     import { onMount } from 'svelte';
-    import { Card, CardBody, Input, Button } from '@sveltestrap/sveltestrap';
 	import { getAgentRuleOptions } from '$lib/services/agent-service';
+    import MaterialCard from '$lib/common/MaterialCard.svelte';
+    import MaterialButton from '$lib/common/MaterialButton.svelte';
+    import MaterialTextField from '$lib/common/MaterialTextField.svelte';
 
     const limit = 5;
     const textLimit = 100;
@@ -151,14 +153,14 @@
 
 </script>
 
-<Card>
-    <CardBody>
-        <div class="text-center">
-            <h5 class="mt-1 mb-3">Triggers & Rules</h5>
-            <h6 class="mt-1 mb-3">Wake-up your agent by rules</h6>
+<MaterialCard variant="outlined" className="agent-rule-card">
+    <div class="material-card-content">
+        <div class="text-center mb-4">
+            <h5 class="material-heading">Triggers & Rules</h5>
+            <h6 class="material-body-medium text-outline">Wake-up your agent by rules</h6>
         </div>
 
-        <div class="agent-utility-container">
+        <div class="material-rule-container">
             {#each innerRules as rule, uid (uid)}
                 <div class="utility-wrapper">
                     <div class="utility-row utility-row-primary">
@@ -166,7 +168,8 @@
                             <div class="line-align-center">{`Rule #${uid + 1}`}</div>
                             <div class="utility-tooltip">
                                 <div class="line-align-center">
-                                    <Input
+                                    <input
+                                        class="material-checkbox"
                                         type="checkbox"
                                         checked={!rule.disabled}
                                         on:change={e => toggleRule(e, uid)}
@@ -178,14 +181,14 @@
                                     data-bs-placement="top"
                                     title="Uncheck to disable rule"
                                 >
-                                    <i class="bx bx-info-circle" />
+                                    <i class="mdi mdi-information-outline text-outline" />
                                 </div>
                             </div>
                         </div>
                         <div class="utility-value">
                             <div class="utility-input line-align-center">
-                                <Input
-                                    type="select"
+                                <select
+                                    class="material-select"
                                     disabled={rule.disabled}
                                     on:change={e => changeRule(e, uid)}
                                 >
@@ -194,11 +197,11 @@
                                             {option.displayName || option.name}
                                         </option>
                                     {/each}
-                                </Input>
+                                </select>
                             </div>
                             <div class="utility-delete line-align-center">
                                 <i
-                                    class="bx bxs-no-entry text-danger clickable"
+                                    class="mdi mdi-close-circle text-danger clickable"
                                     role="link"
                                     tabindex="0"
                                     on:keydown={() => {}}
@@ -216,11 +219,11 @@
                                 </div>
                                 <div class="utility-value">
                                     <div class="utility-input line-align-center">
-                                        <Input
+                                        <MaterialTextField
                                             type="text"
                                             disabled={rule.disabled}
-                                            maxlength={textLimit}
                                             value={rule.criteria}
+                                            placeholder="Enter rule criteria..."
                                             on:input={e => changeContent(e, uid, 'criteria')}
                                         />
                                     </div>
@@ -233,15 +236,16 @@
             {/each}
 
             {#if innerRules.length < limit}
-                <div class="add-utility">
-                    <Button color="primary" on:click={() => addRule()}>
-                        <span>
-                            <i class="bx bx-plus" />
-                            <span>Add Rule</span>
-                        </span>
-                    </Button>
+                <div class="material-add-rule mt-3">
+                    <MaterialButton 
+                        variant="filled" 
+                        icon="mdi mdi-plus"
+                        on:click={() => addRule()}
+                    >
+                        Add Rule
+                    </MaterialButton>
                 </div>
             {/if}
         </div>
-    </CardBody>
-</Card>
+    </div>
+</MaterialCard>

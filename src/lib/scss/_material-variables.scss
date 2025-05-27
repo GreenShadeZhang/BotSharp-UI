@@ -1,0 +1,351 @@
+// Material Design Variables
+// Based on Google's Material You design system with premium color palette
+
+//
+// Material Design Color System
+//
+
+// Primary Color Palette - Elegant Purple Blue
+$md-primary-10: #00006e;
+$md-primary-20: #1c1b8c;
+$md-primary-30: #3730a3;
+$md-primary-40: #4f46e5; // Primary brand color
+$md-primary-50: #6366f1;
+$md-primary-60: #818cf8;
+$md-primary-70: #a5b4fc;
+$md-primary-80: #c7d2fe;
+$md-primary-90: #e0e7ff;
+$md-primary-95: #f0f4ff;
+$md-primary-99: #fefeff;
+
+// Secondary Color Palette - Warm Amber
+$md-secondary-10: #3f1500;
+$md-secondary-20: #7c2d12;
+$md-secondary-30: #9a3412;
+$md-secondary-40: #ea580c;
+$md-secondary-50: #f97316;
+$md-secondary-60: #fb923c;
+$md-secondary-70: #fdba74;
+$md-secondary-80: #fed7aa;
+$md-secondary-90: #ffedd5;
+$md-secondary-95: #fff7ed;
+$md-secondary-99: #fffcfa;
+
+// Tertiary Color Palette - Fresh Emerald
+$md-tertiary-10: #002818;
+$md-tertiary-20: #064e3b;
+$md-tertiary-30: #047857;
+$md-tertiary-40: #059669;
+$md-tertiary-50: #10b981;
+$md-tertiary-60: #34d399;
+$md-tertiary-70: #6ee7b7;
+$md-tertiary-80: #a7f3d0;
+$md-tertiary-90: #d1fae5;
+$md-tertiary-95: #ecfdf5;
+$md-tertiary-99: #f7fefc;
+
+// Error Color Palette
+$md-error-10: #410e0b;
+$md-error-20: #7f1d1d;
+$md-error-30: #991b1b;
+$md-error-40: #dc2626;
+$md-error-50: #ef4444;
+$md-error-60: #f87171;
+$md-error-70: #fca5a5;
+$md-error-80: #fecaca;
+$md-error-90: #fee2e2;
+$md-error-95: #fef2f2;
+$md-error-99: #fffbfa;
+
+// Neutral Color Palette
+$md-neutral-0: #000000;
+$md-neutral-10: #191c20;
+$md-neutral-20: #2d3135;
+$md-neutral-25: #383c41;
+$md-neutral-30: #43474e;
+$md-neutral-35: #4f545c;
+$md-neutral-40: #5b6169;
+$md-neutral-50: #747982;
+$md-neutral-60: #8e939c;
+$md-neutral-70: #a9aeb7;
+$md-neutral-80: #c4c9d2;
+$md-neutral-90: #e1e5ee;
+$md-neutral-95: #eff3fc;
+$md-neutral-98: #f8faff;
+$md-neutral-99: #fcfeff;
+$md-neutral-100: #ffffff;
+
+// Neutral Variant Color Palette
+$md-neutral-variant-10: #191c22;
+$md-neutral-variant-20: #2e3036;
+$md-neutral-variant-30: #44474e;
+$md-neutral-variant-40: #5c5f66;
+$md-neutral-variant-50: #75777f;
+$md-neutral-variant-60: #8f9199;
+$md-neutral-variant-70: #a9acb4;
+$md-neutral-variant-80: #c5c7cf;
+$md-neutral-variant-90: #e1e3eb;
+$md-neutral-variant-95: #eff1f9;
+$md-neutral-variant-99: #fcfeff;
+
+//
+// Light Theme Colors
+//
+$md-light-primary: $md-primary-40;
+$md-light-on-primary: $md-neutral-100;
+$md-light-primary-container: $md-primary-90;
+$md-light-on-primary-container: $md-primary-10;
+
+$md-light-secondary: $md-secondary-40;
+$md-light-on-secondary: $md-neutral-100;
+$md-light-secondary-container: $md-secondary-90;
+$md-light-on-secondary-container: $md-secondary-10;
+
+$md-light-tertiary: $md-tertiary-40;
+$md-light-on-tertiary: $md-neutral-100;
+$md-light-tertiary-container: $md-tertiary-90;
+$md-light-on-tertiary-container: $md-tertiary-10;
+
+$md-light-error: $md-error-40;
+$md-light-on-error: $md-neutral-100;
+$md-light-error-container: $md-error-90;
+$md-light-on-error-container: $md-error-10;
+
+$md-light-background: $md-neutral-99;
+$md-light-on-background: $md-neutral-10;
+$md-light-surface: $md-neutral-99;
+$md-light-on-surface: $md-neutral-10;
+
+$md-light-surface-variant: $md-neutral-variant-90;
+$md-light-on-surface-variant: $md-neutral-variant-30;
+$md-light-outline: $md-neutral-variant-50;
+$md-light-outline-variant: $md-neutral-variant-80;
+
+$md-light-surface-container-lowest: $md-neutral-100;
+$md-light-surface-container-low: $md-neutral-95;
+$md-light-surface-container: $md-neutral-90;
+$md-light-surface-container-high: $md-neutral-80;
+$md-light-surface-container-highest: $md-neutral-70;
+
+//
+// Dark Theme Colors
+//
+$md-dark-primary: $md-primary-80;
+$md-dark-on-primary: $md-primary-20;
+$md-dark-primary-container: $md-primary-30;
+$md-dark-on-primary-container: $md-primary-90;
+
+$md-dark-secondary: $md-secondary-80;
+$md-dark-on-secondary: $md-secondary-20;
+$md-dark-secondary-container: $md-secondary-30;
+$md-dark-on-secondary-container: $md-secondary-90;
+
+$md-dark-tertiary: $md-tertiary-80;
+$md-dark-on-tertiary: $md-tertiary-20;
+$md-dark-tertiary-container: $md-tertiary-30;
+$md-dark-on-tertiary-container: $md-tertiary-90;
+
+$md-dark-error: $md-error-80;
+$md-dark-on-error: $md-error-20;
+$md-dark-error-container: $md-error-30;
+$md-dark-on-error-container: $md-error-90;
+
+$md-dark-background: $md-neutral-10;
+$md-dark-on-background: $md-neutral-90;
+$md-dark-surface: $md-neutral-10;
+$md-dark-on-surface: $md-neutral-90;
+
+$md-dark-surface-variant: $md-neutral-variant-30;
+$md-dark-on-surface-variant: $md-neutral-variant-80;
+$md-dark-outline: $md-neutral-variant-60;
+$md-dark-outline-variant: $md-neutral-variant-30;
+
+$md-dark-surface-container-lowest: $md-neutral-0;
+$md-dark-surface-container-low: $md-neutral-10;
+$md-dark-surface-container: $md-neutral-20;
+$md-dark-surface-container-high: $md-neutral-25;
+$md-dark-surface-container-highest: $md-neutral-30;
+
+//
+// Material Design Typography Scale
+//
+$md-typography-display-large: (
+  font-family: 'Google Sans', 'Roboto', sans-serif,
+  font-size: 57px,
+  line-height: 64px,
+  font-weight: 400,
+  letter-spacing: -0.25px
+);
+
+$md-typography-display-medium: (
+  font-family: 'Google Sans', 'Roboto', sans-serif,
+  font-size: 45px,
+  line-height: 52px,
+  font-weight: 400,
+  letter-spacing: 0px
+);
+
+$md-typography-display-small: (
+  font-family: 'Google Sans', 'Roboto', sans-serif,
+  font-size: 36px,
+  line-height: 44px,
+  font-weight: 400,
+  letter-spacing: 0px
+);
+
+$md-typography-headline-large: (
+  font-family: 'Google Sans', 'Roboto', sans-serif,
+  font-size: 32px,
+  line-height: 40px,
+  font-weight: 400,
+  letter-spacing: 0px
+);
+
+$md-typography-headline-medium: (
+  font-family: 'Google Sans', 'Roboto', sans-serif,
+  font-size: 28px,
+  line-height: 36px,
+  font-weight: 400,
+  letter-spacing: 0px
+);
+
+$md-typography-headline-small: (
+  font-family: 'Google Sans', 'Roboto', sans-serif,
+  font-size: 24px,
+  line-height: 32px,
+  font-weight: 400,
+  letter-spacing: 0px
+);
+
+$md-typography-title-large: (
+  font-family: 'Roboto', sans-serif,
+  font-size: 22px,
+  line-height: 28px,
+  font-weight: 400,
+  letter-spacing: 0px
+);
+
+$md-typography-title-medium: (
+  font-family: 'Roboto', sans-serif,
+  font-size: 16px,
+  line-height: 24px,
+  font-weight: 500,
+  letter-spacing: 0.15px
+);
+
+$md-typography-title-small: (
+  font-family: 'Roboto', sans-serif,
+  font-size: 14px,
+  line-height: 20px,
+  font-weight: 500,
+  letter-spacing: 0.1px
+);
+
+$md-typography-body-large: (
+  font-family: 'Roboto', sans-serif,
+  font-size: 16px,
+  line-height: 24px,
+  font-weight: 400,
+  letter-spacing: 0.5px
+);
+
+$md-typography-body-medium: (
+  font-family: 'Roboto', sans-serif,
+  font-size: 14px,
+  line-height: 20px,
+  font-weight: 400,
+  letter-spacing: 0.25px
+);
+
+$md-typography-body-small: (
+  font-family: 'Roboto', sans-serif,
+  font-size: 12px,
+  line-height: 16px,
+  font-weight: 400,
+  letter-spacing: 0.4px
+);
+
+$md-typography-label-large: (
+  font-family: 'Roboto', sans-serif,
+  font-size: 14px,
+  line-height: 20px,
+  font-weight: 500,
+  letter-spacing: 0.1px
+);
+
+$md-typography-label-medium: (
+  font-family: 'Roboto', sans-serif,
+  font-size: 12px,
+  line-height: 16px,
+  font-weight: 500,
+  letter-spacing: 0.5px
+);
+
+$md-typography-label-small: (
+  font-family: 'Roboto', sans-serif,
+  font-size: 11px,
+  line-height: 16px,
+  font-weight: 500,
+  letter-spacing: 0.5px
+);
+
+//
+// Material Design Elevation & Shadows
+//
+$md-elevation-0: none;
+$md-elevation-1: 0px 1px 2px 0px rgba(0, 0, 0, 0.3), 0px 1px 3px 1px rgba(0, 0, 0, 0.15);
+$md-elevation-2: 0px 1px 2px 0px rgba(0, 0, 0, 0.3), 0px 2px 6px 2px rgba(0, 0, 0, 0.15);
+$md-elevation-3: 0px 1px 3px 0px rgba(0, 0, 0, 0.3), 0px 4px 8px 3px rgba(0, 0, 0, 0.15);
+$md-elevation-4: 0px 2px 3px 0px rgba(0, 0, 0, 0.3), 0px 6px 10px 4px rgba(0, 0, 0, 0.15);
+$md-elevation-5: 0px 4px 4px 0px rgba(0, 0, 0, 0.3), 0px 8px 12px 6px rgba(0, 0, 0, 0.15);
+
+//
+// Material Design Shape System
+//
+$md-shape-corner-none: 0px;
+$md-shape-corner-extra-small: 4px;
+$md-shape-corner-small: 8px;
+$md-shape-corner-medium: 12px;
+$md-shape-corner-large: 16px;
+$md-shape-corner-extra-large: 28px;
+
+//
+// Material Design Motion
+//
+$md-motion-easing-standard: cubic-bezier(0.2, 0.0, 0, 1.0);
+$md-motion-easing-decelerate: cubic-bezier(0.0, 0.0, 0.2, 1.0);
+$md-motion-easing-accelerate: cubic-bezier(0.4, 0.0, 1, 1.0);
+$md-motion-easing-emphasize: cubic-bezier(0.2, 0.0, 0, 1.0);
+
+$md-motion-duration-short1: 50ms;
+$md-motion-duration-short2: 100ms;
+$md-motion-duration-short3: 150ms;
+$md-motion-duration-short4: 200ms;
+$md-motion-duration-medium1: 250ms;
+$md-motion-duration-medium2: 300ms;
+$md-motion-duration-medium3: 350ms;
+$md-motion-duration-medium4: 400ms;
+$md-motion-duration-long1: 450ms;
+$md-motion-duration-long2: 500ms;
+$md-motion-duration-long3: 550ms;
+$md-motion-duration-long4: 600ms;
+
+//
+// Spacing System (based on 4px grid)
+//
+$md-spacing-0: 0px;
+$md-spacing-1: 4px;
+$md-spacing-2: 8px;
+$md-spacing-3: 12px;
+$md-spacing-4: 16px;
+$md-spacing-5: 20px;
+$md-spacing-6: 24px;
+$md-spacing-7: 28px;
+$md-spacing-8: 32px;
+$md-spacing-9: 36px;
+$md-spacing-10: 40px;
+$md-spacing-12: 48px;
+$md-spacing-16: 64px;
+$md-spacing-20: 80px;
+$md-spacing-24: 96px;
+$md-spacing-32: 128px;

@@ -1,6 +1,8 @@
 <script>
 	import HeadTitle from '$lib/common/HeadTitle.svelte';
 	import Breadcrumb from '$lib/common/Breadcrumb.svelte';
+	import MaterialCard from '$lib/common/MaterialCard.svelte';
+	import MaterialButton from '$lib/common/MaterialButton.svelte';
 	import { _ } from 'svelte-i18n'
 	import {
 		Card,
@@ -71,173 +73,156 @@
 
 <Breadcrumb title="{$_('Home')}" pagetitle="{$_('Dashboard')}" />
 
-<Row>
-	<Col xl={4}>
-		<Card class="overflow-hidden">
-			<div class="bg-primary-subtle">
-				<Row class="row">
-					<Col xs={7}>
-						<div class="text-primary p-3">
-							<h5 class="text-primary">{$_('Welcome Back !')}</h5>
-							<p>{PUBLIC_BRAND_NAME}</p>
-						</div>
-					</Col>
-					<Col xs={5} class="align-self-end">
-						<Image src={PUBLIC_LOGIN_IMAGE} alt="" class="img-fluid" />
-					</Col>
-				</Row>
-			</div>
-			<CardBody class="pt-0">
-				<Row>
-					<Col sm={4}>
-						<div class="avatar-md profile-user-wid mb-4">
-							<Image src='images/users/user-dummy.jpg' alt="" class="img-thumbnail rounded-circle" />
-						</div>
-						<h5 class="font-size-15 text-truncate">{user?.full_name}</h5>
-						<p class="text-muted mb-0 text-truncate">{$_('Agent Manager')}</p>
-					</Col>
-					<Col sm={8}>
-						<div class="pt-4">
-							<Row>
-								<Col xs={6}>
-									<h5 class="font-size-15">125</h5>
-									<p class="text-muted mb-0">Conversations</p>
-								</Col>
-								<Col xs={6}>
-									<h5 class="font-size-15">$1245</h5>
-									<p class="text-muted mb-0">{$_('Token Cost')}</p>
-								</Col>
-							</Row>
-							<div class="mt-4">
-								<Link href="page/user/me" class="btn btn-primary waves-effect waves-light btn-sm">
-									{$_('View Profile')} <i class="mdi mdi-arrow-right ms-1" />
-								</Link>
-							</div>
-						</div>
-					</Col>
-				</Row>
-			</CardBody>
-		</Card>
-		<Card>
-			<CardBody>
-				<CardTitle class="mb-4">{$_('Monthly Cost')}</CardTitle>
-				<Row>
-					<Col sm={6}>
-						<p class="text-muted">{$_('This month')}</p>
-						<h3>$34,252</h3>
-						<p class="text-muted">
-							<span class="text-success me-2"> 12% <i class="mdi mdi-arrow-up" /> </span> {$_('From previous period')}
-						</p>
-						<div class="mt-4">
-							<Link class="btn btn-primary waves-effect waves-light btn-sm"
-								>{$_('View More')} <i class="mdi mdi-arrow-right ms-1" /></Link
-							>
-						</div>
-					</Col>
-					<Col sm={6}>
-						<div class="mt-4 mt-sm-0">
-							<RadialBarChart chartColor={['--bs-primary']} />
-						</div>
-					</Col>
-				</Row>
-				<p class="text-muted mb-0">{$_('We craft digital, graphic and dimensional thinking.')}</p>
-			</CardBody>
-		</Card>
-	</Col>
-	<Col xl={8}>
-		<Row>
-			<Col md={4}>
-				<Card class="mini-stats-wid">
-					<CardBody>
-						<div class="d-flex">
-							<div class="flex-grow-1">
-								<p class="text-muted fw-medium">Conversations</p>
-								<h4 class="mb-0">1,235</h4>
-							</div>
-							<div class="flex-shrink-0 align-self-center">
-								<div class="mini-stat-icon avatar-sm rounded-circle bg-primary">
-									<span class="avatar-title">
-										<i class="bx bx-copy-alt font-size-24" />
-									</span>
-								</div>
-							</div>
-						</div>
-					</CardBody>
-				</Card>
-			</Col>
-			<Col md={4}
-				><Card class="mini-stats-wid">
-					<CardBody>
-						<div class="d-flex">
-							<div class="flex-grow-1">
-								<p class="text-muted fw-medium">{$_('Total Cost')}</p>
-								<h4 class="mb-0">$35, 723</h4>
-							</div>
-							<div class="flex-shrink-0 align-self-center">
-								<div class="mini-stat-icon avatar-sm rounded-circle bg-primary">
-									<span class="avatar-title">
-										<i class="bx bx-archive-in font-size-24" />
-									</span>
-								</div>
-							</div>
-						</div>
-					</CardBody>
-				</Card></Col
-			>
-			<Col md={4}>
-				<Card class="mini-stats-wid">
-					<CardBody>
-						<div class="d-flex">
-							<div class="flex-grow-1">
-								<p class="text-muted fw-medium">{$_('Average Cost')}</p>
-								<h4 class="mb-0">$16.2</h4>
-							</div>
-							<div class="flex-shrink-0 align-self-center">
-								<div class="mini-stat-icon avatar-sm rounded-circle bg-primary">
-									<span class="avatar-title">
-										<i class="bx bx-purchase-tag-alt font-size-24" />
-									</span>
-								</div>
-							</div>
-						</div>
-					</CardBody>
-				</Card>
-			</Col>
-		</Row>
-		<Card>
-			<CardBody>
-				<div class="d-sm-flex flex-wrap">
-					<CardTitle class="mb-4">{$_('Token Spent')}</CardTitle>
-					<div class="ms-auto">
-						<Nav pills>
-							<NavItem>
-								<Link href="#" class="nav-link">{$_('Week')}</Link>
-							</NavItem>
-							<NavItem>
-								<Link href="#" class="nav-link">{$_('Month')}</Link>
-							</NavItem>
-							<NavItem>
-								<Link href="#" class="nav-link" active>{$_('Year')}</Link>
-							</NavItem>
-						</Nav>
+<div class="material-dashboard">
+	<Row class="g-4">
+		<Col xl={4}>
+			<MaterialCard variant="elevated" class="material-welcome-card">
+				<div class="material-welcome-header">
+					<div class="material-welcome-content">
+						<h2 class="material-welcome-title">{$_('Welcome Back!')}</h2>
+						<p class="material-welcome-subtitle">{PUBLIC_BRAND_NAME}</p>
+					</div>
+					<div class="material-welcome-illustration">
+						<Image src={PUBLIC_LOGIN_IMAGE} alt="Welcome" class="material-welcome-image" />
 					</div>
 				</div>
-				<StackedColumnChart chartColor={['--bs-primary', '--bs-warning', '--bs-success']} />
-			</CardBody>
-		</Card>
-	</Col>
-</Row>
+				<div class="material-profile-section">
+					<div class="material-profile-info">
+						<div class="material-avatar">
+							<Image src='images/users/user-dummy.jpg' alt="Profile" class="material-avatar-image" />
+						</div>
+						<div class="material-profile-details">
+							<h3 class="material-profile-name">{user?.full_name}</h3>
+							<p class="material-profile-role">{$_('Agent Manager')}</p>
+						</div>
+					</div>
+					<div class="material-profile-stats">
+						<div class="material-stat-item">
+							<span class="material-stat-value">125</span>
+							<span class="material-stat-label">Conversations</span>
+						</div>
+						<div class="material-stat-item">
+							<span class="material-stat-value">$1,245</span>
+							<span class="material-stat-label">{$_('Token Cost')}</span>
+						</div>
+					</div>
+					<div class="material-profile-actions">
+						<MaterialButton 
+							variant="filled" 
+							href="page/user/me"
+							class="material-profile-button"
+						>
+							{$_('View Profile')}
+							<i class="mdi mdi-arrow-right"></i>
+						</MaterialButton>
+					</div>
+				</div>
+			</MaterialCard>
+			
+			<MaterialCard variant="elevated" class="material-cost-card">
+				<div class="material-card-header">
+					<h3 class="material-card-title">{$_('Monthly Cost')}</h3>
+				</div>
+				<div class="material-cost-content">
+					<div class="material-cost-info">
+						<p class="material-cost-period">{$_('This month')}</p>
+						<h2 class="material-cost-amount">$34,252</h2>
+						<div class="material-cost-change">
+							<span class="material-cost-percentage material-cost-percentage--positive">
+								<i class="mdi mdi-trending-up"></i>
+								12%
+							</span>
+							<span class="material-cost-description">{$_('From previous period')}</span>
+						</div>
+						<MaterialButton 
+							variant="filled" 
+							size="small"
+							class="material-cost-button"
+						>
+							{$_('View More')}
+							<i class="mdi mdi-arrow-right"></i>
+						</MaterialButton>
+					</div>
+					<div class="material-cost-chart">
+						<RadialBarChart chartColor={['--md-sys-color-primary']} />
+					</div>
+				</div>
+				<p class="material-cost-note">{$_('We craft digital, graphic and dimensional thinking.')}</p>
+			</MaterialCard>
+		</Col>
+		
+		<Col xl={8}>
+			<Row class="g-4">
+				<Col md={4}>
+					<MaterialCard variant="filled" class="material-stats-card">
+						<div class="material-stats-content">
+							<div class="material-stats-info">
+								<p class="material-stats-label">Conversations</p>
+								<h3 class="material-stats-value">1,235</h3>
+							</div>
+							<div class="material-stats-icon">
+								<i class="mdi mdi-chat-outline"></i>
+							</div>
+						</div>
+					</MaterialCard>
+				</Col>
+				<Col md={4}>
+					<MaterialCard variant="filled" class="material-stats-card">
+						<div class="material-stats-content">
+							<div class="material-stats-info">
+								<p class="material-stats-label">{$_('Total Cost')}</p>
+								<h3 class="material-stats-value">$35,723</h3>
+							</div>
+							<div class="material-stats-icon">
+								<i class="mdi mdi-currency-usd"></i>
+							</div>
+						</div>
+					</MaterialCard>
+				</Col>
+				<Col md={4}>
+					<MaterialCard variant="filled" class="material-stats-card">
+						<div class="material-stats-content">
+							<div class="material-stats-info">
+								<p class="material-stats-label">{$_('Average Cost')}</p>
+								<h3 class="material-stats-value">$16.2</h3>
+							</div>
+							<div class="material-stats-icon">
+								<i class="mdi mdi-chart-line"></i>
+							</div>
+						</div>
+					</MaterialCard>
+				</Col>
+			</Row>
+			
+			<MaterialCard variant="elevated" class="material-chart-card">
+				<div class="material-chart-header">
+					<h3 class="material-chart-title">{$_('Token Spent')}</h3>
+					<div class="material-chart-tabs">
+						<div class="material-tab-group">
+							<button class="material-tab">{$_('Week')}</button>
+							<button class="material-tab">{$_('Month')}</button>
+							<button class="material-tab material-tab--active">{$_('Year')}</button>
+						</div>
+					</div>
+				</div>
+				<div class="material-chart-content">
+					<StackedColumnChart chartColor={['--md-sys-color-primary', '--md-sys-color-secondary', '--md-sys-color-tertiary']} />
+				</div>
+			</MaterialCard>
+		</Col>
+	</Row>
 
-<Row>
-	{#each dashboard_model?.conversation_list || [] as conv, index (conv.conversation_id)}
-		{#if conv?.conversation_id}
-			<Conversation conversationId={conv.conversation_id} instruction={conv.instruction} userId={user.id}/>
-		{/if}
-	{/each}
-</Row>
+	<Row class="g-4">
+		{#each dashboard_model?.conversation_list || [] as conv, index (conv.conversation_id)}
+			{#if conv?.conversation_id}
+				<Conversation conversationId={conv.conversation_id} instruction={conv.instruction} userId={user.id}/>
+			{/if}
+		{/each}
+	</Row>
 
-<Row>
-	<SocialSource />
-	<Activity />
-	<TopSellingProduct />
-</Row>
+	<Row class="g-4">
+		<SocialSource />
+		<Activity />
+		<TopSellingProduct />
+	</Row>
+</div>

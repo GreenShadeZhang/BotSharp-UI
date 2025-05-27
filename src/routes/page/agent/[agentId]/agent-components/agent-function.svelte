@@ -1,6 +1,6 @@
-<script>
-    import { JSONEditor, Mode } from 'svelte-jsoneditor';
+<script>    import { JSONEditor, Mode } from 'svelte-jsoneditor';
     import { onMount } from 'svelte';
+    import MaterialCard from '$lib/common/MaterialCard.svelte';
 
     /** @type {import('$agentTypes').AgentModel} */
     export let agent;
@@ -44,14 +44,25 @@
     }
 </script>
 
-<div class="my-json-editor">
-    <JSONEditor mode={Mode.table} content={content} onChange={handleChange} />
-</div>
+<MaterialCard variant="outlined" className="agent-function-card">
+    <div class="material-card-header">
+        <h5 class="material-heading">Functions & Responses</h5>
+    </div>
+    <div class="material-card-content">
+        <div class="material-json-editor">
+            <JSONEditor mode={Mode.table} content={content} onChange={handleChange} />
+        </div>
+    </div>
+</MaterialCard>
 
 <style>
-    .my-json-editor {
-        /* define a custom theme color */
-        --jse-theme-color: var(--bs-primary);
-        --jse-theme-color-highlight: #687177;
+    .material-json-editor {
+        /* Material Design theme for JSON editor */
+        --jse-theme-color: var(--md-primary-color);
+        --jse-theme-color-highlight: var(--md-primary-color-variant);
+        --jse-panel-background: var(--md-surface-color);
+        --jse-text-color: var(--md-on-surface-color);
+        border-radius: var(--md-border-radius);
+        overflow: hidden;
     }
 </style>

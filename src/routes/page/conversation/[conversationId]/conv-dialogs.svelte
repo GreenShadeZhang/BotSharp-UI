@@ -1,7 +1,8 @@
 <script>
     import { onMount } from 'svelte';
     import { _ } from 'svelte-i18n' 
-    import util from "lodash";
+    import lodash from "lodash";
+    const util = lodash;
     import { Card, CardBody, CardTitle, Col, Row } from '@sveltestrap/sveltestrap';
     import { getDialogs, getConversationFiles, sendNotification } from '$lib/services/conversation-service.js';
     import { utcToLocal } from '$lib/helpers/datetime';

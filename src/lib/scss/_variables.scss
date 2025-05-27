@@ -1,92 +1,92 @@
-// Variables
+// Material Design Variables Override
 
 //
-// custom-variables
+// Material Design Layout Variables
 //
 
-// Vertical Sidebar  Light
-$sidebar-bg:                                          #ffffff;
-$sidebar-menu-item-color:                             #545a6d;
-$sidebar-menu-sub-item-color:                         #545a6d;
-$sidebar-menu-item-icon-color:                        #7f8387;
-$sidebar-menu-item-hover-color:                       #383c40;
-$sidebar-menu-item-active-color:                      #556ee6;
-$sidebar-width:                                       250px;
-$sidebar-collapsed-width:                             70px;
-$sidebar-width-sm:                                    160px;
+// Vertical Sidebar with Material Design
+$sidebar-bg:                                          var(--md-sys-color-surface);
+$sidebar-menu-item-color:                             var(--md-sys-color-on-surface-variant);
+$sidebar-menu-sub-item-color:                         var(--md-sys-color-on-surface-variant);
+$sidebar-menu-item-icon-color:                        var(--md-sys-color-on-surface-variant);
+$sidebar-menu-item-hover-color:                       var(--md-sys-color-on-surface);
+$sidebar-menu-item-active-color:                      var(--md-sys-color-primary);
+$sidebar-width:                                       280px;
+$sidebar-collapsed-width:                             80px;
+$sidebar-width-sm:                                    240px;
 
 // Vertical Sidebar - Dark
-$sidebar-dark-bg:                                     #2a3042; //2c313a
-$sidebar-dark-menu-item-color:                        #a6b0cf;
-$sidebar-dark-menu-sub-item-color:                    #79829c;
-$sidebar-dark-menu-item-icon-color:                   #6a7187;
-$sidebar-dark-menu-item-hover-color:                  #ffffff;
-$sidebar-dark-menu-item-active-color:                 #ffffff;
+$sidebar-dark-bg:                                     var(--md-sys-color-surface);
+$sidebar-dark-menu-item-color:                        var(--md-sys-color-on-surface-variant);
+$sidebar-dark-menu-sub-item-color:                    var(--md-sys-color-on-surface-variant);
+$sidebar-dark-menu-item-icon-color:                   var(--md-sys-color-on-surface-variant);
+$sidebar-dark-menu-item-hover-color:                  var(--md-sys-color-on-surface);
+$sidebar-dark-menu-item-active-color:                 var(--md-sys-color-primary);
 
-// Topbar - Default Light
-$header-height:                                       70px;
-$header-bg:                                           $white;
-$header-item-color:                                   #555b6d;
+// Topbar with Material Design
+$header-height:                                       64px;
+$header-bg:                                           var(--md-sys-color-surface);
+$header-item-color:                                   var(--md-sys-color-on-surface);
 
 // Topbar - Dark
-$header-dark-bg:                                      #2a3042;
-$header-dark-item-color:                              #e9ecef;
+$header-dark-bg:                                      var(--md-sys-color-surface);
+$header-dark-item-color:                              var(--md-sys-color-on-surface);
 
 // Topbar Search
-$topbar-search-bg:                                    #f3f3f9;
+$topbar-search-bg:                                    var(--md-sys-color-surface-container-highest);
 
 // Footer
-$footer-height:                                       60px;
-$footer-bg:                                           #f2f2f5;
-$footer-color:                                        #74788d;
+$footer-height:                                       64px;
+$footer-bg:                                           var(--md-sys-color-surface-container-low);
+$footer-color:                                        var(--md-sys-color-on-surface-variant);
 
 // Horizontal nav
-$topnav-bg:                                           $white;
+$topnav-bg:                                           var(--md-sys-color-surface);
 
-$menu-item-color:                                     #545a6d;
-$menu-item-active-color:                              #556ee6;
+$menu-item-color:                                     var(--md-sys-color-on-surface-variant);
+$menu-item-active-color:                              var(--md-sys-color-primary);
 
 // Right Sidebar
-$rightbar-width:                                      280px;
-
-// Display
-$display-none:                                        none;
-$display-block:                                       block;
+$rightbar-width:                                      320px;
 
 // Brand 
-$navbar-brand-box-width:                             250px;
+$navbar-brand-box-width:                             280px;
 
 // Boxed layout width
-$boxed-layout-width:                                 1300px;
-$boxed-body-bg:                                     #ebebf4;
+$boxed-layout-width:                                 1440px;
+$boxed-body-bg:                                      var(--md-sys-color-background);
 
 // apex charts
-$apex-grid-color:                                   var(--#{$prefix}border-color);
+$apex-grid-color:                                   var(--md-sys-color-outline-variant);
 
 // table
-$table-head-bg:                                     $gray-100;
-$table-dark-border-color:                           tint-color($gray-800, 7.5%);
+$table-head-bg:                                     var(--md-sys-color-surface-container);
+$table-dark-border-color:                           var(--md-sys-color-outline-variant);
 
+// Material Design Color System for Bootstrap Override
 
-// Variables
-//
-// Variables should follow the `$component-state-property-size` formula for
-// consistent naming. Ex: $nav-link-disabled-color and $modal-content-box-shadow-xs.
+// Primary colors using Material Design palette
+$primary:       #{$md-primary-40};
+$secondary:     #{$md-secondary-40};
+$success:       #{$md-tertiary-40};
+$info:          #{$md-primary-60};
+$warning:       #{$md-secondary-50};
+$danger:        #{$md-error-40};
+$light:         #{$md-neutral-95};
+$dark:          #{$md-neutral-20};
 
-// Color system
-
-// scss-docs-start gray-color-variables
-$white:    #fff;
-$gray-100: #f8f9fa;
-$gray-200: #eff2f7;
-$gray-300: #f6f6f6;
-$gray-400: #ced4da;
-$gray-500: #adb5bd;
-$gray-600: #74788d;
-$gray-700: #495057;
-$gray-800: #343a40;
-$gray-900: #212529;
-$black:    #000;
+// Gray scale using Material Design neutral palette
+$white:    #{$md-neutral-100};
+$gray-100: #{$md-neutral-95};
+$gray-200: #{$md-neutral-90};
+$gray-300: #{$md-neutral-80};
+$gray-400: #{$md-neutral-70};
+$gray-500: #{$md-neutral-60};
+$gray-600: #{$md-neutral-50};
+$gray-700: #{$md-neutral-40};
+$gray-800: #{$md-neutral-30};
+$gray-900: #{$md-neutral-20};
+$black:    #{$md-neutral-0};
 // scss-docs-end gray-color-variables
 
 // fusv-disable

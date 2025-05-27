@@ -2,7 +2,9 @@
 	import KnowledgeUploadResult from './knowledge-upload-result.svelte';
     import { onMount, onDestroy, createEventDispatcher } from 'svelte';
     import { fly } from 'svelte/transition';
-	import { Tooltip, Button, Input } from '@sveltestrap/sveltestrap';
+	import { Tooltip } from '@sveltestrap/sveltestrap';
+    import MaterialButton from '$lib/common/MaterialButton.svelte';
+    import MaterialTextField from '$lib/common/MaterialTextField.svelte';
     import { PUBLIC_SERVICE_URL } from '$env/static/public';
     import Swal from 'sweetalert2';
     import 'overlayscrollbars/overlayscrollbars.css';
@@ -337,21 +339,23 @@
     class="knowledge-doc-upload-container"
     in:fly={{ y: -10, duration: 500 }}
     out:fly={{ y: -10, duration: 200 }}
->
-    <div class="doc-upload-header text-primary fw-bold">
-        <Input
-            type="switch"
-            class="upload-toggle-btn"
-            disabled={disabled}
-            checked={showUploader}
-            on:change={e => toggleUploader(e)}
-        />
-        <div class="line-align-center">
-            <div>{`${showUploader ? 'Upload' : 'View'} Documents`}</div>
+>    <div class="material-upload-header">
+        <div class="material-toggle-container">
+            <input
+                class="material-switch"
+                type="checkbox"
+                disabled={disabled}
+                checked={showUploader}
+                on:change={e => toggleUploader(e)}
+                id="upload-toggle"
+            />
+            <label class="material-switch-label" for="upload-toggle">
+                {`${showUploader ? 'Upload' : 'View'} Documents`}
+            </label>
         </div>
         {#if showUploader}
-            <div class="line-align-center" id="upload-tooltip">
-                <i class="bx bx-info-circle" />
+            <div class="material-info-icon" id="upload-tooltip">
+                <i class="mdi mdi-information-outline" />
             </div>
             <Tooltip target="upload-tooltip" placement="top" class="demo-tooltip-note">
                 <ul>
@@ -388,59 +392,49 @@
                     on:drop={e => handleFileDrop(e)}
                 >
                     <i class="bx bx-cloud-upload" />
-                </FileDropZone>
-                <div
+                </FileDropZone>                <div
                     slot="suffix"
                     class="doc-card-btn"
                 >
-                    <!-- svelte-ignore a11y-click-events-have-key-events -->
-                    <!-- svelte-ignore a11y-no-static-element-interactions -->
-                    <i
-                        class="mdi mdi-arrow-up-bold-circle clickable"
-                        data-bs-toggle="tooltip"
-                        data-bs-placement="top"
-                        title="Submit"
+                    <MaterialButton
+                        variant="filled"
+                        icon="mdi mdi-upload-outline"
+                        disabled={disabled || uploadFiles?.length === 0}
                         on:click={() => handleFileSubmit()}
-                    />
+                    >
+                        Submit
+                    </MaterialButton>
                 </div>
             </FileGallery>
 
             <KnowledgeUploadResult
                 successFiles={successFiles}
                 failedFiles={failedFiles}
-            />
-
-            <div class="doc-upload-footer">
+            />            <div class="doc-upload-footer">
                 <div class="load-doc-btn">
-                    <Button
-                        class={`btn btn-md knowledge-demo-btn ${showDocList ? 'btn-soft-warning' : 'btn-soft-primary'}`}
+                    <MaterialButton
+                        variant={showDocList ? "outlined" : "filled"}
                         disabled={disabled}
                         on:click={() => toggleShowDocList()}
+                        className="material-knowledge-btn"
                     >
                         {#if !showDocList}
-                            <div class="btn-content">
-                                <div class="knowledge-btn-icon line-align-center"><i class="bx bx-search-alt" /></div>
-                                <div>{'View Collection Documents'}</div>
-                            </div>
+                            <i class="mdi mdi-folder-search-outline" />
+                            <span>View Collection Documents</span>
                         {:else}
-                            <div class="btn-content">
-                                <div class="knowledge-btn-icon"><i class="bx bx-hide" /></div>
-                                <div>{'Hide Collection Documents'}</div>
-                            </div>
+                            <i class="mdi mdi-folder-eye-outline" />
+                            <span>Hide Collection Documents</span>
                         {/if}
-                    </Button>
+                    </MaterialButton>
                     {#if showDocList}
-                        <div class="reset-docs-btn line-align-center">
-                            <!-- svelte-ignore a11y-click-events-have-key-events -->
-                            <!-- svelte-ignore a11y-no-static-element-interactions -->
-                            <i
-                                class={`bx bx-trash ${disabled || savedFiles.length === 0 ? '' : 'clickable'}`}
-                                data-bs-toggle="tooltip"
-                                data-bs-placement="top"
-                                title="Delete all docs"
-                                on:click={() => handleDeleteAllSavedFiles()}
-                            />
-                        </div>
+                        <MaterialButton
+                            variant="text"
+                            disabled={disabled || savedFiles.length === 0}
+                            on:click={() => handleDeleteAllSavedFiles()}
+                            className="material-danger-btn"
+                        >
+                            <i class="mdi mdi-delete-sweep" />
+                        </MaterialButton>
                     {/if}
                 </div>
                 {#if showDocList}
@@ -456,17 +450,15 @@
                                     needDownload
                                     onDownload={idx => handleDownloadSavedFile(idx)}
                                     showSuffix={!noMoreDocs}
-                                >
-                                    <div class="doc-card-btn doc-load-more" slot="suffix">
-                                        <!-- svelte-ignore a11y-click-events-have-key-events -->
-                                        <!-- svelte-ignore a11y-no-static-element-interactions -->
-                                        <i
-                                            class="mdi mdi-eye-plus-outline clickable"
-                                            data-bs-toggle="tooltip"
-                                            data-bs-placement="top"
-                                            title="Load more"
+                                >                                    <div class="doc-card-btn doc-load-more" slot="suffix">
+                                        <MaterialButton
+                                            variant="text"
+                                            icon="mdi mdi-eye-plus-outline"
+                                            disabled={disabled}
                                             on:click={() => loadMoreDocs()}
-                                        />
+                                        >
+                                            Load more
+                                        </MaterialButton>
                                     </div>
                                 </FileGallery>
                             {:else if !isLoading && savedFiles.length === 0}

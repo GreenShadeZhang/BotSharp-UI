@@ -2,10 +2,13 @@
     import { onMount } from 'svelte';
     import { _ } from 'svelte-i18n';
     import { v4 as uuidv4 } from 'uuid';
-    import util from "lodash";
-    import { Card, CardBody, FormGroup, Input, CardHeader } from '@sveltestrap/sveltestrap';
+    import lodash from "lodash";    
+    const util = lodash;    import { Card, CardBody, FormGroup, Input, CardHeader } from '@sveltestrap/sveltestrap';
     import NavBar from '$lib/common/nav-bar/NavBar.svelte';
 	import NavItem from '$lib/common/nav-bar/NavItem.svelte';
+    import MaterialCard from '$lib/common/MaterialCard.svelte';
+    import MaterialButton from '$lib/common/MaterialButton.svelte';
+    import MaterialTextField from '$lib/common/MaterialTextField.svelte';
 
 
     /** @type {import('$agentTypes').AgentModel} */
@@ -120,69 +123,65 @@
 </script>
 
 
-<Card class="agent-prompt-container">
-    <CardHeader class="agent-prompt-header border-bottom">
-        <div class="d-flex">
+<MaterialCard variant="outlined" className="agent-template-card">
+    <div class="material-card-header">
+        <div class="d-flex align-items-center">
             <div class="flex-grow-1">
-                <h5 class="fw-semibold">{'Templates'}</h5>
+                <h5 class="material-heading">Templates</h5>
             </div>
         </div>
-    </CardHeader>
-    <CardBody>
-        <FormGroup class="agent-prompt-body">
-            <div class="mb-2" style="display: flex; gap: 10px;">
-                <div class="line-align-center fw-bold">
-                    {'Contents:'}
+    </div>
+    <div class="material-card-content">
+        <div class="material-form-group">
+            <div class="mb-2 d-flex align-items-center gap-2">
+                <div class="material-label">
+                    Contents:
                 </div>
-                <!-- svelte-ignore a11y-click-events-have-key-events -->
-                <!-- svelte-ignore a11y-no-static-element-interactions -->
-                <div
-                    class="text-primary clickable"
-                    data-bs-toggle="tooltip"
-                    data-bs-placement="top"
-                    title="Add templates"
-                    style="font-size: 16px;"
+                <MaterialButton
+                    variant="text"
+                    icon="mdi mdi-plus-circle-outline"
+                    size="small"
                     on:click={() => addTemplate()}
+                    title="Add template"
                 >
-                    <i class="mdi mdi-plus-circle-outline" />
-                </div>
+                    Add Template
+                </MaterialButton>
             </div>
-            
-            {#if inner_templates.length > 0}
-            <NavBar
-                id={'agent-template-container'}
-                disableDefaultStyles
-                containerClasses={'nav-tabs-secondary'}
-            >
-                {#each inner_templates as template, idx (idx) }
-                <NavItem
-                    containerStyles={`flex: 0 1 calc(100% / ${inner_templates.length <= 2 ? inner_templates.length : 3})`}
-                    navBtnStyles={'text-transform: none;'}
-                    navBtnId={`template-${idx}-prompt-tab`}
-                    dataBsTarget={`#template-${idx}-prompt-tab-pane`}
-                    ariaControls={`template-${idx}-prompt-tab-pane`}
-                    bind:navBtnText={template.name}
-                    active={template.uid === selected_template.uid}
-                    allowEdit
-                    allowDelete
-                    maxEditLength={50}
-                    editPlaceholder={'Type a title here...'}
-                    onClick={() => selectTemplate(template.uid)}
-                    onDelete={() => deleteTemplate(template.uid)}
-                    onInput={() => handleAgentChange()}
-                />
-                {/each}
-            </NavBar>
-            <Input
+              {#if inner_templates.length > 0}
+            <div class="material-tabs mb-3">
+                <NavBar
+                    id={'agent-template-container'}
+                    disableDefaultStyles
+                    containerClasses={'nav-tabs-secondary'}
+                >
+                    {#each inner_templates as template, idx (idx) }
+                    <NavItem
+                        containerStyles={`flex: 0 1 calc(100% / ${inner_templates.length <= 2 ? inner_templates.length : 3})`}
+                        navBtnStyles={'text-transform: none;'}
+                        navBtnId={`template-${idx}-prompt-tab`}
+                        dataBsTarget={`#template-${idx}-prompt-tab-pane`}
+                        ariaControls={`template-${idx}-prompt-tab-pane`}
+                        bind:navBtnText={template.name}
+                        active={template.uid === selected_template.uid}
+                        allowEdit
+                        allowDelete
+                        maxEditLength={50}
+                        editPlaceholder={'Type a title here...'}
+                        onClick={() => selectTemplate(template.uid)}
+                        onDelete={() => deleteTemplate(template.uid)}
+                        onInput={() => handleAgentChange()}
+                    />
+                    {/each}
+                </NavBar>
+            </div>
+            <MaterialTextField
                 type="textarea"
-                class="form-control"
-                style="scrollbar-width: thin; resize: none;"
                 value={selected_template.content}
                 rows={15}
                 on:input={(e) => changePrompt(e)}
-                placeholder="Enter your template"
+                placeholder="Enter your template..."
             />
             {/if}
-        </FormGroup>
-    </CardBody>
-</Card>
+        </div>
+    </div>
+</MaterialCard>

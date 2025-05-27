@@ -206,44 +206,49 @@
 	}
 </script>
 
-<div class="vertical-menu">
+<div class="md-navigation-drawer vertical-menu">
 	<div class="h-100" id="vertical-menu">
-		<!--- Sidemenu -->
+		<!--- Material Design Sidemenu -->
 		<div id="sidebar-menu">
 			<!-- Left Menu Start -->
 			<ul class="metismenu list-unstyled" id="side-menu">
 				{#each menu as item}
 					{#if item.isHeader}
-						<li class="menu-title" key="t-menu">{$_(item.label)}</li>
+						<li class="menu-title md-typescale-label-large md-color-on-surface-variant" key="t-menu">{$_(item.label)}</li>
 					{:else if item.subMenu}
 						<li>
-							<Link href={null} class="has-arrow waves-effect">
-								<i class={item.icon} />
-								<span>{$_(item.label)}</span>
+							<Link href={null} class="md-navigation-item has-arrow">
+								<div class="md-navigation-icon">
+									<i class={item.icon} />
+								</div>
+								<span class="md-navigation-label">{$_(item.label)}</span>
 							</Link>
 							<ul class="sub-menu mm-collapse">
 								{#each item.subMenu as subMenu}
 									{#if subMenu.isChildItem}
 										<li>
-											<Link href="#" class="has-arrow waves-effect">
-												<span>{$_(subMenu.label)}</span>
+											<Link href="#" class="md-navigation-item has-arrow">
+												<span class="md-navigation-label">{$_(subMenu.label)}</span>
 											</Link>
 											<ul class="sub-menu mm-collapse">
 												{#each subMenu.childItems as childItem}
-													<li><Link href={childItem.link} on:click={() => goToPage()}>{$_(childItem.label)}</Link></li>
+													<li><Link href={childItem.link} class="md-navigation-item" on:click={() => goToPage()}>{$_(childItem.label)}</Link></li>
 												{/each}
 											</ul>
 										</li>
 									{:else}
-										<li><Link href={subMenu.link} on:click={() => goToPage()}>{$_(subMenu.label)}</Link></li>
+										<li><Link href={subMenu.link} class="md-navigation-item" on:click={() => goToPage()}>{$_(subMenu.label)}</Link></li>
 									{/if}
 								{/each}
 							</ul>
 						</li>
 					{:else}
 						<li>
-							<Link class="waves-effect" href={item.link} on:click={() => goToPage()} >
-								<i class={item.icon} /> <span>{$_(item.label)}</span>
+							<Link class="md-navigation-item" href={item.link} on:click={() => goToPage()} >
+								<div class="md-navigation-icon">
+									<i class={item.icon} />
+								</div>
+								<span class="md-navigation-label">{$_(item.label)}</span>
 							</Link>
 						</li>
 					{/if}

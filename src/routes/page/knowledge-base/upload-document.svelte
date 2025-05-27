@@ -1,6 +1,7 @@
 <script>
     import { _ } from 'svelte-i18n';
-    import { Input, Button } from "@sveltestrap/sveltestrap";
+    import MaterialButton from '$lib/common/MaterialButton.svelte';
+    import MaterialTextField from '$lib/common/MaterialTextField.svelte';
 
     /** @type {FileList} */
     let files;
@@ -18,13 +19,23 @@
     async function handleFileUpload() {}
 </script>
 
-<div class="input-group">
-    <Input
+<div class="material-upload-group">
+    <input
         type="file"
         bind:files
-        class="form-control"
-        aria-describedby="inputGroupFileAddon04"
+        class="material-file-input"
         aria-label="{$_('Upload')}"
+        id="file-input"
     />
-    <Button color="primary" id="inputGroupFileAddon04" disabled={!files} on:click={() => handleFileUpload()}>{$_('Upload')}</Button>
+    <label for="file-input" class="material-file-label">
+        <i class="mdi mdi-file-upload-outline" />
+        Choose File
+    </label>
+    <MaterialButton 
+        variant="filled" 
+        disabled={!files} 
+        on:click={() => handleFileUpload()}
+    >
+        {$_('Upload')}
+    </MaterialButton>
 </div>

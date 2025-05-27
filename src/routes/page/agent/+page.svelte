@@ -3,12 +3,14 @@
 	import { _ } from 'svelte-i18n';
 	import { goto } from '$app/navigation';
 	import Swal from 'sweetalert2';
-	import { Button, Col, Row } from '@sveltestrap/sveltestrap';
+	import { Col, Row } from '@sveltestrap/sveltestrap';
 	import Breadcrumb from '$lib/common/Breadcrumb.svelte';
 	import HeadTitle from '$lib/common/HeadTitle.svelte';
 	import LoadingToComplete from '$lib/common/LoadingToComplete.svelte';
 	import PlainPagination from '$lib/common/PlainPagination.svelte';
 	import MultiSelect from '$lib/common/MultiSelect.svelte';
+	import MaterialButton from '$lib/common/MaterialButton.svelte';
+	import MaterialCard from '$lib/common/MaterialCard.svelte';
   	import { createAgent, getAgentLabels, getAgents } from '$lib/services/agent-service.js';
 	import { AgentType, GlobalEvent, UserPermission } from '$lib/helpers/enums';
   	import { myInfo } from '$lib/services/auth-service';
@@ -207,56 +209,69 @@
 <Breadcrumb title="{$_('Agent')}" pagetitle="{$_('List')}" />
 <LoadingToComplete isLoading={isLoading} />
 
-<div class="agents-header-container mb-4">
-	<div>
-		{#if !!user && (ADMIN_ROLES.includes(user.role || '') || !!user.permissions?.includes(UserPermission.CreateAgent))}
-		<Button color="primary" on:click={() => createNewAgent()}>
-			<i class="bx bx-copy" /> {$_('New Agent')}
-		</Button>
-		{/if}
+<div class="material-dashboard">
+	<MaterialCard variant="filled" className="material-agents-header mb-4">
+		<div class="material-card-content p-4">
+			<div class="agents-header-container">
+				<div class="header-actions">
+					{#if !!user && (ADMIN_ROLES.includes(user.role || '') || !!user.permissions?.includes(UserPermission.CreateAgent))}
+					<MaterialButton 
+						variant="filled" 
+						icon="bx bx-plus"
+						on:click={() => createNewAgent()}
+					>
+						{$_('New Agent')}
+					</MaterialButton>
+					{/if}
+				</div>
+				<div class="agent-filter">
+					<div class="filter-controls">
+						<MultiSelect
+							tag={'agent-label-select'}
+							placeholder={'Select labels'}
+							selectedText={'labels'}
+							searchMode
+							selectedKeys={selectedAgentLabels}
+							options={agentLabelOptions}
+							on:select={e => selectAgentLabelOption(e)}
+						/>
+						<MultiSelect
+							tag={'agent-type-select'}
+							placeholder={'Select types'}
+							selectedText={'types'}
+							selectedKeys={selectedAgentTypes}
+							options={agentTypeOptions}
+							on:select={e => selectAgentTypeOption(e)}
+						/>
+						<div class="filter-actions">
+							<MaterialButton
+								variant="outlined"
+								icon="mdi mdi-magnify"
+								size="small"
+								on:click={(e) => search()}
+							>
+								Search
+							</MaterialButton>
+							<MaterialButton
+								variant="text"
+								icon="mdi mdi-restore"
+								size="small"
+								on:click={(e) => reset()}
+							>
+								Reset
+							</MaterialButton>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</MaterialCard>
+
+	<div class="agents-grid">
+		<Row class="g-4">
+			<CardAgent agents={agents.items} />
+		</Row>
 	</div>
-	<div class="agent-filter">
-		<MultiSelect
-			tag={'agent-label-select'}
-			placeholder={'Select labels'}
-			selectedText={'labels'}
-			searchMode
-			selectedKeys={selectedAgentLabels}
-			options={agentLabelOptions}
-			on:select={e => selectAgentLabelOption(e)}
-		/>
-		<MultiSelect
-			tag={'agent-type-select'}
-			placeholder={'Select types'}
-			selectedText={'types'}
-			selectedKeys={selectedAgentTypes}
-			options={agentTypeOptions}
-			on:select={e => selectAgentTypeOption(e)}
-		/>
-		<Button
-			class="btn btn-info"
-			data-bs-toggle="tooltip"
-			data-bs-placement="bottom"
-			title="Search"
-			on:click={(e) => search()}
-		>
-			<i class="mdi mdi-magnify" />
-		</Button>
-		<Button
-			class="btn btn-light"
-			data-bs-toggle="tooltip"
-			data-bs-placement="bottom"
-			title="Reset filters"
-			on:click={(e) => reset()}
-		>
-			<i class="mdi mdi-restore" />
-		</Button>
-	</div>
+
+	<PlainPagination pagination={pager} pageTo={pn => pageTo(pn)} />
 </div>
-
-
-<Row>
-	<CardAgent agents={agents.items} />
-</Row>
-
-<PlainPagination pagination={pager} pageTo={pn => pageTo(pn)} />

@@ -6,7 +6,8 @@
 	import Swal from 'sweetalert2';
 	import 'overlayscrollbars/overlayscrollbars.css';
     import { OverlayScrollbars } from 'overlayscrollbars';
-	import _ from "lodash";
+	import lodash from "lodash";
+	const _ = lodash;
 	import moment from 'moment';
 	import { v4 as uuidv4 } from 'uuid';
 	import {

@@ -1,5 +1,7 @@
 // // https://developer.mozilla.org/en-US/docs/Web/API/Web_Speech_API/Using_the_Web_Speech_API
+// @ts-ignore - Browser compatibility for speech recognition
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+// @ts-ignore - Browser compatibility for speech recognition event
 const SpeechRecognitionEvent = window.SpeechRecognitionEvent || window.webkitSpeechRecognitionEvent;
 
 const recognition = !navigator.userAgent.includes('Firefox') ? new SpeechRecognition() : null;

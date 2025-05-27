@@ -1,8 +1,9 @@
 <script>
     import { onMount } from 'svelte';
-    import { Card, CardBody, Input } from '@sveltestrap/sveltestrap';
     import { getLlmProviders, getLlmProviderModels } from '$lib/services/llm-provider-service';
 	import { INTEGER_REGEX } from '$lib/helpers/constants';
+    import MaterialCard from '$lib/common/MaterialCard.svelte';
+    import MaterialTextField from '$lib/common/MaterialTextField.svelte';
     
     /** @type {import('$agentTypes').AgentModel} */
     export let agent;
@@ -105,71 +106,76 @@
     }
 </script>
 
-<Card>
-    <CardBody>
-        <div class="text-center">
-            <h5 class="mt-1 mb-3">LLM Config</h5>
+<MaterialCard variant="outlined" className="agent-llm-config-card">
+    <div class="material-card-content">
+        <div class="text-center mb-4">
+            <h5 class="material-heading">LLM Config</h5>
             <img src="images/brands/azure-openai-logo.avif" alt="" height="50" />
             {#if agent.llm_config?.is_inherit}
-                <i class="bx bx-copy"></i> <span class="text-muted">Inherited</span>    
+                <div class="mt-2">
+                    <i class="mdi mdi-content-copy"></i> 
+                    <span class="material-body-small text-outline">Inherited</span>
+                </div>    
             {/if}
         </div>
 
-        <div class="mb-3 row">
-            <label for="example-large" class="col-md-3 col-form-label">
-                Provider
-            </label>
-            <div class="col-md-9 config-item-container">
-                <Input type="select" value={config.provider} on:change={e => changeProvider(e)}>
-                    {#each providers as option}
-                        <option value={option} selected={option == config.provider}>{option}</option>
-                    {/each}
-                </Input>
+        <div class="material-llm-config-container">            <div class="material-config-row">
+                <div class="material-label">Provider</div>
+                <div class="material-config-value">
+                    <select 
+                        class="material-select" 
+                        value={config.provider} 
+                        on:change={e => changeProvider(e)}
+                    >
+                        {#each providers as option}
+                            <option value={option} selected={option == config.provider}>{option}</option>
+                        {/each}
+                    </select>
+                </div>
             </div>
-        </div>
-        
-        <div class="mb-3 row">
-            <label for="example-text-input" class="col-md-3 col-form-label">
-                Model
-            </label>
-            <div class="col-md-9">
-                <Input type="select" value={config.model} disabled={models.length === 0} on:change={e => changeModel(e)}>
-                    {#each models as option}
-                        <option value={option.name} selected={option.name == config.model}>{option.name}</option>
-                    {/each}
-                </Input>
+            
+            <div class="material-config-row">
+                <div class="material-label">Model</div>
+                <div class="material-config-value">
+                    <select 
+                        class="material-select" 
+                        value={config.model} 
+                        disabled={models.length === 0} 
+                        on:change={e => changeModel(e)}
+                    >
+                        {#each models as option}
+                            <option value={option.name} selected={option.name == config.model}>{option.name}</option>
+                        {/each}
+                    </select>
+                </div>
             </div>
-        </div>
 
-        <div class="mb-3 row">
-            <label for="example-text-input" class="col-md-3 col-form-label">
-                Max recursive depth
-            </label>
-            <div class="col-md-9">
-                <Input
-                    style="text-align: center;"
-                    type="number"
-                    min={recursiveDepthLowerLimit}
-                    value={config.max_recursion_depth}
-                    on:keydown={e => validateIntegerInput(e)}
-                    on:change={e => changeMaxRecursiveDepth(e)}
-                />
+            <div class="material-config-row">
+                <div class="material-label">Max recursive depth</div>
+                <div class="material-config-value">
+                    <MaterialTextField
+                        type="number"
+                        className="text-center"
+                        value={config.max_recursion_depth?.toString() || "1"}
+                        min={recursiveDepthLowerLimit}
+                        on:keydown={e => validateIntegerInput(e)}
+                        on:change={e => changeMaxRecursiveDepth(e)}
+                    />
+                </div>
             </div>
-        </div>
 
-        <div class="mb-3 row">
-            <label for="example-text-input" class="col-md-3 col-form-label">
-                Max output tokens
-            </label>
-            <div class="col-md-9">
-                <Input
-                    style="text-align: center;"
-                    type="number"
-                    value={config.max_output_tokens}
-                    on:keydown={e => validateIntegerInput(e)}
-                    on:change={e => changeMaxOutputToken(e)}
-                />
+            <div class="material-config-row">
+                <div class="material-label">Max output tokens</div>
+                <div class="material-config-value">
+                    <MaterialTextField
+                        type="number"
+                        className="text-center"
+                        value={config.max_output_tokens?.toString() || ""}
+                        on:keydown={e => validateIntegerInput(e)}
+                        on:change={e => changeMaxOutputToken(e)}
+                    />
+                </div>
             </div>
         </div>
-    </CardBody>
-</Card>
+    </div>
+</MaterialCard>

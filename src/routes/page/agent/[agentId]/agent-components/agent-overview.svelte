@@ -1,11 +1,12 @@
 <script>
-    import { onMount } from 'svelte';
-    import { Button, Card, CardBody, CardHeader, Input, Table } from '@sveltestrap/sveltestrap';
+    import { onMount } from 'svelte';    import { Button, Card, CardBody, CardHeader, Input, Table } from '@sveltestrap/sveltestrap';
     import { _ } from 'svelte-i18n'  
     import InPlaceEdit from '$lib/common/InPlaceEdit.svelte'
     import { utcToLocal } from '$lib/helpers/datetime';
 	import { AgentType } from '$lib/helpers/enums';
 	import { AgentExtensions } from '$lib/helpers/utils/agent';
+    import MaterialCard from '$lib/common/MaterialCard.svelte';
+    import MaterialButton from '$lib/common/MaterialButton.svelte';
 
     const limit = 10;
 
@@ -71,8 +72,8 @@
     }
 </script>
 
-<Card>
-    <CardHeader>
+<MaterialCard variant="outlined" className="agent-overview-card">
+    <div class="material-card-content">
         {#if resetable}
             <!-- svelte-ignore a11y-click-events-have-key-events -->
             <!-- svelte-ignore a11y-no-static-element-interactions -->
@@ -86,7 +87,7 @@
                 <i class="mdi mdi-refresh text-primary clickable" />
             </div>
         {/if}
-        <div class="text-center">
+        <div class="text-center mb-4">
             <div class="agent-overview-header">
                 <img
                     src="images/users/bot.png"
@@ -95,28 +96,28 @@
                     class="mx-auto d-block"
                 />
                 {#if !!AgentExtensions.chatable(agent)}
-                    <Button
-                        class="btn btn-sm btn-soft-info agent-chat"
+                    <MaterialButton
+                        variant="tonal"
+                        icon="mdi mdi-chat"
+                        size="small"
+                        className="agent-chat mt-2"
                         on:click={() => chatWithAgent()}
                     >
-                        <span>{'Chat with me'}</span>
-                        <span><i class="mdi mdi-chat" /></span>
-                    </Button>
+                        Chat with me
+                    </MaterialButton>
                 {/if}
             </div>
-            <h5 class="mt-1 mb-1 div-center">
+            <h5 class="mt-3 mb-1 material-heading">
                 <InPlaceEdit bind:value={agent.name} on:input={handleAgentChange} />
             </h5>
-            <p class="text-muted mb-0">{`Updated at ${utcToLocal(agent.updated_datetime)}`}</p>
+            <p class="material-body-medium text-outline mb-0">{`Updated at ${utcToLocal(agent.updated_datetime)}`}</p>
         </div>
-    </CardHeader>
-    <CardBody>
-        <div class="table-responsive">
-            <Table >
+        <div class="material-table-container">
+            <Table class="material-table">
                 <tbody>
                     <tr>
-                        <th class="agent-prop-key">Type</th>
-                        <td>
+                        <th class="material-table-header">Type</th>
+                        <td class="material-table-cell">
                             {#if agent.type == AgentType.Routing}
                                 Routing Agent
                             {:else if agent.type == AgentType.Planning}
@@ -131,181 +132,172 @@
                                 Unkown
                             {/if}
                         </td>
-                    </tr>
-                    <tr>
-                        <th class="agent-prop-key">
+                    </tr>                    <tr>
+                        <th class="material-table-header">
                             <div class="mt-2 mb-2">
                                 Visibility
                             </div>
                         </th>
-                        <td>
-                            <div class="form-check mt-2 mb-2" style="width: fit-content;">
+                        <td class="material-table-cell">
+                            <div class="material-checkbox-container">
                                 <input 
-                                    class="form-check-input" 
+                                    class="material-checkbox" 
                                     type="checkbox" 
                                     bind:checked={agent.is_public} 
                                     on:change={handleAgentChange}
                                     id="is_public" 
                                 />
-                                <label class="form-check-label" for="is_public">
+                                <label class="material-checkbox-label" for="is_public">
                                     Public
                                 </label>
                             </div>
                         </td>
                     </tr>
                     <tr>
-                        <th class="agent-prop-key">
+                        <th class="material-table-header">
                             <div class="mt-2 mb-2">
                                 Routable
                             </div>
                         </th>
-                        <td>
-                            <div class="form-check mt-2 mb-2" style="width: fit-content;">
+                        <td class="material-table-cell">
+                            <div class="material-checkbox-container">
                                 <input 
-                                    class="form-check-input" 
+                                    class="material-checkbox" 
                                     type="checkbox" 
                                     bind:checked={agent.allow_routing} 
                                     on:change={handleAgentChange}
                                     id="allow_routing" 
-                                />
-                                <label class="form-check-label" for="allow_routing">Allow</label>
+                                />                                <label class="material-checkbox-label" for="allow_routing">Allow</label>
                             </div>
                         </td>
                     </tr>
                     <tr>
-                        <th class="agent-prop-key">
+                        <th class="material-table-header">
                             <div class="mt-2 mb-2">
                                 Profiles
                             </div>
                         </th>
-                        <td>
-                            <div class="agent-prop-list-container vertical-flexible">
+                        <td class="material-table-cell">
+                            <div class="material-list-container">
                                 {#each profiles as profile, index}
-                                <div class="edit-wrapper">
+                                <div class="material-input-group">
                                     <input
-                                        class="form-control edit-text-box"
+                                        class="material-text-field"
                                         type="text"
-                                        placeholder="Typing here..."
+                                        placeholder="Enter profile..."
                                         maxlength={30}
                                         bind:value={profile}
                                         on:input={handleAgentChange}
                                     />
-                                    <div class="delete-icon">
-                                        <i
-                                            class="bx bxs-no-entry"
-                                            role="link"
-                                            tabindex="0"
-                                            on:keydown={() => {}}
-                                            on:click={() => removeProfile(index)}
-                                        />
-                                    </div>
-                                </div>
-                                {/each}
+                                    <button
+                                        class="material-icon-button material-icon-button--error"
+                                        type="button"
+                                        on:click={() => removeProfile(index)}
+                                    >
+                                        <i class="mdi mdi-close"></i>
+                                    </button>
+                                </div>                                {/each}
                                 {#if profiles?.length < limit}
-                                <div class="list-add">
-                                    <i
-                                        class="bx bx bx-list-plus"
-                                        role="link"
-                                        tabindex="0"
-                                        on:keydown={() => {}}
+                                <div class="material-add-button-container">
+                                    <MaterialButton
+                                        variant="text"
+                                        icon="mdi mdi-plus"
+                                        size="small"
                                         on:click={() => addProfile()}
-                                    />
+                                    >
+                                        Add Profile
+                                    </MaterialButton>
                                 </div>
                                 {/if}
                             </div>
                         </td>
                     </tr>
                     <tr>
-                        <th class="agent-prop-key">
+                        <th class="material-table-header">
                             <div class="mt-2 mb-2">
                                 Labels
                             </div>
-                        </th>
-                        <td>
-                            <div class="agent-prop-list-container vertical-flexible">
+                        </th>                        <td class="material-table-cell">
+                            <div class="material-list-container">
                                 {#each labels as label, index}
-                                <div class="edit-wrapper">
+                                <div class="material-input-group">
                                     <input
-                                        class="form-control edit-text-box"
+                                        class="material-text-field"
                                         type="text"
-                                        placeholder="Typing here..."
+                                        placeholder="Enter label..."
                                         maxlength={30}
                                         bind:value={label}
                                         on:input={handleAgentChange}
                                     />
-                                    <div class="delete-icon">
-                                        <i
-                                            class="bx bxs-no-entry"
-                                            role="link"
-                                            tabindex="0"
-                                            on:keydown={() => {}}
-                                            on:click={() => removeLabel(index)}
-                                        />
-                                    </div>
+                                    <button
+                                        class="material-icon-button material-icon-button--error"
+                                        type="button"
+                                        on:click={() => removeLabel(index)}
+                                    >
+                                        <i class="mdi mdi-close"></i>
+                                    </button>
                                 </div>
                                 {/each}
                                 {#if labels?.length < limit}
-                                <div class="list-add">
-                                    <i
-                                        class="bx bx bx-list-plus"
-                                        role="link"
-                                        tabindex="0"
-                                        on:keydown={() => {}}
+                                <div class="material-add-button-container">
+                                    <MaterialButton
+                                        variant="text"
+                                        icon="mdi mdi-plus"
+                                        size="small"
                                         on:click={() => addLabel()}
-                                    />
+                                    >
+                                        Add Label
+                                    </MaterialButton>
                                 </div>
                                 {/if}
                             </div>
                         </td>
                     </tr>
                     <tr>
-                        <th class="agent-prop-key">
+                        <th class="material-table-header">
                             <div class="mt-2 mb-2">
                                 Status
                             </div>
-                        </th>
-                        <td>							
-                            <div class="form-check mt-2 mb-2" style="width: fit-content;">
+                        </th>                        <td class="material-table-cell">							
+                            <div class="material-checkbox-container">
                                 <input 
-                                    class="form-check-input" 
+                                    class="material-checkbox" 
                                     type="checkbox" 
                                     bind:checked={agent.disabled} 
                                     on:change={handleAgentChange}
                                     id="disabled" 
                                 />
-                                <label class="form-check-label" for="disabled">Disabled</label>
+                                <label class="material-checkbox-label" for="disabled">Disabled</label>
                             </div>
                         </td>
                     </tr>
                     <tr>
-                        <th class="agent-prop-key" style="vertical-align: middle">
+                        <th class="material-table-header" style="vertical-align: middle">
                             <div class="mt-1">
                                 Max message count
                             </div>
-                        </th>
-                        <td>							
+                        </th>                        <td class="material-table-cell">
                             <div class="mt-2 mb-2">
-                                <Input
+                                <input
                                     type="number"
-                                    style="width: 50%; min-width: 100px;"
-                                    class="text-center"
+                                    class="material-text-field material-text-field--number"
 									min={1}
                                     max={1000}
 									step={1}
                                     bind:value={agent.max_message_count}
                                     on:input={handleAgentChange}
+                                    placeholder="Enter max count..."
                                 />
                             </div>
                         </td>
-                    </tr>
-                    <tr>
-                        <th class="agent-prop-key">
+                    </tr><tr>
+                        <th class="material-table-header">
                             <div class="mt-2 mb-2">
                                 Created Date
                             </div>
                         </th>
-                        <td>
-                            <div class="mt-2 mb-2">
+                        <td class="material-table-cell">
+                            <div class="mt-2 mb-2 material-body-medium">
                                 {utcToLocal(agent.created_datetime)}
                             </div>
                         </td>
@@ -313,5 +305,5 @@
                 </tbody>
             </Table>
         </div>
-    </CardBody>
-</Card>
+    </div>
+</MaterialCard>

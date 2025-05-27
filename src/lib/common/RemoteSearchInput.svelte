@@ -5,9 +5,9 @@
 		DropdownMenu,
 		DropdownItem,
 		Spinner,
-		DropdownToggle
-	} from '@sveltestrap/sveltestrap';
-	import { debounce } from 'lodash';
+		DropdownToggle        } from '@sveltestrap/sveltestrap';
+        import lodash from 'lodash';
+        const { debounce } = lodash;
 
 	/** @type {string} */
 	export let value;

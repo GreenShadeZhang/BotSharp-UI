@@ -2,16 +2,14 @@
 	import { onMount } from 'svelte';
     import { fly } from 'svelte/transition';
 	import { _ } from 'svelte-i18n';
-	import util from "lodash";
-	import Swal from 'sweetalert2';
-	import {
-        Button,
-        Card,
-        CardBody,
-        Input,
-        Table,
+	import lodash from "lodash";
+	const util = lodash;
+	import Swal from 'sweetalert2';	import {
         Tooltip
     } from '@sveltestrap/sveltestrap';
+    import MaterialCard from '$lib/common/MaterialCard.svelte';
+    import MaterialButton from '$lib/common/MaterialButton.svelte';
+    import MaterialTextField from '$lib/common/MaterialTextField.svelte';
     import {
         getVectorKnowledgeCollections,
         getVectorKnowledgePageList,
@@ -675,26 +673,25 @@
 
 <div class="knowledge-demo-btn mb-4">
 	<div class="demo-btn">
-		<Button
-			color={`${showDemo ? 'danger' : 'primary'}`}
+		<MaterialButton
+			variant={showDemo ? "filled" : "outlined"}
 			on:click={() => toggleDemo()}
 		>
 			{#if !showDemo}
 				<div class="btn-content">
-					<div class="knowledge-btn-icon"><i class="bx bx-search-alt" /></div>
+					<div class="knowledge-btn-icon"><i class="mdi mdi-magnify" /></div>
 					<div>{'Start Search'}</div>
 				</div>
 			{:else}
 				<div class="btn-content">
-					<div class="knowledge-btn-icon"><i class="bx bx-hide" /></div>
+					<div class="knowledge-btn-icon"><i class="mdi mdi-eye-off-outline" /></div>
 					<div>{'Hide Search'}</div>
 				</div>
 			{/if}
-		</Button>
-
+		</MaterialButton>
 		{#if showDemo}
 			<div class="knowledge-btn-icon demo-tooltip-icon line-align-center" id="demo-tooltip">
-				<i class="bx bx-info-circle" />
+				<i class="mdi mdi-information-outline" />
 			</div>
 			<Tooltip target="demo-tooltip" placement="top" class="demo-tooltip-note">
 				<ul>
@@ -706,14 +703,15 @@
 	</div>
 	
 	<div class="reset-btn">
-		<Button
+		<MaterialButton
+			variant="outlined"
 			on:click={() => reset()}
 		>
 			<div class="btn-content">
-				<div class="knowledge-btn-icon"><i class="bx bx-reset" /></div>
+				<div class="knowledge-btn-icon"><i class="mdi mdi-refresh" /></div>
 				<div>{'Reset'}</div>
 			</div>
-		</Button>
+		</MaterialButton>
 	</div>
 </div>
 
@@ -722,84 +720,75 @@
 		{#if showDemo}
 			<div
 				in:fly={{ y: -10, duration: 500 }}
-				out:fly={{ y: -10, duration: 200 }}
-			>
-				<div class="knowledge-search-container mb-4">
-					<textarea
-						class='form-control knowledge-textarea'
-						rows={5}
+				out:fly={{ y: -10, duration: 200 }}			>				<div class="knowledge-search-container mb-4">
+					<MaterialTextField
+						label="Search knowledge"
 						maxlength={maxLength}
 						disabled={isSearching}
-						placeholder={'Start searching here...'}
+						placeholder="Start searching here..."
 						bind:value={text}
 						on:keydown={(e) => pressKey(e)}
+						helpText="{text?.length || 0}/{maxLength}"
 					/>
-					<div class="text-secondary text-end text-count">
-						{text?.length || 0}/{maxLength}
-					</div>
 				
                     <div class="mt-3 knowledge-search-footer">
-                        <div class="search-input">
-                            <div class="line-align-center input-text fw-bold">
+                        <div class="search-input">                            <div class="line-align-center input-text fw-bold">
                                 <span>{'Confidence:'}</span>
-                            </div>
-							<div style="display: flex; gap: 5px;">
-								<div class="line-align-center confidence-box">
-									<Input
+                            </div>							<div style="display: flex; gap: 5px;">								<div class="line-align-center confidence-box">
+									<MaterialTextField
 										type="text"
-										class="text-center"
+										className="text-center"
 										disabled={textSearch}
 										bind:value={confidence}
 										on:keydown={(e) => validateConfidenceInput(e)}
 										on:blur={(e) => changeConfidence(e)}
 									/>
-								</div>
-								<div class="step-btn-group">
-									<Button
-										class="btn btn-sm"
-										color="link"
+								</div><div class="step-btn-group">
+									<MaterialButton
+										variant="text"
+										size="small"
 										on:click={() => stepChangeConfidence('plus', step)}
 									>
 										<i class="mdi mdi-chevron-up" />
-									</Button>
-									<Button
-										class="btn btn-sm"
-										color="link"
+									</MaterialButton>
+									<MaterialButton
+										variant="text"
+										size="small"
 										on:click={() => stepChangeConfidence('minus', step)}
 									>
 										<i class="mdi mdi-chevron-down" />
-									</Button>
+									</MaterialButton>
 								</div>
 							</div>
-                        </div>
-						<div class="search-input">
+                        </div>						<div class="search-input">
 							<div class="line-align-center input-text fw-bold">
 								<span>{'Similarity search'}</span>
 							</div>
 							<div class="line-align-center input-text search-toggle">
-								<Input
-									type="switch"
-									bind:checked={textSearch}
-								/>
+								<div class="material-switch">
+									<input
+										type="checkbox"
+										class="material-switch-input"
+										bind:checked={textSearch}
+									/>
+								</div>
 							</div>
 							<div class="line-align-center input-text fw-bold">
 								<span>{'Keyword search'}</span>
 							</div>
-						</div>
-                        <div class="line-align-center">
-							<Button
-								color="primary"
+						</div><div class="line-align-center">
+							<MaterialButton
+								variant="filled"
 								disabled={disableSearchBtn}
 								on:click={() => search()}
 							>
 								{'Search'}
-							</Button>
+							</MaterialButton>
                         </div>
                     </div>
-				
-					{#if isSearching}
+						{#if isSearching}
 						<div class="knowledge-loader mt-5">
-							<LoadingDots duration={'1s'} size={12} gap={5} color={'var(--bs-primary)'} />
+							<LoadingDots duration={'1s'} size={12} gap={5} color={'var(--md-sys-color-primary)'} />
 						</div>
 					{:else if searchDone && (!items || items.length === 0)}
 						<div class="mt-5 text-center">
@@ -808,67 +797,66 @@
 					{/if}
 			  	</div>
 			</div>
-		{/if}
-		<div class="d-md-flex mt-5">
+		{/if}		<div class="d-md-flex mt-5">
 			<div class="w-100">
-				<Card>
-					<CardBody>
-						<div class="mt-2">
-							<div class="d-flex flex-wrap mb-3 knowledge-table-header">
-								<div class="d-flex" style="gap: 5px;">
-									<h5 class="font-size-16 knowledge-header-text">
-										<div>{$_('Knowledges')}</div>
-									</h5>
-									<div
-										class="line-align-center"
-										data-bs-toggle="tooltip"
-										data-bs-placement="top"
-										title="Add knowledge"
+				<MaterialCard variant="outlined">
+					<div class="mt-2">
+						<div class="d-flex flex-wrap mb-3 knowledge-table-header">
+							<div class="d-flex" style="gap: 5px;">
+								<h5 class="font-size-16 knowledge-header-text">
+									<div>{$_('Knowledges')}</div>
+								</h5>
+								<div
+									class="line-align-center"
+									data-bs-toggle="tooltip"
+									data-bs-placement="top"
+									title="Add knowledge"
+								>
+									<MaterialButton
+										variant="outlined"
+										size="small"
+										on:click={() => onKnowledgeCreate()}
 									>
-                                        <Button
-                                            class="btn btn-sm btn-soft-primary knowledge-btn-icon"
-                                            on:click={() => onKnowledgeCreate()}
-                                        >
-                                            <i class="mdi mdi-plus" />
-                                        </Button>
-									</div>
-									<div
-										class="line-align-center"
-										data-bs-toggle="tooltip"
-										data-bs-placement="top"
-										title="Delete all data"
-									>
-                                        <Button
-                                            class="btn btn-sm btn-soft-danger knowledge-btn-icon"
-                                            on:click={() => onKnowledgeDeleteAll()}
-                                        >
-                                            <i class="mdi mdi-minus" />
-                                        </Button>
-									</div>
+										<i class="mdi mdi-plus" />
+									</MaterialButton>
 								</div>
-								<div class="collection-dropdown-container">
-									<div class="line-align-center collection-dropdown">
-										<Input
+								<div
+									class="line-align-center"
+									data-bs-toggle="tooltip"
+									data-bs-placement="top"
+									title="Delete all data"
+								>
+									<MaterialButton
+										variant="outlined"
+										size="small"
+										on:click={() => onKnowledgeDeleteAll()}
+									>
+										<i class="mdi mdi-minus" />
+									</MaterialButton>
+								</div>
+							</div>								<div class="collection-dropdown-container">
+									<div class="line-align-center collection-dropdown">										<MaterialTextField
 											type="select"
+											bind:value={selectedCollection}
 											on:change={(e) => changeCollection(e)}
 										>
 											{#each collections as option, idx (idx)}
 												<option value={option} selected={option === selectedCollection}>{option}</option>
 											{/each}
-										</Input>
-									</div>
-									<div
+										</MaterialTextField>
+									</div><div
 										class="line-align-center"
 										data-bs-toggle="tooltip"
 										data-bs-placement="top"
 										title="Add collection"
 									>
-										<Button
-											class="btn btn-sm btn-soft-primary collection-action-btn"
+										<MaterialButton
+											variant="outlined"
+											size="small"
 											on:click={() => toggleCollectionCreate()}
 										>
 											<i class="mdi mdi-plus" />
-										</Button>
+										</MaterialButton>
 									</div>
 									<div
 										class="line-align-center"
@@ -876,28 +864,26 @@
 										data-bs-placement="top"
 										title="Delete collection"
 									>
-										<Button
-											class="btn btn-sm btn-soft-danger collection-action-btn"
+										<MaterialButton
+											variant="outlined"
+											size="small"
 											on:click={() => deleteCollection()}
 										>
 											<i class="mdi mdi-minus" />
-										</Button>
+										</MaterialButton>
 									</div>
 								</div>
 							</div>
 						  
 							<hr class="mt-2" />
-						  
-							<div class="table-responsive knowledge-table">
-								<Table class="table align-middle table-nowrap table-hover mb-0">
-									<thead>
-										<tr>
-											<th scope="col">{$_('Question')}</th>
-											<th scope="col">{$_('Answer')}</th>
-											<th></th>
-										</tr>
-									</thead>
-									<tbody>
+										<div class="table-responsive knowledge-table">
+								<div class="material-table">
+									<div class="material-table-header">
+										<div class="material-table-cell">{$_('Question')}</div>
+										<div class="material-table-cell">{$_('Answer')}</div>
+										<div class="material-table-cell"></div>
+									</div>
+									<div class="material-table-body">
 										{#each items as item, idx (idx)}
                                             <VectorItem
 												collection={selectedCollection}
@@ -908,27 +894,25 @@
 												on:update={(e) => onKnowledgeUpdate(e)}
 											/>
 										{/each}
-									</tbody>
-								</Table>
-						  
-								{#if isLoadingMore}
+									</div>
+								</div>
+										{#if isLoadingMore}
 									<div class="knowledge-loader mt-4">
 										<Loader size={25} disableDefaultStyles />
 									</div>
 								{:else if !!nextId}
 									<div class="mt-4 text-center">
-										<Button
-											class="btn btn-soft-primary"
+										<MaterialButton
+											variant="outlined"
 											on:click={() => loadMore()}
 										>
 											{'Load more'}
-										</Button>
+										</MaterialButton>
 									</div>
 								{/if}
 							</div>
 						</div>
-					</CardBody>
-				</Card>
+				</MaterialCard>
 			</div>
 		</div>
 	</div>

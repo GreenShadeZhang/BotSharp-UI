@@ -2,6 +2,8 @@
 	import Link from 'svelte-link';
 	import { Row, Col, CardBody, Card, Container, Form, Label, Input, Button, Alert } from '@sveltestrap/sveltestrap';
 	import Headtitle from '$lib/common/HeadTitle.svelte';
+	import MaterialTextField from '$lib/common/MaterialTextField.svelte';
+	import MaterialButton from '$lib/common/MaterialButton.svelte';
 	import { goto } from '$app/navigation';
 	import { PUBLIC_LOGO_URL, PUBLIC_COMPANY_NAME } from '$env/static/public';
 
@@ -56,123 +58,99 @@
 
 <Headtitle title="Register" />
 
-<div class="account-pages my-5 pt-sm-5">
+<div class="material-auth-page">
 	<Container>
-		<Row class="justify-content-center">
-			<Col md={8} lg={8} xl={5}>
-				<Card class="overflow-hidden">
-					<div class="bg-primary-subtle">
-						<Row>
-							<Col class="col-7">
-								<div class="text-primary p-4">
-									<h5 class="text-primary">Free Register</h5>
-									<p>Get your free account now.</p>
-								</div>
-							</Col>
-							<Col class="col-5 align-self-end">
-								<img src='images/profile-img.png' alt="" class="img-fluid" />
-							</Col>
-						</Row>
+		<Row class="justify-content-center min-vh-100 align-items-center">
+			<Col md={8} lg={6} xl={5}>
+				<div class="material-auth-card">
+					<div class="material-auth-header">
+						<div class="material-auth-brand">
+							<img src={PUBLIC_LOGO_URL} alt="Logo" class="material-auth-logo" />
+							<h1 class="material-auth-title">Create Account</h1>
+							<p class="material-auth-subtitle">Get your free account now</p>
+						</div>
 					</div>
-					<CardBody class="pt-0">
-						<div>
-							<Link href="page/dashboard">
-								<div class="avatar-md profile-user-wid mb-4">
-									<span class="avatar-title rounded-circle bg-light">
-										<img src={PUBLIC_LOGO_URL} alt="" class="rounded-circle" height="34" />
-									</span>
-								</div>
-							</Link>
-						</div>
-						<div class="p-2">
-							<Alert {isOpen} color={status}>{msg}</Alert>
-							<Form class="needs-validation" on:submit={onSubmit}>
-								<div class="mb-3">
-									<Label for="useremail" class="form-label">Email</Label>
-									<Input
-										type="email"
-										class="form-control"
-										id="useremail"
-										placeholder="Enter email"
-										bind:value={emailid}
-										
-									/>
-									<div class="invalid-feedback">Please Enter Email</div>
-								</div>
+					<div class="material-auth-content">
+						{#if isOpen}
+							<div class="material-alert material-alert--{status}" role="alert">
+								{msg}
+							</div>
+						{/if}
+						<Form class="material-auth-form" on:submit={onSubmit}>
+							<MaterialTextField
+								label="Email"
+								type="email"
+								id="useremail"
+								placeholder="Enter email"
+								bind:value={emailid}
+								required
+							/>
 
-								<div class="mb-3">
-									<Label for="username" class="form-label">Username</Label>
-									<Input
-										type="text"
-										class="form-control"
-										id="username"
-										placeholder="Enter username"
-										bind:value={username}
-										
-									/>
-									<div class="invalid-feedback">Please Enter Username</div>
-								</div>
+							<MaterialTextField
+								label="Username"
+								type="text"
+								id="username"
+								placeholder="Enter username"
+								bind:value={username}
+								required
+							/>
 
-								<div class="mb-3">
-									<Label for="userpassword" class="form-label">Password</Label>
-									<Input
-										type="password"
-										class="form-control"
-										id="userpassword"
-										placeholder="Enter password"
-										bind:value={password}
-										
-									/>
-									<div class="invalid-feedback">Please Enter Password</div>
-								</div>
+							<MaterialTextField
+								label="Password"
+								type="password"
+								id="userpassword"
+								placeholder="Enter password"
+								bind:value={password}
+								required
+								showPasswordToggle={true}
+							/>
 
-								<div class="mt-4 d-grid">
-									<Button color="primary" class="waves-effect waves-light" type="submit"
-										>Register</Button
-									>
-								</div>
+							<MaterialButton
+								variant="filled"								size="large"
+								className="material-register-button"
+								type="submit"
+								class="material-auth-submit"
+							>
+								Create Account
+							</MaterialButton>
 
-								<div class="mt-4 text-center">
-									<h5 class="font-size-14 mb-3">Sign up using</h5>
+							<div class="material-auth-divider">
+								<span>or sign up with</span>
+							</div>
 
-									<ul class="list-inline">
-										<li class="list-inline-item">
-											<Link href="#" class="social-list-item bg-primary text-white border-primary">
-												<i class="mdi mdi-facebook" />
-											</Link>
-										</li>
-										<li class="list-inline-item">
-											<Link href="#" class="social-list-item bg-info text-white border-info">
-												<i class="mdi mdi-twitter" />
-											</Link>
-										</li>
-										<li class="list-inline-item">
-											<Link href="#" class="social-list-item bg-danger text-white border-danger">
-												<i class="mdi mdi-google" />
-											</Link>
-										</li>
-									</ul>
-								</div>
+							<div class="material-auth-social">
+								<Link href="#" class="material-social-button material-social-button--facebook">
+									<i class="mdi mdi-facebook"></i>
+									Facebook
+								</Link>
+								<Link href="#" class="material-social-button material-social-button--twitter">
+									<i class="mdi mdi-twitter"></i>
+									Twitter
+								</Link>
+								<Link href="#" class="material-social-button material-social-button--google">
+									<i class="mdi mdi-google"></i>
+									Google
+								</Link>
+							</div>
 
-								<div class="mt-4 text-center">
-									<p class="mb-0">
-										By registering you agree to the <Link href="#" class="text-primary"
-											>Terms of Use</Link
-										>
-									</p>
-								</div>
-							</Form>
-						</div>
-					</CardBody>
-				</Card>
-				<div class="mt-5 text-center">
+							<div class="material-auth-terms">
+								<p>
+									By registering you agree to our 
+									<Link href="#" class="material-link">Terms of Use</Link>
+								</p>
+							</div>
+						</Form>
+					</div>
+				</div>
+				
+				<div class="material-auth-footer">
 					<p>
-						Already have an account ?
-						<Link href="login" class="fw-medium text-primary">Login</Link>
+						Already have an account?
+						<Link href="login" class="material-link">Sign in</Link>
 					</p>
-					<p>
-						© {new Date().getFullYear()} {PUBLIC_COMPANY_NAME}. Crafted with
-						<i class="mdi mdi-heart text-danger" /> by Open Source community
+					<p class="material-copyright">
+						© {new Date().getFullYear()} {PUBLIC_COMPANY_NAME}. 
+						Crafted with <i class="mdi mdi-heart text-secondary"></i> by open source community
 					</p>
 				</div>
 			</Col>

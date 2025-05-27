@@ -1,0 +1,269 @@
+// Material Design Theme System
+
+// Global CSS Custom Properties for Dynamic Theme Switching
+:root {
+  // Light Theme
+  --md-sys-color-primary: #{$md-light-primary};
+  --md-sys-color-on-primary: #{$md-light-on-primary};
+  --md-sys-color-primary-container: #{$md-light-primary-container};
+  --md-sys-color-on-primary-container: #{$md-light-on-primary-container};
+  
+  --md-sys-color-secondary: #{$md-light-secondary};
+  --md-sys-color-on-secondary: #{$md-light-on-secondary};
+  --md-sys-color-secondary-container: #{$md-light-secondary-container};
+  --md-sys-color-on-secondary-container: #{$md-light-on-secondary-container};
+  
+  --md-sys-color-tertiary: #{$md-light-tertiary};
+  --md-sys-color-on-tertiary: #{$md-light-on-tertiary};
+  --md-sys-color-tertiary-container: #{$md-light-tertiary-container};
+  --md-sys-color-on-tertiary-container: #{$md-light-on-tertiary-container};
+  
+  --md-sys-color-error: #{$md-light-error};
+  --md-sys-color-on-error: #{$md-light-on-error};
+  --md-sys-color-error-container: #{$md-light-error-container};
+  --md-sys-color-on-error-container: #{$md-light-on-error-container};
+  
+  --md-sys-color-background: #{$md-light-background};
+  --md-sys-color-on-background: #{$md-light-on-background};
+  --md-sys-color-surface: #{$md-light-surface};
+  --md-sys-color-on-surface: #{$md-light-on-surface};
+  
+  --md-sys-color-surface-variant: #{$md-light-surface-variant};
+  --md-sys-color-on-surface-variant: #{$md-light-on-surface-variant};
+  --md-sys-color-outline: #{$md-light-outline};
+  --md-sys-color-outline-variant: #{$md-light-outline-variant};
+  
+  --md-sys-color-surface-container-lowest: #{$md-light-surface-container-lowest};
+  --md-sys-color-surface-container-low: #{$md-light-surface-container-low};
+  --md-sys-color-surface-container: #{$md-light-surface-container};
+  --md-sys-color-surface-container-high: #{$md-light-surface-container-high};
+  --md-sys-color-surface-container-highest: #{$md-light-surface-container-highest};
+  
+  // Typography
+  --md-sys-typescale-display-large-font: #{map-get($md-typography-display-large, font-family)};
+  --md-sys-typescale-display-large-size: #{map-get($md-typography-display-large, font-size)};
+  --md-sys-typescale-display-large-weight: #{map-get($md-typography-display-large, font-weight)};
+  --md-sys-typescale-display-large-line-height: #{map-get($md-typography-display-large, line-height)};
+  
+  --md-sys-typescale-headline-large-font: #{map-get($md-typography-headline-large, font-family)};
+  --md-sys-typescale-headline-large-size: #{map-get($md-typography-headline-large, font-size)};
+  --md-sys-typescale-headline-large-weight: #{map-get($md-typography-headline-large, font-weight)};
+  --md-sys-typescale-headline-large-line-height: #{map-get($md-typography-headline-large, line-height)};
+  
+  --md-sys-typescale-title-large-font: #{map-get($md-typography-title-large, font-family)};
+  --md-sys-typescale-title-large-size: #{map-get($md-typography-title-large, font-size)};
+  --md-sys-typescale-title-large-weight: #{map-get($md-typography-title-large, font-weight)};
+  --md-sys-typescale-title-large-line-height: #{map-get($md-typography-title-large, line-height)};
+  
+  --md-sys-typescale-body-large-font: #{map-get($md-typography-body-large, font-family)};
+  --md-sys-typescale-body-large-size: #{map-get($md-typography-body-large, font-size)};
+  --md-sys-typescale-body-large-weight: #{map-get($md-typography-body-large, font-weight)};
+  --md-sys-typescale-body-large-line-height: #{map-get($md-typography-body-large, line-height)};
+  
+  // Elevation
+  --md-sys-elevation-level0: #{$md-elevation-0};
+  --md-sys-elevation-level1: #{$md-elevation-1};
+  --md-sys-elevation-level2: #{$md-elevation-2};
+  --md-sys-elevation-level3: #{$md-elevation-3};
+  --md-sys-elevation-level4: #{$md-elevation-4};
+  --md-sys-elevation-level5: #{$md-elevation-5};
+  
+  // Shape
+  --md-sys-shape-corner-none: #{$md-shape-corner-none};
+  --md-sys-shape-corner-extra-small: #{$md-shape-corner-extra-small};
+  --md-sys-shape-corner-small: #{$md-shape-corner-small};
+  --md-sys-shape-corner-medium: #{$md-shape-corner-medium};
+  --md-sys-shape-corner-large: #{$md-shape-corner-large};
+  --md-sys-shape-corner-extra-large: #{$md-shape-corner-extra-large};
+}
+
+// Dark Theme
+[data-bs-theme="dark"] {
+  --md-sys-color-primary: #{$md-dark-primary};
+  --md-sys-color-on-primary: #{$md-dark-on-primary};
+  --md-sys-color-primary-container: #{$md-dark-primary-container};
+  --md-sys-color-on-primary-container: #{$md-dark-on-primary-container};
+  
+  --md-sys-color-secondary: #{$md-dark-secondary};
+  --md-sys-color-on-secondary: #{$md-dark-on-secondary};
+  --md-sys-color-secondary-container: #{$md-dark-secondary-container};
+  --md-sys-color-on-secondary-container: #{$md-dark-on-secondary-container};
+  
+  --md-sys-color-tertiary: #{$md-dark-tertiary};
+  --md-sys-color-on-tertiary: #{$md-dark-on-tertiary};
+  --md-sys-color-tertiary-container: #{$md-dark-tertiary-container};
+  --md-sys-color-on-tertiary-container: #{$md-dark-on-tertiary-container};
+  
+  --md-sys-color-error: #{$md-dark-error};
+  --md-sys-color-on-error: #{$md-dark-on-error};
+  --md-sys-color-error-container: #{$md-dark-error-container};
+  --md-sys-color-on-error-container: #{$md-dark-on-error-container};
+  
+  --md-sys-color-background: #{$md-dark-background};
+  --md-sys-color-on-background: #{$md-dark-on-background};
+  --md-sys-color-surface: #{$md-dark-surface};
+  --md-sys-color-on-surface: #{$md-dark-on-surface};
+  
+  --md-sys-color-surface-variant: #{$md-dark-surface-variant};
+  --md-sys-color-on-surface-variant: #{$md-dark-on-surface-variant};
+  --md-sys-color-outline: #{$md-dark-outline};
+  --md-sys-color-outline-variant: #{$md-dark-outline-variant};
+  
+  --md-sys-color-surface-container-lowest: #{$md-dark-surface-container-lowest};
+  --md-sys-color-surface-container-low: #{$md-dark-surface-container-low};
+  --md-sys-color-surface-container: #{$md-dark-surface-container};
+  --md-sys-color-surface-container-high: #{$md-dark-surface-container-high};
+  --md-sys-color-surface-container-highest: #{$md-dark-surface-container-highest};
+}
+
+// Base styles for Material Design
+body {
+  background-color: var(--md-sys-color-background);
+  color: var(--md-sys-color-on-background);
+  font-family: var(--md-sys-typescale-body-large-font);
+  font-size: var(--md-sys-typescale-body-large-size);
+  font-weight: var(--md-sys-typescale-body-large-weight);
+  line-height: var(--md-sys-typescale-body-large-line-height);
+  transition: background-color $md-motion-duration-medium2 $md-motion-easing-standard,
+              color $md-motion-duration-medium2 $md-motion-easing-standard;
+}
+
+// Typography utility classes
+.md-typescale-display-large {
+  font-family: var(--md-sys-typescale-display-large-font);
+  font-size: var(--md-sys-typescale-display-large-size);
+  font-weight: var(--md-sys-typescale-display-large-weight);
+  line-height: var(--md-sys-typescale-display-large-line-height);
+}
+
+.md-typescale-headline-large {
+  font-family: var(--md-sys-typescale-headline-large-font);
+  font-size: var(--md-sys-typescale-headline-large-size);
+  font-weight: var(--md-sys-typescale-headline-large-weight);
+  line-height: var(--md-sys-typescale-headline-large-line-height);
+}
+
+.md-typescale-title-large {
+  font-family: var(--md-sys-typescale-title-large-font);
+  font-size: var(--md-sys-typescale-title-large-size);
+  font-weight: var(--md-sys-typescale-title-large-weight);
+  line-height: var(--md-sys-typescale-title-large-line-height);
+}
+
+// Surface utility classes
+.md-surface {
+  background-color: var(--md-sys-color-surface);
+  color: var(--md-sys-color-on-surface);
+}
+
+.md-surface-container {
+  background-color: var(--md-sys-color-surface-container);
+  color: var(--md-sys-color-on-surface);
+}
+
+.md-surface-container-low {
+  background-color: var(--md-sys-color-surface-container-low);
+  color: var(--md-sys-color-on-surface);
+}
+
+.md-surface-container-high {
+  background-color: var(--md-sys-color-surface-container-high);
+  color: var(--md-sys-color-on-surface);
+}
+
+.md-surface-container-highest {
+  background-color: var(--md-sys-color-surface-container-highest);
+  color: var(--md-sys-color-on-surface);
+}
+
+// Elevation utility classes
+.md-elevation-0 { box-shadow: var(--md-sys-elevation-level0); }
+.md-elevation-1 { box-shadow: var(--md-sys-elevation-level1); }
+.md-elevation-2 { box-shadow: var(--md-sys-elevation-level2); }
+.md-elevation-3 { box-shadow: var(--md-sys-elevation-level3); }
+.md-elevation-4 { box-shadow: var(--md-sys-elevation-level4); }
+.md-elevation-5 { box-shadow: var(--md-sys-elevation-level5); }
+
+// Shape utility classes
+.md-shape-none { border-radius: var(--md-sys-shape-corner-none); }
+.md-shape-extra-small { border-radius: var(--md-sys-shape-corner-extra-small); }
+.md-shape-small { border-radius: var(--md-sys-shape-corner-small); }
+.md-shape-medium { border-radius: var(--md-sys-shape-corner-medium); }
+.md-shape-large { border-radius: var(--md-sys-shape-corner-large); }
+.md-shape-extra-large { border-radius: var(--md-sys-shape-corner-extra-large); }
+
+// Color utility classes
+.md-color-primary {
+  color: var(--md-sys-color-primary);
+}
+
+.md-color-secondary {
+  color: var(--md-sys-color-secondary);
+}
+
+.md-color-tertiary {
+  color: var(--md-sys-color-tertiary);
+}
+
+.md-color-error {
+  color: var(--md-sys-color-error);
+}
+
+.md-color-on-surface-variant {
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+// Motion utility classes
+.md-motion-standard {
+  transition-timing-function: #{$md-motion-easing-standard};
+}
+
+.md-motion-decelerate {
+  transition-timing-function: #{$md-motion-easing-decelerate};
+}
+
+.md-motion-accelerate {
+  transition-timing-function: #{$md-motion-easing-accelerate};
+}
+
+.md-motion-emphasize {
+  transition-timing-function: #{$md-motion-easing-emphasize};
+}
+
+// Spacing utility classes
+@for $i from 0 through 32 {
+  .md-m-#{$i} { margin: #{$i * 4px}; }
+  .md-mt-#{$i} { margin-top: #{$i * 4px}; }
+  .md-mr-#{$i} { margin-right: #{$i * 4px}; }
+  .md-mb-#{$i} { margin-bottom: #{$i * 4px}; }
+  .md-ml-#{$i} { margin-left: #{$i * 4px}; }
+  .md-mx-#{$i} { margin-left: #{$i * 4px}; margin-right: #{$i * 4px}; }
+  .md-my-#{$i} { margin-top: #{$i * 4px}; margin-bottom: #{$i * 4px}; }
+  
+  .md-p-#{$i} { padding: #{$i * 4px}; }
+  .md-pt-#{$i} { padding-top: #{$i * 4px}; }
+  .md-pr-#{$i} { padding-right: #{$i * 4px}; }
+  .md-pb-#{$i} { padding-bottom: #{$i * 4px}; }
+  .md-pl-#{$i} { padding-left: #{$i * 4px}; }
+  .md-px-#{$i} { padding-left: #{$i * 4px}; padding-right: #{$i * 4px}; }
+  .md-py-#{$i} { padding-top: #{$i * 4px}; padding-bottom: #{$i * 4px}; }
+}
+
+// Responsive breakpoints aligned with Material Design
+@media (min-width: 600px) {
+  .md-tablet\:hidden { display: none; }
+}
+
+@media (min-width: 840px) {
+  .md-desktop\:hidden { display: none; }
+}
+
+@media (min-width: 1240px) {
+  .md-large\:hidden { display: none; }
+}
+
+// Focus ring for accessibility
+.md-focus-ring:focus-visible {
+  outline: 2px solid var(--md-sys-color-primary);
+  outline-offset: 2px;
+}

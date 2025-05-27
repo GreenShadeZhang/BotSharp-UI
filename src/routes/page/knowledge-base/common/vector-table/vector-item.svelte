@@ -1,6 +1,6 @@
 <script>
     import { createEventDispatcher } from "svelte";
-    import { Button } from "@sveltestrap/sveltestrap";
+    import MaterialButton from "$lib/common/MaterialButton.svelte";
     import { fly } from 'svelte/transition';
     import Swal from 'sweetalert2';
 	import Loader from "$lib/common/Loader.svelte";
@@ -71,54 +71,53 @@
     <Loader />
 {/if}
 
-<tr in:fly={{ y: -5, duration: 800 }}>
-    <td class={`knowledge-text-qa ${isDocumentCollection ? 'knowledge-text' : ''}`}>
+<div class="material-table-row" in:fly={{ y: -5, duration: 800 }}>
+    <div class={`material-table-cell knowledge-text-qa ${isDocumentCollection ? 'knowledge-text' : ''}`}>
         <div class="ellipsis">{item?.data?.question || item?.data?.text || ''}</div>
-    </td>
+    </div>
     {#if isQuestionAnswerCollection}
-        <td class="knowledge-text-qa">
+        <div class="material-table-cell knowledge-text-qa">
             <div class="ellipsis">{item?.data?.answer || ''}</div>
-        </td>
+        </div>
     {/if}
-    <td class="knowledge-op">
-        <ul class="list-unstyled hstack gap-1 mb-0 knowledge-op-list">
+    <div class="material-table-cell knowledge-op"><ul class="list-unstyled hstack gap-1 mb-0 knowledge-op-list">
             <li data-bs-toggle="tooltip" data-bs-placement="top" title="View Detail">
-                <Button
-                    class="btn btn-sm btn-soft-primary"
+                <MaterialButton
+                    variant="outlined"
+                    size="small"
                     on:click={() => toggleKnowledgeDetail()}
                 >
                     {#if open}
-                        <i class="bx bx-hide" />
+                        <i class="mdi mdi-eye-off-outline" />
                     {:else}
                         <i class="mdi mdi-eye-outline" />
                     {/if}
-                </Button>
+                </MaterialButton>
             </li>
             <li data-bs-toggle="tooltip" data-bs-placement="top" title="Edit">
-                <Button
-                    class="btn btn-sm btn-soft-warning"
-                    disabled={disabled}
+                <MaterialButton
+                    variant="outlined"
+                    size="small"                    disabled={disabled}
                     on:click={() => editKnowledge()}
                 >
-                    <i class="bx bxs-edit" />
-                </Button>
+                    <i class="mdi mdi-pencil-outline" />
+                </MaterialButton>
             </li>
             <li data-bs-toggle="tooltip" data-bs-placement="top" title="Delete">
-                <Button
-                    class="btn btn-sm btn-soft-danger"
+                <MaterialButton
+                    variant="outlined"
+                    size="small"
                     disabled={disabled}
-                    on:click={() => deleteKnowledge(item?.id)}
-                >
+                    on:click={() => deleteKnowledge(item?.id)}                >
                     <i class="mdi mdi-delete-outline" />
-                </Button>
-            </li>
+                </MaterialButton>            </li>
         </ul>
-    </td>
-</tr>
+    </div>
+</div>
 
 {#if open}
-    <tr in:fly={{ y: -5, duration: 800 }} out:fly={{ y: -5, duration: 300 }}>
-        <td colspan="12">
+    <div class="material-table-row knowledge-detail-row" in:fly={{ y: -5, duration: 800 }} out:fly={{ y: -5, duration: 300 }}>
+        <div class="material-table-cell" style="grid-column: 1 / -1;">
             <div class="knowledge-detail">
                 <ul>
                     {#if isQuestionAnswerCollection}
@@ -152,11 +151,10 @@
                         </li>
                     {/if}
                 </ul>
-                {#if item?.id}
-                    <div class="more-detail">
-                        <Button class='toggle-btn btn-sm' color="link" on:click={() => loadMore = !loadMore}>
+                {#if item?.id}                    <div class="more-detail">
+                        <MaterialButton variant="text" size="small" on:click={() => loadMore = !loadMore}>
                             {`${loadMore ? 'Less -' : 'More +'}`}
-                        </Button>
+                        </MaterialButton>
                     </div>
                     {#if loadMore}
                         <ul
@@ -190,10 +188,9 @@
                             {#if item?.vector}
                                 <li class="more-detail-item wrappable">Vector dimension: {item?.vector?.length}</li>
                             {/if}
-                        </ul>
-                    {/if}
+                        </ul>                    {/if}
                 {/if}
             </div>
-        </td>
-    </tr>
+        </div>
+    </div>
 {/if}

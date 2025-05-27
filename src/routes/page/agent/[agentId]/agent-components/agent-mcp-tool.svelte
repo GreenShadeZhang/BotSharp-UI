@@ -1,7 +1,9 @@
 <script>
     import { onMount } from 'svelte';
-    import { Card, CardBody, Input, Button } from '@sveltestrap/sveltestrap';
 	import { getServerConfigs } from '$lib/services/mcp-service';
+    import MaterialCard from '$lib/common/MaterialCard.svelte';
+    import MaterialButton from '$lib/common/MaterialButton.svelte';
+    import MaterialTextField from '$lib/common/MaterialTextField.svelte';
     
     const limit = 10;
     const textLimit = 100;
@@ -211,14 +213,14 @@
     }
 </script>
 
-<Card>
-    <CardBody>
-        <div class="text-center">
-            <h5 class="mt-1 mb-3">MCP Tools</h5>
-            <h6 class="mt-1 mb-3">Tools powered by MCP Servers</h6>
+<MaterialCard variant="outlined" className="agent-mcp-tool-card">
+    <div class="material-card-content">
+        <div class="text-center mb-4">
+            <h5 class="material-heading">MCP Tools</h5>
+            <h6 class="material-body-medium text-outline">Tools powered by MCP Servers</h6>
         </div>
 
-        <div class="agent-utility-container">
+        <div class="material-mcp-container">
             {#each innerMcps as tool, uid (uid)}
                 <div class="utility-wrapper">
                     <div class="utility-row utility-row-primary">
@@ -226,7 +228,8 @@
                             <div class="line-align-center">{`MCP #${uid + 1}`}</div>
                             <div class="utility-tooltip">
                                 <div class="line-align-center">
-                                    <Input
+                                    <input
+                                        class="material-checkbox"
                                         type="checkbox"
                                         checked={!tool.disabled}
                                         on:change={e => toggleTool(e, uid)}
@@ -238,14 +241,14 @@
                                     data-bs-placement="top"
                                     title="Uncheck to disable MCP"
                                 >
-                                    <i class="bx bx-info-circle" />
+                                    <i class="mdi mdi-information-outline text-outline" />
                                 </div>
                             </div>
                         </div>
                         <div class="utility-value">
                             <div class="utility-input line-align-center">
-                                <Input
-                                    type="select"
+                                <select
+                                    class="material-select"
                                     disabled={tool.disabled}
                                     on:change={e => changeTool(e, uid)}
                                 >
@@ -254,11 +257,11 @@
                                             {option.displayName || option.name}
                                         </option>
                                     {/each}
-                                </Input>
+                                </select>
                             </div>
                             <div class="utility-delete line-align-center">
                                 <i
-                                    class="bx bxs-no-entry text-danger clickable"
+                                    class="mdi mdi-close-circle text-danger clickable"
                                     role="link"
                                     tabindex="0"
                                     on:keydown={() => {}}
@@ -276,10 +279,11 @@
                                 </div>
                                 <div class="utility-value">
                                     <div class="utility-input line-align-center">
-                                        <Input
+                                        <MaterialTextField
                                             type="text"
-                                            disabled
+                                            disabled={true}
                                             value={tool.server_id}
+                                            placeholder="Server ID"
                                         />
                                     </div>
                                     <div class="utility-delete line-align-center"></div>
@@ -294,17 +298,17 @@
                                     </div>
                                     <div class="utility-value">
                                         <div class="utility-input line-align-center">
-                                            <Input
+                                            <MaterialTextField
                                                 type="text"
-                                                maxlength={textLimit}
                                                 disabled={tool.disabled}
                                                 value={fn.name}
+                                                placeholder="Function name..."
                                                 on:change={e => changeContent(e, uid, fid, 'function')}
                                             />
                                         </div>
                                         <div class="utility-delete line-align-center">
                                             <i
-                                                class="bx bxs-no-entry text-danger clickable"
+                                                class="mdi mdi-close-circle text-danger clickable"
                                                 role="link"
                                                 tabindex="0"
                                                 on:keydown={() => {}}
@@ -322,7 +326,7 @@
                                     </div>
                                     <div class="utility-value">
                                         <i
-                                            class="bx bx-list-plus add-list clickable"
+                                            class="mdi mdi-plus-circle add-list clickable"
                                             role="link"
                                             tabindex="0"
                                             on:keydown={() => {}}
@@ -337,15 +341,16 @@
             {/each}
 
             {#if innerMcps.length < limit}
-                <div class="add-utility">
-                    <Button color="primary" on:click={() => addTool()}>
-                        <span>
-                            <i class="bx bx-plus" />
-                            <span>Add MCP</span>
-                        </span>
-                    </Button>
+                <div class="material-add-mcp mt-3">
+                    <MaterialButton 
+                        variant="filled" 
+                        icon="mdi mdi-plus"
+                        on:click={() => addTool()}
+                    >
+                        Add MCP
+                    </MaterialButton>
                 </div>
             {/if}
         </div>
-    </CardBody>
-</Card>
+    </div>
+</MaterialCard>

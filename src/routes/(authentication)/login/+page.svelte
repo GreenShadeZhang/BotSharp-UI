@@ -14,6 +14,8 @@
 		Alert
 	} from '@sveltestrap/sveltestrap';
 	import Headtitle from '$lib/common/HeadTitle.svelte';
+	import MaterialTextField from '$lib/common/MaterialTextField.svelte';
+	import MaterialButton from '$lib/common/MaterialButton.svelte';
 	import { getToken } from '$lib/services/auth-service.js';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
@@ -103,157 +105,122 @@
 </script>
 
 <Headtitle title="Login" />
-<div class="account-pages my-5 pt-sm-5">
+<div class="material-auth-page">
 	<Container>
-		<Row class="justify-content-center">
+		<Row class="justify-content-center min-vh-100 align-items-center">
 			<Col md={8} lg={6} xl={5}>
-				<Card class="overflow-hidden">
-					<div class="bg-primary-subtle">
-						<Row>
-							<Col class="col-7">
-								<div class="text-primary p-4">
-									<h5 class="text-primary">{$_('Welcome Back !')}</h5>
-									<p>Sign in to continue to {PUBLIC_BRAND_NAME}.</p>
-								</div>
-							</Col>
-							<Col class="col-5 align-self-end">
-								<img src={PUBLIC_LOGIN_IMAGE} alt="" class="img-fluid" />
-							</Col>
-						</Row>
-					</div>
-					<CardBody class="pt-0">
-						<div class="auth-logo">
-							<Link href="page/dashboard" class="auth-logo-light">
-								<div class="avatar-md profile-user-wid mb-4">
-									<span class="avatar-title rounded-circle bg-light">
-										<img src={PUBLIC_LOGO_URL} alt="" class="rounded-circle" height="55" />
-									</span>
-								</div>
-							</Link>
-							<Link href="page/dashboard" class="auth-logo-dark">
-								<div class="avatar-md profile-user-wid mb-4">
-									<span class="avatar-title rounded-circle bg-light">
-										<img src={PUBLIC_LOGO_URL} alt="" class="rounded-circle" height="55" />
-									</span>
-								</div>
-							</Link>
+				<div class="material-auth-card">
+					<div class="material-auth-header">
+						<div class="material-auth-brand">
+							<img src={PUBLIC_LOGO_URL} alt="Logo" class="material-auth-logo" />
+							<h1 class="material-auth-title">{$_('Welcome Back!')}</h1>
+							<p class="material-auth-subtitle">Sign in to continue to {PUBLIC_BRAND_NAME}</p>
 						</div>
-						<div class="p-2">
-							<Alert {isOpen} color={status}>{msg}</Alert>
-							<Form class="form-horizontal" on:submit={onSubmit}>
-								<div class="mb-3">
-									<Label for="username" class="form-label">Username</Label>
-									<Input
-										type="text"
-										class="form-control"
-										id="username"
-										placeholder="Enter username"
-										disabled={isSubmitting}
-										bind:value={username}
-									/>
+					</div>
+					<div class="material-auth-content">
+						{#if isOpen}
+							<div class="material-alert material-alert--{status}" role="alert">
+								{msg}
+							</div>
+						{/if}
+						<Form class="material-auth-form" on:submit={onSubmit}>
+							<MaterialTextField
+								label="Username"
+								type="text"
+								id="username"
+								placeholder="Enter username"
+								disabled={isSubmitting}
+								bind:value={username}
+								required
+							/>
+
+							<MaterialTextField
+								label="Password"
+								type="password"
+								id="user-password"
+								placeholder="Enter password"
+								disabled={isSubmitting}
+								bind:value={password}
+								required
+								showPasswordToggle={true}
+							/>
+
+							<div class="material-checkbox">
+								<input
+									class="material-checkbox-input"
+									type="checkbox"
+									id="remember-check"
+									disabled={isSubmitting}
+									bind:checked={isRememberMe}
+								/>
+								<label class="material-checkbox-label" for="remember-check">
+									<span class="material-checkbox-checkmark"></span>
+									Remember me
+								</label>
+							</div>
+
+							<MaterialButton
+								variant="filled"								size="large"
+								className="material-login-button"
+								disabled={isSubmitting}
+								type="submit"
+								class="material-auth-submit"
+							>
+								{!isSubmitting ? 'Log In' : 'Logging in...'}
+							</MaterialButton>
+							
+							{#if PUBLIC_AUTH_ENABLE_SSO == 'true'}
+								<div class="material-auth-divider">
+									<span>or continue with</span>
 								</div>
 
-								<div class="mb-3">
-									<Label class="form-label" for="user-password">Password</Label>
-									<div class="input-group auth-pass-inputgroup">
-										<Input
-											type="password"
-											class="form-control"
-											id="user-password"
-											placeholder="Enter password"
-											disabled={isSubmitting}
-											aria-label="Password"
-											aria-describedby="password-addon"
-											bind:value={password}
-										/>
-										<Button
-											color="light"
-											type="button"
-											id="password-addon"
-											disabled={isSubmitting}
-											on:click={() => onPasswordToggle()}
-										>
-											<i id="password-eye-icon" class="mdi mdi-eye-outline" />
-										</Button>
-									</div>
-								</div>
-
-								<div class="form-check">
-									<input
-										class="form-check-input"
-										type="checkbox"
-										id="remember-check"
+								<div class="material-auth-social">
+									<Link
+										class="material-social-button material-social-button--github"
+										href="{PUBLIC_SERVICE_URL}/sso/GitHub?redirectUrl={PUBLIC_LIVECHAT_HOST}page/user/me"
 										disabled={isSubmitting}
-										bind:checked={isRememberMe}
-									/>
-									<Label class="form-check-label" for="remember-check">Remember me</Label>
-								</div>
-
-								<div class="mt-3 d-grid">
-									<Button
-										color="primary"
-										disabled={isSubmitting}
-										class="waves-effect waves-light"
-										type="submit"
 									>
-										{!isSubmitting ? 'Log In' : 'Log In...'}
-									</Button>
-								</div>
-								{#if PUBLIC_AUTH_ENABLE_SSO == 'true'}
-								<div class="mt-4 text-center">
-									<h5 class="font-size-14 mb-3">Sign in with</h5>
-
-									<ul class="list-inline">
-										<li class="list-inline-item">
-											<Link
-												class="social-list-item bg-primary text-white border-primary"
-												href="{PUBLIC_SERVICE_URL}/sso/GitHub?redirectUrl={PUBLIC_LIVECHAT_HOST}page/user/me"
-												disabled={isSubmitting}
-											>
-												<i class="mdi mdi-github" />
-											</Link>
-										</li>		
-										<li class="list-inline-item">
-											<Link
-												class="social-list-item bg-primary text-white border-primary"
-												href="{PUBLIC_SERVICE_URL}/sso/Keycloak?redirectUrl={PUBLIC_LIVECHAT_HOST}page/user/me"
-												disabled={isSubmitting}
-											>
-												<i class="mdi mdi-cloud" />
-											</Link>
-										</li>									
-										<li class="list-inline-item">
-											<Link
-												class="social-list-item bg-danger text-white border-danger"
-												href="{PUBLIC_SERVICE_URL}/sso/Google?redirectUrl={PUBLIC_LIVECHAT_HOST}page/user/me"
-												disabled={isSubmitting}
-											>
-												<i class="mdi mdi-google" />
-											</Link>
-										</li>
-									</ul>
-								</div>
-								{/if}
-								{#if PUBLIC_AUTH_ENABLE_FIND_PWD == 'true' }
-								<div class="mt-4 text-center">
-									<Link href="recoverpw" class="text-muted" disabled={isSubmitting}>
-										<i class="mdi mdi-lock me-1" /> Forgot your password?
+										<i class="mdi mdi-github"></i>
+										GitHub
+									</Link>
+									<Link
+										class="material-social-button material-social-button--keycloak"
+										href="{PUBLIC_SERVICE_URL}/sso/Keycloak?redirectUrl={PUBLIC_LIVECHAT_HOST}page/user/me"
+										disabled={isSubmitting}
+									>
+										<i class="mdi mdi-cloud"></i>
+										Keycloak
+									</Link>
+									<Link
+										class="material-social-button material-social-button--google"
+										href="{PUBLIC_SERVICE_URL}/sso/Google?redirectUrl={PUBLIC_LIVECHAT_HOST}page/user/me"
+										disabled={isSubmitting}
+									>
+										<i class="mdi mdi-google"></i>
+										Google
 									</Link>
 								</div>
-								{/if}
-							</Form>
-						</div>
-					</CardBody>
-				</Card>
-				<div class="mt-5 text-center">
+							{/if}
+							
+							{#if PUBLIC_AUTH_ENABLE_FIND_PWD == 'true'}
+								<div class="material-auth-links">
+									<Link href="recoverpw" class="material-text-button" disabled={isSubmitting}>
+										Forgot your password?
+									</Link>
+								</div>
+							{/if}
+						</Form>
+					</div>
+				</div>
+				
+				<div class="material-auth-footer">
 					<p hidden={!(PUBLIC_ALLOW_SIGNUP === 'true')}>
-						Don&apos;t have an account ?
-						<Link href="register" class="fw-medium text-primary" disabled={isSubmitting}>Signup now</Link>
+						Don't have an account?
+						<Link href="register" class="material-link" disabled={isSubmitting}>Sign up</Link>
 					</p>
-					<p>
-						© {new Date().getFullYear()}
-						{PUBLIC_COMPANY_NAME}. Crafted with
-						<i class="mdi mdi-heart text-danger" /> by open source community
+					<p class="material-copyright">
+						© {new Date().getFullYear()} {PUBLIC_COMPANY_NAME}. 
+						Crafted with <i class="mdi mdi-heart text-secondary"></i> by open source community
 					</p>
 				</div>
 			</Col>

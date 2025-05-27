@@ -10,7 +10,8 @@
         Form,
         FormGroup
     } from "@sveltestrap/sveltestrap";
-    import _ from "lodash";
+    import lodash from "lodash";
+    const _ = lodash;
 
     /** @type {boolean} */
     export let isOpen;

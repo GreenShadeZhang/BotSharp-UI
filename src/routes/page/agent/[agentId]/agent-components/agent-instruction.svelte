@@ -2,10 +2,13 @@
     import { onMount } from 'svelte';
     import { _ } from 'svelte-i18n';
     import { v4 as uuidv4 } from 'uuid';
-    import util from "lodash";
-    import { Card, CardBody, FormGroup, Input, CardHeader } from '@sveltestrap/sveltestrap';
+    import lodash from "lodash";    
+    const util = lodash;    import { Card, CardBody, FormGroup, Input, CardHeader } from '@sveltestrap/sveltestrap';
     import NavBar from '$lib/common/nav-bar/NavBar.svelte';
 	import NavItem from '$lib/common/nav-bar/NavItem.svelte';
+    import MaterialCard from '$lib/common/MaterialCard.svelte';
+    import MaterialButton from '$lib/common/MaterialButton.svelte';
+    import MaterialTextField from '$lib/common/MaterialTextField.svelte';
 
     const defaultChannel = "default";
     
@@ -121,90 +124,82 @@
     }
 </script>
 
-<Card class="agent-prompt-container">
-    <CardHeader class="agent-prompt-header border-bottom">
-        <div class="d-flex">
+<MaterialCard variant="outlined" className="agent-instruction-card">
+    <div class="material-card-header">
+        <div class="d-flex align-items-center">
             <div class="flex-grow-1">
-                <h5 class="fw-semibold">{agent.name}</h5>
+                <h5 class="material-heading">{agent.name}</h5>
             </div>
         </div>
-    </CardHeader>
-    <CardBody>
-        <FormGroup>
+    </div>
+    <div class="material-card-content">
+        <div class="material-form-group">
             <div class="mb-2">
-                <div class="line-align-center fw-bold">
-                    {'Description:'}
+                <div class="material-label">
+                    Description:
                 </div>
             </div>
-            <Input
+            <MaterialTextField
                 type="textarea"
-                class="form-control"
-                style="scrollbar-width: thin; resize: none;"
                 rows={4}
                 bind:value={agent.description}
-                placeholder="Enter your Message"
+                placeholder="Enter agent description..."
                 on:input={handleAgentChange}
             />
-        </FormGroup>
-
-        <FormGroup class="agent-prompt-body">
-            <div class="mb-2" style="display: flex; gap: 10px;">
-                <div class="line-align-center fw-bold">
+        </div>        <div class="material-form-group">
+            <div class="mb-2 d-flex align-items-center gap-2">
+                <div class="material-label">
                     {#if inner_instructions.length > 1}
-                        {'Instructions:'}
+                        Instructions:
                     {:else}
-                        {'System instruction:'}
+                        System instruction:
                     {/if}
                 </div>
-                <!-- svelte-ignore a11y-click-events-have-key-events -->
-                <!-- svelte-ignore a11y-no-static-element-interactions -->
-                <div
-                    class="text-primary clickable"
-                    data-bs-toggle="tooltip"
-                    data-bs-placement="top"
-                    title="Add channel instruction"
-                    style="font-size: 16px;"
+                <MaterialButton
+                    variant="text"
+                    icon="mdi mdi-plus-circle-outline"
+                    size="small"
                     on:click={() => addChannel()}
+                    title="Add channel instruction"
                 >
-                    <i class="mdi mdi-plus-circle-outline" />
-                </div>
+                    Add Channel
+                </MaterialButton>
             </div>
             
             {#if inner_instructions.length > 1}
-            <NavBar
-                id={'agent-instruction-container'}
-                disableDefaultStyles
-                containerClasses={'nav-tabs-secondary'}
-            >
-                {#each inner_instructions as inst, idx (idx) }
-                <NavItem
-                    containerStyles={`flex: 0 1 calc(100% / ${inner_instructions.length <= 2 ? inner_instructions.length : 3})`}
-                    navBtnStyles={'text-transform: none;'}
-                    navBtnId={`${inst.channel}-prompt-tab`}
-                    dataBsTarget={`#${inst.channel}-prompt-tab-pane`}
-                    ariaControls={`${inst.channel}-prompt-tab-pane`}
-                    bind:navBtnText={inst.channel}
-                    active={inst.uid === selected_instruction.uid}
-                    allowEdit={idx > 0}
-                    allowDelete={idx > 0}
-                    maxEditLength={20}
-                    editPlaceholder={'Type a channel here...'}
+            <div class="material-tabs mb-3">
+                <NavBar
+                    id={'agent-instruction-container'}
+                    disableDefaultStyles
+                    containerClasses={'nav-tabs-secondary'}
+                >
+                    {#each inner_instructions as inst, idx (idx) }
+                    <NavItem
+                        containerStyles={`flex: 0 1 calc(100% / ${inner_instructions.length <= 2 ? inner_instructions.length : 3})`}
+                        navBtnStyles={'text-transform: none;'}
+                        navBtnId={`${inst.channel}-prompt-tab`}
+                        dataBsTarget={`#${inst.channel}-prompt-tab-pane`}
+                        ariaControls={`${inst.channel}-prompt-tab-pane`}
+                        bind:navBtnText={inst.channel}
+                        active={inst.uid === selected_instruction.uid}
+                        allowEdit={idx > 0}
+                        allowDelete={idx > 0}
+                        maxEditLength={20}
+                        editPlaceholder={'Type a channel here...'}
                     onClick={() => selectChannel(inst.uid)}
-                    onDelete={() => deleteChannel(inst.uid)}
-                    onInput={handleAgentChange}
-                />
-                {/each}
-            </NavBar>
+                    onDelete={() => deleteChannel(inst.uid)}                        onInput={handleAgentChange}
+                    />
+                    {/each}
+                </NavBar>
+            </div>
             {/if}
-            <Input
+            <MaterialTextField
                 type="textarea"
-                class="form-control"
-                style="scrollbar-width: thin; resize: none;"
                 value={selected_instruction.instruction}
                 rows={20}
                 on:input={(e) => changePrompt(e)}
-                placeholder="Enter your instruction"
+                placeholder="Enter your instruction..."
             />
-        </FormGroup>
-    </CardBody>
-</Card>
+        </div>
+    </div>
+</MaterialCard>
