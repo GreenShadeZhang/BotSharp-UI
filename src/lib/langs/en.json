@@ -293,13 +293,52 @@
     "User":"User",
     "Location":"Location",
     "Delete Conversation":" Delete Conversation",
-    "Design & Developed by open source community":"Design & Developed by open source community",
-    "Personal Information":"Personal Information",
+    "Design & Developed by open source community":"Design & Developed by open source community",    "Personal Information":"Personal Information",
     "First Name":"First Name",
     "Last Name":"Last Name",
     "Account Origin":"Account Origin",
     "Update Date":"Update Date",
     "Create Date":"Create Date",
     "Active now":"Active now",
-    "Reset":"Reset"
+    "Reset":"Reset",
+    "homepage": {
+        "badge": "Next-Gen IoT Platform",
+        "title": "Build Smart AI Agents for IoT Excellence",
+        "title_highlight": "AI Agents",
+        "description": "Empower your IoT ecosystem with intelligent agents. Connect, automate, and scale your devices with cutting-edge AI technology.",
+        "get_started": "Get Started",
+        "documentation": "Documentation",
+        "features": {
+            "why_choose": "Why Choose Our Platform?",
+            "subtitle": "Everything you need to build, deploy, and scale intelligent IoT solutions",
+            "smart_agents": {
+                "title": "Smart Agents",
+                "description": "Deploy intelligent AI agents for automated IoT management"
+            },
+            "iot_integration": {
+                "title": "IoT Integration",
+                "description": "Seamlessly connect and control your IoT devices"
+            },
+            "real_time_analytics": {
+                "title": "Real-time Analytics",
+                "description": "Monitor and analyze your IoT data in real-time"
+            }
+        },
+        "stats": {
+            "devices": "Devices Connected",
+            "agents": "Active Agents",
+            "uptime": "Uptime",
+            "support": "Support"
+        },
+        "cta": {
+            "title": "Ready to Transform Your IoT?",
+            "description": "Join thousands of developers building the future of connected intelligence",
+            "action": "Start Building Now"
+        },
+        "floating_cards": {
+            "iot_device": "IoT Device",
+            "ai_agent": "AI Agent",
+            "cloud": "Cloud"
+        }
+    }
 }

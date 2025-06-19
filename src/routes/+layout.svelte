@@ -1,6 +1,6 @@
-<script>
-	import { addMessages, init, getLocaleFromNavigator } from 'svelte-i18n';
+<script>	import { addMessages, init, getLocaleFromNavigator } from 'svelte-i18n';
 	import en from '$lib/langs/en.json';
+	import zh from '$lib/langs/zh.json';
 	import '$lib/helpers/http';
 	import { onDestroy, onMount } from 'svelte';
 	import { globalErrorStore, loaderStore } from '$lib/helpers/store';
@@ -8,9 +8,10 @@
 	import LoadingToComplete from '$lib/common/LoadingToComplete.svelte';
 
 	addMessages('en', en);
+	addMessages('zh', zh);
 
 	init({
-		fallbackLocale: 'en',
+		fallbackLocale: 'zh',
 		initialLocale: getLocaleFromNavigator()
 	});
 

@@ -3,6 +3,8 @@
     import { fade, fly } from 'svelte/transition';
     import { Container, Row, Col, Button, Card, CardBody } from '@sveltestrap/sveltestrap';
     import HeadTitle from "$lib/common/HeadTitle.svelte";
+    import LanguageDropdown from "$lib/common/LanguageDropdown.svelte";
+    import { _ } from 'svelte-i18n';
     import { 
         PUBLIC_LOGO_URL, 
         PUBLIC_BRAND_NAME, 
@@ -10,9 +12,7 @@
         PUBLIC_HOME_SLOGAN, 
         PUBLIC_HOME_IMAGE 
     } from '$env/static/public';
-    import { onMount } from 'svelte';
-
-    let mounted = false;
+    import { onMount } from 'svelte';    let mounted = false;
 	onMount(async () => {
         mounted = true;
 	});
@@ -20,30 +20,34 @@
     const features = [
         {
             icon: "fas fa-robot",
-            title: "Smart Agents",
-            description: "Deploy intelligent AI agents for automated IoT management"
+            titleKey: "homepage.features.smart_agents.title",
+            descKey: "homepage.features.smart_agents.description"
         },
         {
             icon: "fas fa-network-wired", 
-            title: "IoT Integration",
-            description: "Seamlessly connect and control your IoT devices"
+            titleKey: "homepage.features.iot_integration.title",
+            descKey: "homepage.features.iot_integration.description"
         },
         {
             icon: "fas fa-chart-line",
-            title: "Real-time Analytics", 
-            description: "Monitor and analyze your IoT data in real-time"
+            titleKey: "homepage.features.real_time_analytics.title",
+            descKey: "homepage.features.real_time_analytics.description"
         }
     ];
 
     const stats = [
-        { number: "1M+", label: "Devices Connected" },
-        { number: "50K+", label: "Active Agents" },
-        { number: "99.9%", label: "Uptime" },
-        { number: "24/7", label: "Support" }
+        { number: "1M+", labelKey: "homepage.stats.devices" },
+        { number: "50K+", labelKey: "homepage.stats.agents" },
+        { number: "99.9%", labelKey: "homepage.stats.uptime" },
+        { number: "24/7", labelKey: "homepage.stats.support" }
     ];
-</script>
-  
+</script>  
 <HeadTitle title="{PUBLIC_BRAND_NAME} - AI Agent IoT Platform" />
+
+<!-- Language Selector -->
+<div class="language-selector">
+    <LanguageDropdown />
+</div>
 
 <!-- Hero Section -->
 <section class="hero-section">
@@ -58,23 +62,25 @@
                     <div in:fly={{ x: -50, duration: 800, delay: 200 }}>
                         <div class="hero-badge">
                             <i class="fas fa-sparkles me-2"></i>
-                            Next-Gen IoT Platform
-                        </div>
-                        <h1 class="hero-title">
-                            Build Smart <span class="gradient-text">AI Agents</span><br/>
-                            for IoT Excellence
+                            {$_('homepage.badge')}
+                        </div>                        <h1 class="hero-title">
+                            {#if $_('homepage.title').includes($_('homepage.title_highlight'))}
+                                {$_('homepage.title').split($_('homepage.title_highlight'))[0]}<span class="gradient-text">{$_('homepage.title_highlight')}</span>{$_('homepage.title').split($_('homepage.title_highlight'))[1]}
+                            {:else}
+                                {$_('homepage.title')}
+                            {/if}
                         </h1>
                         <p class="hero-description">
-                            Empower your IoT ecosystem with intelligent agents. Connect, automate, and scale your devices with cutting-edge AI technology.
+                            {$_('homepage.description')}
                         </p>
                         <div class="hero-actions">
                             <Button href="/login" color="primary" size="lg" class="me-3 hero-btn-primary">
                                 <i class="fas fa-rocket me-2"></i>
-                                Get Started
+                                {$_('homepage.get_started')}
                             </Button>
                             <Button href="/docs" outline color="light" size="lg" class="hero-btn-secondary">
                                 <i class="fas fa-book me-2"></i>
-                                Documentation
+                                {$_('homepage.documentation')}
                             </Button>
                         </div>
                     </div>
@@ -86,15 +92,15 @@
                         <div class="floating-cards">
                             <div class="floating-card card-1">
                                 <i class="fas fa-microchip"></i>
-                                <span>IoT Device</span>
+                                <span>{$_('homepage.floating_cards.iot_device')}</span>
                             </div>
                             <div class="floating-card card-2">
                                 <i class="fas fa-brain"></i>
-                                <span>AI Agent</span>
+                                <span>{$_('homepage.floating_cards.ai_agent')}</span>
                             </div>
                             <div class="floating-card card-3">
                                 <i class="fas fa-cloud"></i>
-                                <span>Cloud</span>
+                                <span>{$_('homepage.floating_cards.cloud')}</span>
                             </div>
                         </div>
                         <div class="hero-main-visual">
@@ -116,7 +122,7 @@
                     {#if mounted}
                         <div in:fly={{ y: 30, duration: 600, delay: 600 + i * 100 }} class="stat-item">
                             <h3 class="stat-number">{stat.number}</h3>
-                            <p class="stat-label">{stat.label}</p>
+                            <p class="stat-label">{$_(stat.labelKey)}</p>
                         </div>
                     {/if}
                 </Col>
@@ -130,11 +136,10 @@
     <Container>
         <Row class="justify-content-center mb-5">
             <Col lg="8" class="text-center">
-                {#if mounted}
-                    <div transition:fade={{ duration: 800, delay: 1000 }}>
-                        <h2 class="section-title">Why Choose Our Platform?</h2>
+                {#if mounted}                    <div transition:fade={{ duration: 800, delay: 1000 }}>
+                        <h2 class="section-title">{$_('homepage.features.why_choose')}</h2>
                         <p class="section-subtitle">
-                            Everything you need to build, deploy, and scale intelligent IoT solutions
+                            {$_('homepage.features.subtitle')}
                         </p>
                     </div>
                 {/if}
@@ -148,9 +153,8 @@
                                 <CardBody class="text-center p-4">
                                     <div class="feature-icon">
                                         <i class={feature.icon}></i>
-                                    </div>
-                                    <h5 class="feature-title">{feature.title}</h5>
-                                    <p class="feature-description">{feature.description}</p>
+                                    </div>                                    <h5 class="feature-title">{$_(feature.titleKey)}</h5>
+                                    <p class="feature-description">{$_(feature.descKey)}</p>
                                 </CardBody>
                             </Card>
                         </div>
@@ -166,15 +170,14 @@
     <Container>
         <Row class="justify-content-center">
             <Col lg="8" class="text-center">
-                {#if mounted}
-                    <div transition:fade={{ duration: 800, delay: 1800 }}>
-                        <h2 class="cta-title">Ready to Transform Your IoT?</h2>
+                {#if mounted}                    <div transition:fade={{ duration: 800, delay: 1800 }}>
+                        <h2 class="cta-title">{$_('homepage.cta.title')}</h2>
                         <p class="cta-description">
-                            Join thousands of developers building the future of connected intelligence
+                            {$_('homepage.cta.description')}
                         </p>
                         <div class="cta-actions">
                             <Button href="/login" color="primary" size="lg" class="me-3">
-                                Start Building Now
+                                {$_('homepage.cta.action')}
                                 <i class="fas fa-arrow-right ms-2"></i>
                             </Button>
                         </div>
@@ -186,6 +189,19 @@
 </section>
 
 <style>
+/* Language Selector */
+.language-selector {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    padding: 5px;
+}
+
 /* Hero Section */
 .hero-section {
     position: relative;

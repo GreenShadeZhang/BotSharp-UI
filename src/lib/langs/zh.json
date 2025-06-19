@@ -488,13 +488,52 @@
   "User":"用户",
   "Location":"位置",
   "Delete Conversation":"删除对话",
-  "Design & Developed by open source community":"由开源社区设计和开发",
-  "Personal Information":"个人信息",
+  "Design & Developed by open source community":"由开源社区设计和开发",  "Personal Information":"个人信息",
   "First Name":"名",
   "Last Name":"姓",
   "Account Origin":"账户起源",
   "Update Date":"更新日期",
   "Create Date":"创建日期",
   "Active now":"正在工作",
-  "Reset":"重置"
+  "Reset":"重置",
+  "homepage": {
+    "badge": "下一代物联网平台",
+    "title": "构建智能AI代理，打造物联网卓越体验",
+    "title_highlight": "AI代理",
+    "description": "通过智能代理赋能您的物联网生态系统。连接、自动化和扩展您的设备，采用尖端AI技术。",
+    "get_started": "立即开始",
+    "documentation": "文档",
+    "features": {
+      "why_choose": "为什么选择我们的平台？",
+      "subtitle": "构建、部署和扩展智能物联网解决方案所需的一切",
+      "smart_agents": {
+        "title": "智能代理",
+        "description": "部署智能AI代理，实现自动化物联网管理"
+      },
+      "iot_integration": {
+        "title": "物联网集成",
+        "description": "无缝连接和控制您的物联网设备"
+      },
+      "real_time_analytics": {
+        "title": "实时分析",
+        "description": "实时监控和分析您的物联网数据"
+      }
+    },
+    "stats": {
+      "devices": "设备连接数",
+      "agents": "活跃代理",
+      "uptime": "正常运行时间",
+      "support": "技术支持"
+    },
+    "cta": {
+      "title": "准备好转型您的物联网了吗？",
+      "description": "加入成千上万开发者，共同构建连接智能的未来",
+      "action": "立即开始构建"
+    },
+    "floating_cards": {
+      "iot_device": "物联网设备",
+      "ai_agent": "AI代理",
+      "cloud": "云服务"
+    }
+  }
 }
