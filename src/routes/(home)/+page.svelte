@@ -244,17 +244,18 @@
     left: 0;
     right: 0;
     z-index: 1000;
-    background: rgba(255, 255, 255, 0.95);
+    background: rgba(255, 255, 255, 0.92);
     backdrop-filter: blur(20px);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-    padding: 1rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+    padding: 0.5rem 0;
     transition: all 0.3s ease;
+    box-shadow: 0 1px 10px rgba(0, 0, 0, 0.05);
 }
 
 .top-nav.scrolled {
     background: rgba(255, 255, 255, 0.98);
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.15);
-    padding: 0.75rem 0;
+    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.08);
+    padding: 0.4rem 0;
 }
 
 .nav-content {
@@ -283,13 +284,13 @@
 }
 
 .brand-logo {
-    height: 40px;
+    height: 32px;
     width: auto;
-    margin-right: 12px;
+    margin-right: 10px;
 }
 
 .brand-name {
-    font-size: 1.5rem;
+    font-size: 1.3rem;
     font-weight: 700;
     background: linear-gradient(45deg, #667eea, #764ba2);
     -webkit-background-clip: text;
@@ -313,15 +314,16 @@
     background: rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 50px;
-    padding: 8px 16px;
+    border-radius: 25px;
+    padding: 6px 14px;
     color: #333;
     font-weight: 500;
+    font-size: 14px;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
 }
 
 .language-selector :global(.dropdown-toggle:hover) {
@@ -364,16 +366,17 @@
 .login-btn {
     background: linear-gradient(45deg, #667eea, #764ba2);
     border: none;
-    border-radius: 50px;
-    padding: 10px 24px;
+    border-radius: 25px;
+    padding: 8px 18px;
     font-weight: 600;
+    font-size: 14px;
     color: white;
     text-decoration: none;
     display: inline-flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
+    box-shadow: 0 2px 12px rgba(102, 126, 234, 0.25);
     position: relative;
     overflow: hidden;
 }
@@ -390,8 +393,8 @@
 }
 
 .login-btn:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 30px rgba(102, 126, 234, 0.4);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(102, 126, 234, 0.35);
     color: white;
     text-decoration: none;
 }
@@ -410,7 +413,7 @@
     min-height: 100vh;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     overflow: hidden;
-    padding-top: 80px;
+    padding-top: 60px;
 }
 
 .hero-background {
@@ -732,23 +735,20 @@
     }
 }
 
-@media (max-width: 768px) {
-    .top-nav {
-        padding: 0.75rem 0;
+@media (max-width: 768px) {    .top-nav {
+        padding: 0.4rem 0;
     }
     
     .nav-content {
         flex-wrap: wrap;
         gap: 1rem;
     }
-    
-    .brand-name {
-        font-size: 1.2rem;
+      .brand-name {
+        font-size: 1.1rem;
     }
-    
-    .brand-logo {
-        height: 32px;
-        margin-right: 8px;
+      .brand-logo {
+        height: 28px;
+        margin-right: 6px;
     }
     
     .nav-actions {
@@ -764,9 +764,8 @@
         padding: 8px 16px;
         font-size: 14px;
     }
-    
-    .hero-section {
-        padding-top: 100px;
+      .hero-section {
+        padding-top: 80px;
     }
 }
 
@@ -784,9 +783,8 @@
         justify-content: center;
         width: 100%;
     }
-    
-    .hero-section {
-        padding-top: 120px;
+      .hero-section {
+        padding-top: 100px;
     }
 }
 
