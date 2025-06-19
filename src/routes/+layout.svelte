@@ -6,6 +6,7 @@
 	import { globalErrorStore, loaderStore } from '$lib/helpers/store';
 	import Loader from '$lib/common/Loader.svelte';
 	import LoadingToComplete from '$lib/common/LoadingToComplete.svelte';
+	import { initializeAuth } from '$lib/services/oidc-auth-service.js';
 	
 	addMessages('zh', zh);
 	addMessages('en', en);
@@ -27,6 +28,10 @@
 
 	onMount(() => {
 		window?.speechSynthesis?.cancel();
+		
+		// Initialize authentication state
+		initializeAuth();
+		
 		loaderUnsubscriber = loaderStore.subscribe(value => {
 			isLoading = value;
 		});

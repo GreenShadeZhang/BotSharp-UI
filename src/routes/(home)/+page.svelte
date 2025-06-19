@@ -12,12 +12,18 @@
         PUBLIC_HOME_SLOGAN, 
         PUBLIC_HOME_IMAGE 
     } from '$env/static/public';
-    import { onMount, onDestroy } from 'svelte';    let mounted = false;
+    import { onMount, onDestroy } from 'svelte';
+    import { initiateLogin, isAuthenticated } from '$lib/services/oidc-auth-service.js';
+    
+    let mounted = false;
+    let userAuthenticated = false;
     /** @type {(() => void) | undefined} */
     let cleanup;
-    
-	onMount(async () => {
+    	onMount(async () => {
         mounted = true;
+        
+        // Check authentication status
+        userAuthenticated = isAuthenticated();
         
         // Add scroll effect to navigation
         if (typeof window !== 'undefined') {
@@ -66,6 +72,19 @@
         { number: "99.9%", labelKey: "homepage.stats.uptime" },
         { number: "24/7", labelKey: "homepage.stats.support" }
     ];
+
+    /**
+     * Handle login button click
+     */
+    function handleLogin() {
+        if (userAuthenticated) {
+            // User is already authenticated, redirect to chat
+            window.location.href = '/profile';
+        } else {
+            // Initiate OIDC login flow
+            initiateLogin();
+        }
+    }
 </script>  
 <HeadTitle title="{PUBLIC_BRAND_NAME} - AI Agent IoT Platform" />
 
@@ -85,12 +104,15 @@
             <div class="nav-actions">                <!-- Custom Language Selector -->
                 <div class="language-selector" title="Select Language / 选择语言">
                     <LanguageDropdown />
-                </div>
-                
-                <!-- Login Button -->
-                <Button href="/login" color="primary" class="login-btn" title="Login to Dashboard">
+                </div>                <!-- Login Button -->
+                <Button 
+                    on:click={handleLogin} 
+                    color="primary" 
+                    class="login-btn" 
+                    title={userAuthenticated ? "Go to Dashboard" : "Login to Dashboard"}
+                >
                     <i class="fas fa-user-circle me-2"></i>
-                    {$_('Login') || 'Login'}
+                    {userAuthenticated ? ($_('Dashboard') || 'Dashboard') : ($_('Login') || 'Login')}
                 </Button>
             </div>
         </div>
@@ -120,9 +142,13 @@
                         </h1>
                         <p class="hero-description">
                             {$_('homepage.description')}
-                        </p>
-                        <div class="hero-actions">
-                            <Button href="/login" color="primary" size="lg" class="me-3 hero-btn-primary">
+                        </p>                        <div class="hero-actions">
+                            <Button 
+                                on:click={handleLogin} 
+                                color="primary" 
+                                size="lg" 
+                                class="me-3 hero-btn-primary"
+                            >
                                 <i class="fas fa-rocket me-2"></i>
                                 {$_('homepage.get_started')}
                             </Button>
@@ -222,9 +248,13 @@
                         <h2 class="cta-title">{$_('homepage.cta.title')}</h2>
                         <p class="cta-description">
                             {$_('homepage.cta.description')}
-                        </p>
-                        <div class="cta-actions">
-                            <Button href="/login" color="primary" size="lg" class="me-3">
+                        </p>                        <div class="cta-actions">
+                            <Button 
+                                on:click={handleLogin} 
+                                color="primary" 
+                                size="lg" 
+                                class="me-3"
+                            >
                                 {$_('homepage.cta.action')}
                                 <i class="fas fa-arrow-right ms-2"></i>
                             </Button>

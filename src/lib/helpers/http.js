@@ -1,17 +1,20 @@
 import axios from 'axios';
 import { getUserStore, globalErrorStore, loaderStore } from '$lib/helpers/store.js';
+import { getCurrentToken, refreshAuthToken } from '$lib/services/auth-service.js';
 
 // Add a request interceptor to attach authentication tokens or headers
 axios.interceptors.request.use(
     (config) => {
         // Add your authentication logic here
-        const user = getUserStore();
         if (!skipLoader(config)) {
             loaderStore.set(true);
         }
-        // For example, attach an authentication token to the request headers
-        if (user.token)
-            config.headers.Authorization = `Bearer ${user.token}`;
+        
+        // Get current token (supports both legacy and OIDC)
+        const token = getCurrentToken();
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
         return config;
     },
     (error) => {
@@ -25,23 +28,27 @@ axios.interceptors.response.use(
     (response) => {
         // If the request was successful, return the response
         loaderStore.set(false);
-        const user = getUserStore();
-
-        const isExpired = Date.now() / 1000 > user.expires;
-        if (isExpired) {
-            redirectToLogin();
-            return Promise.reject('user token expired!');
-        }
         return response;
     },
-    (error) => {
+    async (error) => {
         loaderStore.set(false);
-        const user = getUserStore();
         
-        const isExpired = Date.now() / 1000 > user.expires;
-        if (isExpired || (error.response && error.response.status === 401)) {
-            redirectToLogin();
-            return Promise.reject(error);
+        if (error.response && error.response.status === 401) {
+            // Try to refresh token first
+            const refreshed = await refreshAuthToken();
+            if (refreshed) {
+                // Retry the original request with new token
+                const originalRequest = error.config;
+                const newToken = getCurrentToken();
+                if (newToken) {
+                    originalRequest.headers.Authorization = `Bearer ${newToken}`;
+                    return axios(originalRequest);
+                }
+            } else {
+                // Refresh failed, redirect to login
+                redirectToLogin();
+                return Promise.reject(error);
+            }
         } else if (!skipGlobalError(error.config)) {
             globalErrorStore.set(true);
             setTimeout(() => {
@@ -56,12 +63,10 @@ axios.interceptors.response.use(
 
 
 function redirectToLogin() {
-    const curUrl = window.location.pathname + window.location.search;
-    let loginUrl = 'login';
-    if (curUrl) {
-        loginUrl += `?redirect=${encodeURIComponent(curUrl)}`;
-    }
-    window.location.href = loginUrl;
+    // Use OIDC login instead of legacy login page
+    import('$lib/services/oidc-auth-service.js').then(({ initiateLogin }) => {
+        initiateLogin();
+    });
 }
 
 /** @param {import('axios').InternalAxiosRequestConfig<any>} config */
