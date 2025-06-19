@@ -12,10 +12,35 @@
         PUBLIC_HOME_SLOGAN, 
         PUBLIC_HOME_IMAGE 
     } from '$env/static/public';
-    import { onMount } from 'svelte';    let mounted = false;
+    import { onMount, onDestroy } from 'svelte';    let mounted = false;
+    /** @type {(() => void) | undefined} */
+    let cleanup;
+    
 	onMount(async () => {
         mounted = true;
+        
+        // Add scroll effect to navigation
+        if (typeof window !== 'undefined') {
+            const nav = document.querySelector('.top-nav');
+            const handleScroll = () => {
+                if (window.scrollY > 100) {
+                    nav?.classList.add('scrolled');
+                } else {
+                    nav?.classList.remove('scrolled');
+                }
+            };
+            
+            window.addEventListener('scroll', handleScroll);
+            
+            cleanup = () => {
+                window.removeEventListener('scroll', handleScroll);
+            };
+        }
 	});
+	
+	onDestroy(() => {
+        cleanup?.();
+    });
 
     const features = [
         {
@@ -44,10 +69,33 @@
 </script>  
 <HeadTitle title="{PUBLIC_BRAND_NAME} - AI Agent IoT Platform" />
 
-<!-- Language Selector -->
-<div class="language-selector">
-    <LanguageDropdown />
-</div>
+<!-- Top Navigation Bar -->
+<nav class="top-nav">
+    <Container>
+        <div class="nav-content">
+            <!-- Brand Logo -->
+            <div class="brand">
+                <a href={PUBLIC_COMPANY_WEBSITE} class="brand-link">
+                    <img src={PUBLIC_LOGO_URL} alt="logo" class="brand-logo" />
+                    <span class="brand-name">{PUBLIC_BRAND_NAME}</span>
+                </a>
+            </div>
+            
+            <!-- Navigation Actions -->
+            <div class="nav-actions">                <!-- Custom Language Selector -->
+                <div class="language-selector" title="Select Language / 选择语言">
+                    <LanguageDropdown />
+                </div>
+                
+                <!-- Login Button -->
+                <Button href="/login" color="primary" class="login-btn" title="Login to Dashboard">
+                    <i class="fas fa-user-circle me-2"></i>
+                    {$_('Login') || 'Login'}
+                </Button>
+            </div>
+        </div>
+    </Container>
+</nav>
 
 <!-- Hero Section -->
 <section class="hero-section">
@@ -189,17 +237,171 @@
 </section>
 
 <style>
-/* Language Selector */
-.language-selector {
+/* Top Navigation */
+.top-nav {
     position: fixed;
-    top: 20px;
-    right: 20px;
+    top: 0;
+    left: 0;
+    right: 0;
     z-index: 1000;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 1rem 0;
+    transition: all 0.3s ease;
+}
+
+.top-nav.scrolled {
+    background: rgba(255, 255, 255, 0.98);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.15);
+    padding: 0.75rem 0;
+}
+
+.nav-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+}
+
+.brand-link {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.3s ease;
+}
+
+.brand-link:hover {
+    text-decoration: none;
+    color: inherit;
+    transform: scale(1.05);
+}
+
+.brand-logo {
+    height: 40px;
+    width: auto;
+    margin-right: 12px;
+}
+
+.brand-name {
+    font-size: 1.5rem;
+    font-weight: 700;
+    background: linear-gradient(45deg, #667eea, #764ba2);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+/* Enhanced Language Selector */
+.language-selector {
+    position: relative;
+}
+
+.language-selector :global(.dropdown-toggle) {
     background: rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 10px;
-    padding: 5px;
+    border-radius: 50px;
+    padding: 8px 16px;
+    color: #333;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.language-selector :global(.dropdown-toggle:hover) {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.15);
+}
+
+.language-selector :global(.dropdown-toggle::after) {
+    border-top-color: #667eea;
+    margin-left: 8px;
+}
+
+.language-selector :global(.dropdown-menu) {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 15px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    margin-top: 8px;
+    overflow: hidden;
+}
+
+.language-selector :global(.dropdown-item) {
+    padding: 12px 20px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.language-selector :global(.dropdown-item:hover) {
+    background: linear-gradient(45deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+    color: #667eea;
+}
+
+/* Enhanced Login Button */
+.login-btn {
+    background: linear-gradient(45deg, #667eea, #764ba2);
+    border: none;
+    border-radius: 50px;
+    padding: 10px 24px;
+    font-weight: 600;
+    color: white;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.login-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(45deg, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s ease;
+}
+
+.login-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 30px rgba(102, 126, 234, 0.4);
+    color: white;
+    text-decoration: none;
+}
+
+.login-btn:hover::before {
+    left: 100%;
+}
+
+.login-btn:active {
+    transform: translateY(-1px);
 }
 
 /* Hero Section */
@@ -208,6 +410,7 @@
     min-height: 100vh;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     overflow: hidden;
+    padding-top: 80px;
 }
 
 .hero-background {
@@ -530,59 +733,102 @@
 }
 
 @media (max-width: 768px) {
-    .hero-title {
-        font-size: 2.5rem;
+    .top-nav {
+        padding: 0.75rem 0;
     }
     
-    .hero-description {
-        font-size: 1.1rem;
+    .nav-content {
+        flex-wrap: wrap;
+        gap: 1rem;
     }
     
-    .hero-actions {
-        flex-direction: column;
-        align-items: center;
+    .brand-name {
+        font-size: 1.2rem;
     }
     
-    .hero-visual {
-        height: 300px;
-        margin-top: 3rem;
+    .brand-logo {
+        height: 32px;
+        margin-right: 8px;
     }
     
-    .hero-main-visual {
-        width: 100px;
-        height: 100px;
+    .nav-actions {
+        gap: 0.75rem;
     }
     
-    .hero-main-visual i {
-        font-size: 50px;
+    .language-selector :global(.dropdown-toggle) {
+        padding: 6px 12px;
+        font-size: 14px;
     }
     
-    .floating-card {
-        font-size: 12px;
-        padding: 10px 15px;
+    .login-btn {
+        padding: 8px 16px;
+        font-size: 14px;
     }
     
-    .floating-card i {
-        font-size: 16px;
-    }
-    
-    .stats-section {
-        padding: 60px 0;
-    }
-    
-    .features-section {
-        padding: 80px 0;
-    }
-    
-    .cta-section {
-        padding: 80px 0;
+    .hero-section {
+        padding-top: 100px;
     }
 }
 
 @media (max-width: 576px) {
-    .hero-actions {
-        flex-direction: column;
-        align-items: center;    }
+    .nav-content {
+        justify-content: center;
+        text-align: center;
+    }
+    
+    .brand {
+        margin-bottom: 0.5rem;
+    }
+    
+    .nav-actions {
+        justify-content: center;
+        width: 100%;
+    }
+    
+    .hero-section {
+        padding-top: 120px;
+    }
+}
+
+/* Enhanced hover effects */
+.top-nav:hover {
+    background: rgba(255, 255, 255, 0.98);    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+}
+
+/* Add subtle animation to navigation */
+.top-nav {
+    animation: slideDown 0.5s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        transform: translateY(-100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Language flag icons enhancement */
+.language-selector :global(.dropdown-toggle::before) {
+    content: '🌐';
+    margin-right: 6px;
+    font-size: 16px;
+}
+
+/* Enhanced button interactions */
+.login-btn, 
+.language-selector :global(.dropdown-toggle) {
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.login-btn:focus,
+.language-selector :global(.dropdown-toggle:focus) {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3);
 }
 </style>
 

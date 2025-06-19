@@ -6,9 +6,10 @@
 	import { globalErrorStore, loaderStore } from '$lib/helpers/store';
 	import Loader from '$lib/common/Loader.svelte';
 	import LoadingToComplete from '$lib/common/LoadingToComplete.svelte';
-
-	addMessages('en', en);
+	
 	addMessages('zh', zh);
+	addMessages('en', en);
+	
 
 	init({
 		fallbackLocale: 'zh',
