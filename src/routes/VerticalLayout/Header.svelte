@@ -481,13 +481,59 @@
 	width: 250px;
 }
 
+/* Collapsed state - align header with 70px sidebar */
+:global(body.vertical-collpsed) .navbar-header {
+	padding-left: 0 !important;
+}
+
+:global(body.vertical-collpsed) .header-left {
+	margin-left: 0 !important;
+}
+
 :global(body.vertical-collpsed) .modern-brand-box {
-	width: auto;
-	min-width: auto;
+	width: 70px !important;
+	min-width: 70px !important;
+	margin: 0 !important;
+	padding: 0 !important;
+	display: flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+}
+
+:global(body.vertical-collpsed) .modern-brand-link {
+	width: 70px !important;
+	height: 70px !important;
+	padding: 0 !important;
+	margin: 0 !important;
+	display: flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+	border-radius: 0 !important;
+}
+
+:global(body.vertical-collpsed) .modern-brand-link:hover {
+	background: transparent !important;
+	transform: none !important;
+}
+
+:global(body.vertical-collpsed) .brand-logo-container {
+	margin: 0 !important;
+	display: flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+}
+
+:global(body.vertical-collpsed) .brand-logo {
+	height: 32px !important;
+	width: auto !important;
 }
 
 :global(body.vertical-collpsed) .brand-name {
-	display: none;
+	display: none !important;
+}
+
+:global(body.vertical-collpsed) .modern-menu-toggle {
+	margin-left: 1rem !important;
 }
 
 /* Animation Effects */
