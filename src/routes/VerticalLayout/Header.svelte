@@ -315,12 +315,17 @@
 .action-item :global(.btn) {
 	background: rgba(102, 126, 234, 0.08) !important;
 	border: 1px solid rgba(102, 126, 234, 0.15) !important;
-	border-radius: 12px !important;
-	padding: 10px 12px !important;
+	border-radius: 10px !important;
+	padding: 8px !important;
 	color: #667eea !important;
 	font-weight: 500 !important;
 	transition: all 0.3s ease !important;
 	box-shadow: 0 2px 8px rgba(102, 126, 234, 0.06) !important;
+	min-width: 36px !important;
+	height: 36px !important;
+	display: flex !important;
+	align-items: center !important;
+	justify-content: center !important;
 }
 
 .action-item :global(.dropdown-toggle:hover),
@@ -329,6 +334,48 @@
 	border-color: rgba(102, 126, 234, 0.25) !important;
 	transform: translateY(-1px) !important;
 	box-shadow: 0 4px 15px rgba(102, 126, 234, 0.15) !important;
+}
+
+/* Icon styling for action items */
+.action-item :global(.dropdown-toggle i),
+.action-item :global(.btn i) {
+	font-size: 16px !important;
+	line-height: 1 !important;
+}
+
+/* Profile action specific styling */
+.profile-action :global(.dropdown-toggle) {
+	min-width: auto !important;
+	padding: 6px 10px !important;
+	border-radius: 8px !important;
+}
+
+/* Language Dropdown specific styling */
+.action-item :global(.language-switch) {
+	background: rgba(255, 255, 255, 0.95) !important;
+	backdrop-filter: blur(20px) !important;
+	border: 1px solid rgba(102, 126, 234, 0.15) !important;
+	border-radius: 12px !important;
+	box-shadow: 0 8px 32px rgba(102, 126, 234, 0.15) !important;
+	margin-top: 8px !important;
+}
+
+.action-item :global(.language-switch .dropdown-item) {
+	padding: 8px 16px !important;
+	transition: all 0.2s ease !important;
+	border-radius: 8px !important;
+	margin: 2px 4px !important;
+}
+
+.action-item :global(.language-switch .dropdown-item:hover) {
+	background: rgba(102, 126, 234, 0.1) !important;
+	color: #667eea !important;
+}
+
+.action-item :global(.language-switch .dropdown-item.active) {
+	background: linear-gradient(45deg, rgba(102, 126, 234, 0.15), rgba(118, 75, 162, 0.15)) !important;
+	color: #667eea !important;
+	font-weight: 600 !important;
 }
 
 /* Responsive Design */
@@ -372,6 +419,18 @@
 	.brand-logo {
 		height: 32px;
 	}
+	
+	.action-item :global(.dropdown-toggle),
+	.action-item :global(.btn) {
+		min-width: 34px !important;
+		height: 34px !important;
+		padding: 7px !important;
+	}
+	
+	.action-item :global(.dropdown-toggle i),
+	.action-item :global(.btn i) {
+		font-size: 15px !important;
+	}
 }
 
 @media (max-width: 768px) {
@@ -390,8 +449,19 @@
 	
 	.action-item :global(.dropdown-toggle),
 	.action-item :global(.btn) {
-		padding: 8px 10px !important;
-		font-size: 12px !important;
+		min-width: 32px !important;
+		height: 32px !important;
+		padding: 6px !important;
+		border-radius: 8px !important;
+	}
+	
+	.action-item :global(.dropdown-toggle i),
+	.action-item :global(.btn i) {
+		font-size: 14px !important;
+	}
+	
+	.profile-action :global(.dropdown-toggle) {
+		padding: 5px 8px !important;
 	}
 	
 	.modern-menu-toggle {
