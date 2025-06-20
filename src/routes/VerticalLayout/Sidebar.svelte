@@ -294,9 +294,7 @@
 :global(.modern-sidebar #sidebar-menu ul li a i) {
 	display: inline-block !important;
 	margin-right: 0 !important;
-	min-width: auto !important;
-	/* 保持图标字体的正常属性 */
-	font-family: inherit !important;
+	min-width: auto !important;	/* 保持图标字体的正常属性 */
 	font-style: normal !important;
 }
 
@@ -488,7 +486,6 @@
 	line-height: 1 !important;
 	text-align: center !important;
 	vertical-align: middle !important;
-	font-family: inherit !important;
 }
 
 /* 确保图标字体的伪元素内容不被破坏 */
@@ -499,6 +496,8 @@
 	display: inline-block !important;
 	text-rendering: auto !important;
 	-webkit-font-smoothing: antialiased !important;
+	/* 确保字体族不被重置 */
+	font-family: inherit !important;
 }
 
 /* 通用图标样式 - 确保所有图标都能正常显示 */
@@ -506,6 +505,25 @@
 	/* 保持图标字体的基本样式 */
 	overflow: visible !important;
 	white-space: nowrap !important;
+	/* 防止被其他CSS规则影响 */
+	text-transform: none !important;
+	letter-spacing: normal !important;
+	word-spacing: normal !important;
+}
+
+/* 强制重置可能影响图标显示的属性 */
+:global(.modern-sidebar) i[class*="fa-"]:before,
+:global(.modern-sidebar) i[class*="fas"]:before,
+:global(.modern-sidebar) i[class*="far"]:before,
+:global(.modern-sidebar) i[class*="fab"]:before,
+:global(.modern-sidebar) i[class*="mdi"]:before,
+:global(.modern-sidebar) i[class*="bx"]:before {
+	display: inline-block !important;
+	font-style: normal !important;
+	font-variant: normal !important;
+	text-rendering: auto !important;
+	-webkit-font-smoothing: antialiased !important;
+	-moz-osx-font-smoothing: grayscale !important;
 }
 
 :global(.modern-menu-link:hover) .menu-icon-container {
@@ -533,6 +551,35 @@
 	-moz-osx-font-smoothing: grayscale !important;
 	display: inline-block !important;
 	line-height: 1 !important;
+}
+
+/* FontAwesome 特定样式 */
+:global(.modern-sidebar) i[class*="fa-"],
+:global(.modern-sidebar) i[class*="fas"] {
+	font-family: "Font Awesome 6 Free", "fa-solid-900", FontAwesome !important;
+	font-weight: 900 !important;
+}
+
+:global(.modern-sidebar) i[class*="far"] {
+	font-family: "Font Awesome 6 Free", "fa-regular-400", FontAwesome !important;
+	font-weight: 400 !important;
+}
+
+:global(.modern-sidebar) i[class*="fab"] {
+	font-family: "Font Awesome 6 Brands", "fa-brands-400", FontAwesome !important;
+	font-weight: 400 !important;
+}
+
+/* Material Design Icons */
+:global(.modern-sidebar) i[class*="mdi"] {
+	font-family: "Material Design Icons", "materialdesignicons-webfont" !important;
+	font-weight: normal !important;
+}
+
+/* Boxicons */
+:global(.modern-sidebar) i[class*="bx"] {
+	font-family: "boxicons" !important;
+	font-weight: normal !important;
 }
 
 /* Menu Text */
