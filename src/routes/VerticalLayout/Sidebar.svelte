@@ -12,14 +12,17 @@
 
 	/** @type {import('$pluginTypes').PluginMenuDefModel[]} */
 	export let menu;
-
 	// after routing complete call afterUpdate function
 	afterUpdate(() => {
-		removeActiveDropdown();		const curUrl = getPathUrl();
+		removeActiveDropdown();
+		const curUrl = getPathUrl();
 		if (curUrl) {
 			let item = document.querySelector(".modern-sidebar a[href='" + curUrl + "']");
 			if (item) {
 				item.classList.add('mm-active');
+				// 滚动到当前活动项
+				item.scrollIntoView({ behavior: 'smooth', block: 'center' });
+				
 				const parent1 = item.parentElement;
 				if (parent1) {
 					parent1.classList.add('mm-active');
@@ -39,6 +42,9 @@
 							parent3.classList.remove('mm-collapse');
 							if (parent3.previousElementSibling) {
 								parent3.previousElementSibling.classList.add('mm-active');
+								if (!parent3.previousElementSibling.classList.contains('revert-arrow')) {
+									parent3.previousElementSibling.classList.add('revert-arrow');
+								}
 							}
 						}
 					}
@@ -96,54 +102,78 @@
 		}
 
 		// menuItemScroll()
-	});
-	const activeMenu = () => {
+	});	const activeMenu = () => {
 		if (browser) {
+			// 处理主菜单的展开/收缩
 			document.querySelectorAll('.modern-sidebar .has-arrow').forEach((menu) => {
-				menu.addEventListener('click', () => {
+				menu.addEventListener('click', (e) => {
+					e.preventDefault();
+					
 					if (menu.nextElementSibling) {
+						// 检查是否有活动的子菜单
 						let activeLinks = 0;
 						const links = menu.nextElementSibling.querySelectorAll('li a');
 						links.forEach((x) => (activeLinks += Number(x.classList.contains('mm-active'))));
-						if (activeLinks > 0) {
-							menu.classList.add('mm-active');
-						}
-
-						if (menu.nextElementSibling.classList.contains('mm-collapse')) {
+						
+						// 如果当前菜单已经展开，则收缩它
+						if (menu.nextElementSibling.classList.contains('mm-show')) {
+							menu.nextElementSibling.classList.remove('mm-show');
+							menu.nextElementSibling.classList.add('mm-collapse');
+							menu.classList.remove('revert-arrow');
+							if (activeLinks === 0) {
+								menu.classList.remove('mm-active');
+							}
+						} else {
+							// 展开当前菜单
 							menu.nextElementSibling.classList.remove('mm-collapse');
 							menu.nextElementSibling.classList.add('mm-show');
 							menu.classList.add('revert-arrow');
-						} else {
-							menu.nextElementSibling.classList.add('mm-collapse');
-							menu.nextElementSibling.classList.remove('mm-show');
-							menu.classList.remove('revert-arrow');
+							menu.classList.add('mm-active');
 						}
 					}
 				});
 			});
 
-			
+			// 处理子菜单链接的点击
 			document.querySelectorAll('.modern-submenu a').forEach((submenu) => {
-				submenu.addEventListener('click', () => {
-					removeActiveDropdown();
-					submenu.classList.add('mm-active');
-					if (submenu.nextElementSibling) {
-						submenu.nextElementSibling.classList.add('mm-show');
-					}
-					if (submenu.parentElement) {
-						submenu.parentElement.classList.add('mm-active');
-						const parent1 = submenu.parentElement.parentElement;
-						if (parent1) {
-							parent1.classList.add('mm-show');
-							if (parent1.previousElementSibling) {
-								parent1.previousElementSibling.classList.add('mm-active');
+				submenu.addEventListener('click', (e) => {
+					// 如果是有子菜单的链接，阻止默认行为
+					if (submenu.classList.contains('has-arrow')) {
+						e.preventDefault();
+						
+						// 处理嵌套子菜单的展开/收缩
+						if (submenu.nextElementSibling) {
+							if (submenu.nextElementSibling.classList.contains('mm-show')) {
+								submenu.nextElementSibling.classList.remove('mm-show');
+								submenu.nextElementSibling.classList.add('mm-collapse');
+								submenu.classList.remove('revert-arrow');
+							} else {
+								submenu.nextElementSibling.classList.remove('mm-collapse');
+								submenu.nextElementSibling.classList.add('mm-show');
+								submenu.classList.add('revert-arrow');
 							}
-
-							const parent2 = parent1.parentElement?.parentElement;
-							if (parent2) {
-								parent2.classList.add('mm-show');
-								if (parent2.previousElementSibling) {
-									parent2.previousElementSibling.classList.add('mm-active');
+						}
+					} else {
+						// 对于常规链接，移除其他活动状态并设置当前为活动
+						document.querySelectorAll('.modern-submenu a').forEach((link) => {
+							link.classList.remove('mm-active');
+							if (link.parentElement) {
+								link.parentElement.classList.remove('mm-active');
+							}
+						});
+						
+						submenu.classList.add('mm-active');
+						if (submenu.parentElement) {
+							submenu.parentElement.classList.add('mm-active');
+							
+							// 确保父级菜单也保持展开状态
+							const parentMenu = submenu.parentElement.parentElement;
+							if (parentMenu) {
+								parentMenu.classList.add('mm-show');
+								parentMenu.classList.remove('mm-collapse');
+								if (parentMenu.previousElementSibling) {
+									parentMenu.previousElementSibling.classList.add('mm-active');
+									parentMenu.previousElementSibling.classList.add('revert-arrow');
 								}
 							}
 						}
@@ -151,29 +181,49 @@
 				});
 			});
 		}
-	};
-	const removeActiveDropdown = () => {
+	};	const removeActiveDropdown = () => {
+		// 清理所有菜单项的活动状态，但保留当前路由对应的活动状态
+		const currentUrl = getPathUrl();
+		
 		document.querySelectorAll('.modern-sidebar .has-arrow').forEach((menu) => {
 			if (menu.nextElementSibling) {
-				if (!menu.nextElementSibling.classList.contains('mm-collapse')) {
-					menu.nextElementSibling.classList.add('mm-collapse');
+				// 检查子菜单中是否有当前活动的链接
+				const hasActiveChild = menu.nextElementSibling.querySelector(`a[href='${currentUrl}'].mm-active`);
+				
+				if (!hasActiveChild) {
+					// 如果没有活动的子项，则收缩菜单
+					if (!menu.nextElementSibling.classList.contains('mm-collapse')) {
+						menu.nextElementSibling.classList.add('mm-collapse');
+					}
+					menu.nextElementSibling.classList.remove('mm-show');
+					menu.classList.remove('mm-active');
+					menu.classList.remove('revert-arrow');
 				}
-				menu.nextElementSibling.classList.remove('mm-show');
-				menu.classList.remove('mm-active');
-				menu.classList.remove('revert-arrow');
 			}
 		});
 
+		// 清理子菜单的活动状态，除了当前路由对应的项
 		document.querySelectorAll('.modern-submenu a').forEach((submenu) => {
-			submenu.classList.remove('mm-active');
-			if (submenu.parentElement) {
-				submenu.parentElement.classList.remove('mm-active');
+			if (submenu.getAttribute('href') !== currentUrl) {
+				submenu.classList.remove('mm-active');
+				if (submenu.parentElement) {
+					submenu.parentElement.classList.remove('mm-active');
+				}
 			}
 		});
 
-		document.querySelectorAll('.modern-sidebar .mm-active').forEach((menu) => {
-			menu.querySelectorAll('.mm-active').forEach((child) => child.classList.remove('mm-active'));
-			menu.classList.remove('mm-active');
+		// 清理其他可能的活动状态
+		document.querySelectorAll('.modern-sidebar .mm-active').forEach((item) => {
+			// 检查是否是当前路由对应的链接
+			if (item.tagName === 'A' && item.getAttribute('href') !== currentUrl) {
+				item.classList.remove('mm-active');
+			} else if (item.tagName !== 'A') {
+				// 对于非链接元素，检查是否包含当前活动的链接
+				const hasActiveLink = item.querySelector(`a[href='${currentUrl}']`);
+				if (!hasActiveLink) {
+					item.classList.remove('mm-active');
+				}
+			}
 		});
 	};
 	const menuItemScroll = () => {
@@ -215,24 +265,22 @@
 							<div class="title-divider"></div>
 						</li>
 					{:else if item.subMenu}
-						<li class="modern-menu-item">
-							<Link href={null} class="has-arrow waves-effect modern-menu-link">
+						<li class="modern-menu-item">							<Link href={null} class="has-arrow waves-effect modern-menu-link">
 								<div class="menu-icon-container">
 									<i class={item.icon} />
 								</div>
 								<span class="menu-text">{$_(item.label)}</span>
 								<div class="menu-arrow">
-									<i class="fas fa-chevron-right"></i>
+									<i class="bx bx-chevron-right"></i>
 								</div>
 							</Link>
 							<ul class="sub-menu mm-collapse modern-submenu">
 								{#each item.subMenu as subMenu}
 									{#if subMenu.isChildItem}
-										<li class="modern-submenu-item">
-											<Link href="#" class="has-arrow waves-effect modern-submenu-link">
+										<li class="modern-submenu-item">											<Link href="#" class="has-arrow waves-effect modern-submenu-link">
 												<span class="submenu-text">{$_(subMenu.label)}</span>
 												<div class="submenu-arrow">
-													<i class="fas fa-chevron-right"></i>
+													<i class="bx bx-chevron-right"></i>
 												</div>
 											</Link>
 											<ul class="sub-menu mm-collapse modern-submenu-nested">
@@ -458,6 +506,20 @@
 	color: rgba(147, 197, 253, 0.9) !important;
 }
 
+/* 确保当前页面链接的活动状态 */
+:global(.modern-sidebar a.mm-active) {
+	color: rgba(255, 255, 255, 0.95) !important;
+	background: linear-gradient(145deg, rgba(67, 56, 202, 0.2), rgba(29, 78, 216, 0.15)) !important;
+	border-color: rgba(67, 56, 202, 0.3) !important;
+	font-weight: 600 !important;
+}
+
+/* 活动菜单项的父级容器 */
+:global(.modern-sidebar li.mm-active) {
+	background: rgba(67, 56, 202, 0.05);
+	border-radius: 12px;
+}
+
 /* Menu Icon Container */
 .menu-icon-container {
 	width: 40px !important;
@@ -488,11 +550,10 @@
 	vertical-align: middle !important;
 }
 
-/* 最高优先级的箭头图标修复 - 确保展开箭头正确显示 */
-:global(.vertical-menu.modern-sidebar) .menu-arrow i.fas.fa-chevron-right,
-:global(.vertical-menu.modern-sidebar) .submenu-arrow i.fas.fa-chevron-right {
-	font-family: "Font Awesome 6 Free" !important;
-	font-weight: 900 !important;
+/* 箭头图标样式 - 使用boxicons替代FontAwesome */
+:global(.vertical-menu.modern-sidebar) .menu-arrow i.bx.bx-chevron-right,
+:global(.vertical-menu.modern-sidebar) .submenu-arrow i.bx.bx-chevron-right {
+	font-family: 'boxicons' !important;
 	font-style: normal !important;
 	font-variant: normal !important;
 	text-rendering: auto !important;
@@ -500,11 +561,6 @@
 	-webkit-font-smoothing: antialiased !important;
 	-moz-osx-font-smoothing: grayscale !important;
 	display: inline-block !important;
-}
-
-:global(.vertical-menu.modern-sidebar) .menu-arrow i.fas.fa-chevron-right::before,
-:global(.vertical-menu.modern-sidebar) .submenu-arrow i.fas.fa-chevron-right::before {
-	content: "\f054" !important;
 }
 
 /* Menu Text */
@@ -523,26 +579,35 @@
 .menu-arrow {
 	opacity: 0.6;
 	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+	margin-left: auto;
+	flex-shrink: 0;
 }
 
 .menu-arrow i {
 	font-size: 12px;
 	transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+	color: rgba(148, 163, 184, 0.8);
 }
 
 :global(.modern-menu-link:hover) .menu-arrow {
 	opacity: 1;
 }
 
+:global(.modern-menu-link:hover) .menu-arrow i {
+	color: rgba(226, 232, 240, 0.9);
+}
+
+/* 展开状态的箭头旋转 */
 :global(.revert-arrow) .menu-arrow i,
-:global(.mm-active) .menu-arrow i {
+:global(.mm-active.has-arrow) .menu-arrow i {
 	transform: rotate(90deg);
+	color: rgba(147, 197, 253, 0.9) !important;
 }
 
 /* Arrow compatibility with existing system */
 :global(.has-arrow) .menu-arrow {
 	display: block;
-	float: right;
+	margin-left: auto;
 }
 
 /* Modern Submenu */
@@ -687,19 +752,29 @@
 .submenu-arrow {
 	opacity: 0.5;
 	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+	margin-left: auto;
+	flex-shrink: 0;
 }
 
 .submenu-arrow i {
 	font-size: 10px;
 	transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+	color: rgba(148, 163, 184, 0.6);
 }
 
 :global(.modern-submenu-link:hover) .submenu-arrow {
 	opacity: 0.8;
 }
 
-:global(.revert-arrow) .submenu-arrow i {
+:global(.modern-submenu-link:hover) .submenu-arrow i {
+	color: rgba(226, 232, 240, 0.8);
+}
+
+/* 展开状态的子菜单箭头旋转 */
+:global(.revert-arrow) .submenu-arrow i,
+:global(.mm-active.has-arrow) .submenu-arrow i {
 	transform: rotate(90deg);
+	color: rgba(147, 197, 253, 0.8) !important;
 }
 
 /* Nested Submenu */
