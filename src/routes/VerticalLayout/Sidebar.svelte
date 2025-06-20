@@ -1015,4 +1015,169 @@
 		transition: none !important;
 	}
 }
+
+/* Collapsed Sidebar Styles - Icon Centering */
+:global(body.vertical-collpsed) .modern-sidebar {
+	width: 70px !important;
+}
+
+/* Collapsed Sidebar Styles - Icon Centering - FINAL VERSION */
+/* Force the sidebar width */
+:global(body.vertical-collpsed) .vertical-menu.modern-sidebar {
+	width: 70px !important;
+}
+
+/* Target the exact menu structure for collapsed state */
+:global(body.vertical-collpsed) .vertical-menu.modern-sidebar #sidebar-menu .metismenu li a,
+:global(body.vertical-collpsed) .vertical-menu.modern-sidebar .modern-menu-link {
+	display: flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+	padding: 15px 0 !important;
+	margin: 0 !important;
+	text-align: center !important;
+	width: 70px !important;
+	min-height: 55px !important;
+}
+
+/* Center the icons */
+:global(body.vertical-collpsed) .vertical-menu.modern-sidebar .menu-icon-container {
+	margin: 0 !important;
+	display: flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+}
+
+:global(body.vertical-collpsed) .vertical-menu.modern-sidebar .menu-icon-container i,
+:global(body.vertical-collpsed) .vertical-menu.modern-sidebar #sidebar-menu .metismenu li a i {
+	margin: 0 !important;
+	font-size: 18px !important;
+	text-align: center !important;
+}
+
+/* Hide text and arrows */
+:global(body.vertical-collpsed) .vertical-menu.modern-sidebar .menu-text,
+:global(body.vertical-collpsed) .vertical-menu.modern-sidebar #sidebar-menu .metismenu li a span {
+	display: none !important;
+}
+
+:global(body.vertical-collpsed) .vertical-menu.modern-sidebar .menu-arrow {
+	display: none !important;
+}
+
+/* Hide menu titles */
+:global(body.vertical-collpsed) .vertical-menu.modern-sidebar .modern-menu-title {
+	display: none !important;
+}
+
+/* Hover effect for collapsed state - show expanded menu */
+:global(body.vertical-collpsed) .modern-menu-item:hover .modern-menu-link {
+	position: relative;
+	width: calc(190px + 70px) !important;
+	background: rgba(30, 41, 59, 0.95) !important;
+	backdrop-filter: blur(20px);
+	border-radius: 8px 12px 12px 8px !important;
+	justify-content: flex-start !important;
+	padding: 15px 16px !important;
+	margin-right: -190px;
+	z-index: 1000;
+	box-shadow: 6px 0 25px rgba(0, 0, 0, 0.4);
+	border: 1px solid rgba(102, 126, 234, 0.3);
+	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+:global(body.vertical-collpsed) .modern-menu-item:hover .menu-text {
+	display: block !important;
+	margin-left: 12px;
+	white-space: nowrap;
+	opacity: 1;
+	animation: fadeInRight 0.3s ease-out;
+	color: rgba(226, 232, 240, 0.9) !important;
+}
+
+:global(body.vertical-collpsed) .modern-menu-item:hover .menu-icon-container {
+	margin-right: 0 !important;
+	flex-shrink: 0;
+	background: rgba(102, 126, 234, 0.2) !important;
+	border: 1px solid rgba(102, 126, 234, 0.3);
+}
+
+/* Submenu handling in collapsed state */
+:global(body.vertical-collpsed) .modern-submenu {
+	display: none !important;
+}
+
+:global(body.vertical-collpsed) .modern-menu-item:hover .modern-submenu {
+	display: block !important;
+	position: absolute;
+	left: 70px;
+	top: 0;
+	width: 190px;
+	background: rgba(15, 23, 42, 0.95);
+	backdrop-filter: blur(20px);
+	border-radius: 0 12px 12px 0;
+	box-shadow: 4px 0 20px rgba(0, 0, 0, 0.3);
+	border: 1px solid rgba(102, 126, 234, 0.15);
+	border-left: none;
+	z-index: 999;
+	padding: 8px 0;
+}
+
+:global(body.vertical-collpsed) .modern-menu-item.mm-active .menu-icon-container {
+	background: linear-gradient(145deg, rgba(102, 126, 234, 0.3), rgba(118, 75, 162, 0.2)) !important;
+	border: 1px solid rgba(102, 126, 234, 0.4);
+	box-shadow: 0 0 15px rgba(102, 126, 234, 0.3);
+}
+
+:global(body.vertical-collpsed) .modern-menu-item.mm-active .menu-icon-container i {
+	color: rgba(147, 197, 253, 1) !important;
+	transform: scale(1.05);
+}
+
+:global(body.vertical-collpsed) .modern-menu-item.mm-active .modern-menu-link {
+	background: rgba(102, 126, 234, 0.1) !important;
+}
+
+/* Menu icon container specific styles for collapsed state */
+:global(body.vertical-collpsed) .menu-icon-container {
+	margin-right: 0 !important;
+	margin-left: 0 !important;
+	width: 42px !important;
+	height: 42px !important;
+}
+
+:global(body.vertical-collpsed) .menu-icon-container i {
+	font-size: 18px !important;
+}
+
+:global(body.vertical-collpsed) .modern-menu-title {
+	display: none !important;
+}
+
+/* Force center with CSS specificity hacks */
+:global(body.vertical-collpsed.vertical-collpsed .vertical-menu #sidebar-menu ul li a) {
+	text-align: center !important;
+	justify-content: center !important;
+	padding-left: 0 !important;
+	padding-right: 0 !important;
+}
+
+:global(body.vertical-collpsed.vertical-collpsed .vertical-menu #sidebar-menu ul li a i) {
+	margin-left: 0 !important;
+	text-align: center !important;
+}
+
+/* Alternative approach - target the specific HTML structure */
+:global(.vertical-collpsed .vertical-menu.modern-sidebar #sidebar-menu ul li a) {
+	display: flex !important;
+	justify-content: center !important;
+	align-items: center !important;
+	padding: 15px 0 !important;
+	text-align: center !important;
+}
+
+:global(.vertical-collpsed .vertical-menu.modern-sidebar #sidebar-menu ul li a i) {
+	margin: 0 auto !important;
+	text-align: center !important;
+}
 </style>
