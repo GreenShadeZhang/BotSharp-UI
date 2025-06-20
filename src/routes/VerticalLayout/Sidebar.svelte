@@ -252,7 +252,6 @@
 </script>
 
 <div class="vertical-menu modern-sidebar">
-	<div class="sidebar-gradient-overlay"></div>
 	<div class="h-100" id="vertical-menu">
 		<!--- Sidemenu -->
 		<div id="sidebar-menu" class="modern-sidebar-menu">
@@ -381,22 +380,9 @@
 	box-shadow: 0 4px 25px rgba(0, 0, 0, 0.15);
 }
 
-/* Sidebar Gradient Overlay */
-.sidebar-gradient-overlay {
-	position: absolute;
-	top: 0;
-	left: 0;
-	right: 0;
-	height: 120px;
-	background: linear-gradient(145deg, rgba(67, 56, 202, 0.15) 0%, rgba(29, 78, 216, 0.1) 100%);
-	pointer-events: none;
-	z-index: 1;
-}
-
 /* Modern Sidebar Menu */
 .modern-sidebar-menu {
 	position: relative;
-	z-index: 2;
 	padding: 16px 0 30px 0;
 	height: 100%;
 }
