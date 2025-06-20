@@ -34,7 +34,7 @@
             if (success) {
                 message = 'Authentication successful! Redirecting...';
                 setTimeout(() => {
-                    goto('/profile', { replaceState: true });
+                    goto('/page/dashboard', { replaceState: true });
                 }, 1500);
             } else {
                 throw new Error('Failed to complete authentication');

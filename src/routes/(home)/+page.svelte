@@ -79,7 +79,7 @@
     function handleLogin() {
         if (userAuthenticated) {
             // User is already authenticated, redirect to chat
-            window.location.href = '/profile';
+            window.location.href = '/page/dashboard';
         } else {
             // Initiate OIDC login flow
             initiateLogin();
