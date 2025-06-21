@@ -363,7 +363,7 @@
     }
   },
 
-  "Agents":"智能代理",
+  "Agents":"智能体",
   "Evaluator":"评估者",
   "Evaluating":"评估器",
   "Router":"路由器",
@@ -371,7 +371,7 @@
   "Plugins": "插件",
   "Settings": "设置",
   "Dashboard":"指示板",
-  "Agent":"代理",
+  "Agent":"智能体",
   "Knowledge Base":"知识库",
   "Conversation":"对话",
   "Task":"任务",
@@ -381,7 +381,7 @@
   "Search":"搜索",
   "Welcome Back !":"欢迎回来 !",
   "Admin":"管理",
-  "Agent Manager":"代理管理器",
+  "Agent Manager":"智能体管理器",
   "Conversations":"对话",
   "Token Cost":"令牌成本",
   "View Profile":"查看配置文件",
@@ -410,7 +410,7 @@
   "Conversation List": "对话列表",
   "Task List": "任务列表",
   "Knowledge Manager":"知识管理",
-  "Migrate agents from file repository to MongoDB":"将代理从文件存储库迁移到MongoDB",
+  "Migrate agents from file repository to MongoDB":"将智能体从文件存储库迁移到MongoDB",
   "Setting":"设置",
   "Start Migration":"开始迁移",
   "Plugin":"插件",
@@ -481,8 +481,8 @@
   "View":"查看",
   "Install":"安装",
   "Dialogs":"对话框",
-  "Agent Overview":"代理概述",
-  "Save Agent":"保存代理",
+  "Agent Overview":"智能体概述",
+  "Save Agent":"保存智能体",
   "Conversation Detail":"谈话细节",
   "closed":"关闭",
   "webchat":"聊天",
@@ -496,45 +496,44 @@
   "Update Date":"更新日期",
   "Create Date":"创建日期",
   "Active now":"正在工作",
-  "Reset":"重置",
-  "homepage": {
-    "badge": "下一代物联网平台",
-    "title": "构建智能AI代理，打造物联网卓越体验",
-    "title_highlight": "AI代理",
-    "description": "通过智能代理赋能您的物联网生态系统。连接、自动化和扩展您的设备，采用尖端AI技术。",
-    "get_started": "立即开始",
-    "documentation": "文档",
+  "Reset":"重置",  "homepage": {
+    "badge": "智能化平台技术展示",
+    "title": "探索智能体技术，体验智能化服务魅力",
+    "title_highlight": "智能体技术",
+    "description": "展示平台的智能化能力，通过智能体技术为用户提供便捷高效的服务体验。",
+    "get_started": "体验智能服务",
+    "documentation": "技术文档",
     "features": {
-      "why_choose": "为什么选择我们的平台？",
-      "subtitle": "构建、部署和扩展智能物联网解决方案所需的一切",
+      "why_choose": "平台智能化特色",
+      "subtitle": "先进的智能体技术，为用户带来全新的智能化体验",
       "smart_agents": {
-        "title": "智能代理",
-        "description": "部署智能AI代理，实现自动化物联网管理"
+        "title": "智能体服务",
+        "description": "智能体技术提供自动化、个性化的智能服务"
       },
       "iot_integration": {
-        "title": "物联网集成",
-        "description": "无缝连接和控制您的物联网设备"
+        "title": "设备智能互联",
+        "description": "实现设备间的智能协作与自动化管理"
       },
       "real_time_analytics": {
-        "title": "实时分析",
-        "description": "实时监控和分析您的物联网数据"
+        "title": "智能数据分析",
+        "description": "实时智能分析，为决策提供数据支持"
       }
     },
     "stats": {
-      "devices": "设备连接数",
-      "agents": "活跃代理",
-      "uptime": "正常运行时间",
-      "support": "技术支持"
+      "devices": "智能设备接入",
+      "agents": "活跃智能体",
+      "uptime": "服务可用性",
+      "support": "智能支持"
     },
     "cta": {
-      "title": "准备好转型您的物联网了吗？",
-      "description": "加入成千上万开发者，共同构建连接智能的未来",
-      "action": "立即开始构建"
+      "title": "感受智能化带来的便利",
+      "description": "体验智能体技术如何让工作和生活更加高效便捷",
+      "action": "开始智能体验"
     },
     "floating_cards": {
-      "iot_device": "物联网设备",
-      "ai_agent": "AI代理",
-      "cloud": "云服务"
+      "iot_device": "智能设备",
+      "ai_agent": "智能体",
+      "cloud": "云端服务"
     }
   }
 }

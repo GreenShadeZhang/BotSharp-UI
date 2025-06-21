@@ -300,45 +300,44 @@
     "Update Date":"Update Date",
     "Create Date":"Create Date",
     "Active now":"Active now",
-    "Reset":"Reset",
-    "homepage": {
-        "badge": "Next-Gen IoT Platform",
-        "title": "Build Smart AI Agents for IoT Excellence",
-        "title_highlight": "AI Agents",
-        "description": "Empower your IoT ecosystem with intelligent agents. Connect, automate, and scale your devices with cutting-edge AI technology.",
-        "get_started": "Get Started",
-        "documentation": "Documentation",
+    "Reset":"Reset",    "homepage": {
+        "badge": "AI Intelligence Platform Demo",
+        "title": "Experience AI Agent Technology, Discover Intelligent Services",
+        "title_highlight": "AI Agent Technology",
+        "description": "Showcasing platform's AI capabilities through intelligent agent technology to provide convenient and efficient service experiences.",
+        "get_started": "Experience AI Services",
+        "documentation": "Technical Documentation",
         "features": {
-            "why_choose": "Why Choose Our Platform?",
-            "subtitle": "Everything you need to build, deploy, and scale intelligent IoT solutions",
+            "why_choose": "Platform Intelligence Features",
+            "subtitle": "Advanced AI agent technology delivering innovative intelligent experiences for users",
             "smart_agents": {
-                "title": "Smart Agents",
-                "description": "Deploy intelligent AI agents for automated IoT management"
+                "title": "AI Agent Services",
+                "description": "AI agent technology providing automated, personalized intelligent services"
             },
             "iot_integration": {
-                "title": "IoT Integration",
-                "description": "Seamlessly connect and control your IoT devices"
+                "title": "Smart Device Integration",
+                "description": "Enabling intelligent collaboration and automated management between devices"
             },
             "real_time_analytics": {
-                "title": "Real-time Analytics",
-                "description": "Monitor and analyze your IoT data in real-time"
+                "title": "Intelligent Data Analytics",
+                "description": "Real-time intelligent analysis providing data support for decision-making"
             }
         },
         "stats": {
-            "devices": "Devices Connected",
-            "agents": "Active Agents",
-            "uptime": "Uptime",
-            "support": "Support"
+            "devices": "Smart Devices Connected",
+            "agents": "Active AI Agents",
+            "uptime": "Service Availability",
+            "support": "Intelligent Support"
         },
         "cta": {
-            "title": "Ready to Transform Your IoT?",
-            "description": "Join thousands of developers building the future of connected intelligence",
-            "action": "Start Building Now"
+            "title": "Experience the Convenience of Intelligence",
+            "description": "Discover how AI agent technology makes work and life more efficient and convenient",
+            "action": "Start AI Experience"
         },
         "floating_cards": {
-            "iot_device": "IoT Device",
+            "iot_device": "Smart Device",
             "ai_agent": "AI Agent",
-            "cloud": "Cloud"
+            "cloud": "Cloud Service"
         }
     }
 }
