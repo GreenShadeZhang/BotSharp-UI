@@ -516,14 +516,16 @@
       },
       "real_time_analytics": {
         "title": "智能数据分析",
-        "description": "实时智能分析，为决策提供数据支持"
-      }
-    },
+        "description": "实时智能分析，为决策提供数据支持"      }    },
     "stats": {
-      "devices": "智能设备接入",
-      "agents": "活跃智能体",
-      "uptime": "服务可用性",
-      "support": "智能支持"
+      "conversation_title": "智能对话",
+      "conversation": "自然对话交互",
+      "multimodal_title": "多模态",
+      "multimodal": "多模态理解",
+      "realtime_title": "实时响应",
+      "realtime": "毫秒级响应",
+      "available_title": "全天候",
+      "available": "随时可用"
     },
     "cta": {
       "title": "感受智能化带来的便利",

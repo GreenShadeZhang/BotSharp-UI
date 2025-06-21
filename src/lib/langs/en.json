@@ -322,12 +322,15 @@
                 "title": "Intelligent Data Analytics",
                 "description": "Real-time intelligent analysis providing data support for decision-making"
             }
-        },
-        "stats": {
-            "devices": "Smart Devices Connected",
-            "agents": "Active AI Agents",
-            "uptime": "Service Availability",
-            "support": "Intelligent Support"
+        },        "stats": {
+            "conversation_title": "Smart Dialogue",
+            "conversation": "Natural Dialogue",
+            "multimodal_title": "Multimodal",
+            "multimodal": "Multimodal AI",
+            "realtime_title": "Real-time",
+            "realtime": "Real-time Response",
+            "available_title": "24/7",
+            "available": "Always Available"
         },
         "cta": {
             "title": "Experience the Convenience of Intelligence",

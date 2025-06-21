@@ -62,15 +62,14 @@
 		{
 			icon: 'fas fa-chart-line',
 			titleKey: 'homepage.features.real_time_analytics.title',
-			descKey: 'homepage.features.real_time_analytics.description'
-		}
+			descKey: 'homepage.features.real_time_analytics.description'		}
 	];
 
 	const stats = [
-		{ number: '1M+', labelKey: 'homepage.stats.devices' },
-		{ number: '50K+', labelKey: 'homepage.stats.agents' },
-		{ number: '99.9%', labelKey: 'homepage.stats.uptime' },
-		{ number: '24/7', labelKey: 'homepage.stats.support' }
+		{ titleKey: 'homepage.stats.conversation_title', labelKey: 'homepage.stats.conversation', icon: 'fas fa-comments' },
+		{ titleKey: 'homepage.stats.multimodal_title', labelKey: 'homepage.stats.multimodal', icon: 'fas fa-brain' },
+		{ titleKey: 'homepage.stats.realtime_title', labelKey: 'homepage.stats.realtime', icon: 'fas fa-bolt' },
+		{ titleKey: 'homepage.stats.available_title', labelKey: 'homepage.stats.available', icon: 'fas fa-clock' }
 	];
 
 	/**
@@ -198,11 +197,12 @@
 <section class="stats-section">
 	<Container>
 		<Row>
-			{#each stats as stat, i}
-				<Col lg="3" md="6" class="mb-4">
-					{#if mounted}
+			{#each stats as stat, i}				<Col lg="3" md="6" class="mb-4">					{#if mounted}
 						<div in:fly={{ y: 30, duration: 600, delay: 600 + i * 100 }} class="stat-item">
-							<h3 class="stat-number">{stat.number}</h3>
+							<div class="stat-icon">
+								<i class={stat.icon}></i>
+							</div>
+							<h3 class="stat-number">{$_(stat.titleKey)}</h3>
 							<p class="stat-label">{$_(stat.labelKey)}</p>
 						</div>
 					{/if}
@@ -670,15 +670,35 @@
 		padding: 80px 0;
 		background: #f8f9fa;
 	}
-
 	.stat-item {
 		text-align: center;
+		padding: 20px;
+		border-radius: 15px;
+		background: white;
+		box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+		transition: transform 0.3s ease, box-shadow 0.3s ease;
 	}
 
-	.stat-number {
-		font-size: 3rem;
+	.stat-item:hover {
+		transform: translateY(-5px);
+		box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+	}
+
+	.stat-icon {
+		width: 60px;
+		height: 60px;
+		margin: 0 auto 15px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+		border-radius: 50%;
+		color: white;
+		font-size: 1.5rem;
+	}	.stat-number {
+		font-size: 1.4rem;
 		font-weight: 700;
-		color: #667eea;
+		color: #2c3e50;
 		margin-bottom: 0.5rem;
 	}
 
