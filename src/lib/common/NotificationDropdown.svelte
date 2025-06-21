@@ -1,5 +1,4 @@
-<script lang="ts">
-	import Link from 'svelte-link/src/Link.svelte';
+<script>
 	import { Dropdown, DropdownToggle, DropdownMenu } from '@sveltestrap/sveltestrap';
 	import "overlayscrollbars/overlayscrollbars.css";
 	import { OverlayScrollbars } from "overlayscrollbars";
@@ -18,49 +17,31 @@
 			theme: "os-theme-light",
 			pointers: ["mouse", "touch", "pen"],
 		},
-	};
-
-	/** @type {import('svelte/store').Unsubscriber} */
-	/** @type {any} */
-	let unsubscriber;
+	};	let unsubscriber = null;
 	
-	/** @type {import('$lib/services/notification-service.js').NotificationState} */
-	/** @type {{ items: any[], unreadCount: number }} */
-	let notificationState = { items: [], unreadCount: 0 };
+	// 使用reactive statements来订阅notificationStore
+	$: notificationState = $notificationStore || { items: [], unreadCount: 0 };
 
 	/** @type {boolean} */
 	let isOpen = false;
 
 	/** @type {boolean} */
 	let isModalOpen = false;
-
 	onMount(() => {
-		const menuElement = document.querySelector("#notification");
-		if (menuElement) {
-			OverlayScrollbars(menuElement, options);
-		}
-
-		// 订阅通知状态
-		unsubscriber = notificationStore.subscribe(state => {
-			notificationState = state;
-		});
-
 		// 请求浏览器通知权限
 		notificationService.requestPermission();
-	});
 
-	onDestroy(() => {
-		if (unsubscriber) {
-			unsubscriber();
+		// 初始化滚动条
+		const menuElement = document.querySelector("#notification");
+		if (menuElement) {
+			// @ts-ignore
+			OverlayScrollbars(menuElement, options);
 		}
 	});
-
-	/**
+	onDestroy(() => {
+		// 清理工作已通过reactive statements自动处理
+	});/**
 	 * 处理通知点击
-	 * @param {import('$lib/services/notification-service.js').NotificationItem} notification
-	 */
-	/**
-	 * @param {any} notification
 	 */
 	function handleNotificationClick(notification) {
 		// 标记为已读
@@ -80,27 +61,21 @@
 	 */
 	function markAllAsRead() {
 		notificationService.markAllAsRead();
-	}
-
-	/**
+	}	/**
 	 * 删除通知
-	 * @param {import('$lib/services/notification-service.js').NotificationItem} notification
-	 * @param {Event} event
-	 */
-	/**
-	 * @param {any} notification
-	 * @param {any} event
 	 */
 	function deleteNotification(notification, event) {
 		event.stopPropagation();
 		notificationService.remove(notification.id);
 	}
-
 	/**
 	 * 清空所有通知
 	 */
 	function clearAllNotifications() {
-		notificationService.clear();
+		const confirmed = confirm($_('Are you sure you want to clear all notifications? This action cannot be undone.') || '确定要清空所有通知吗？此操作无法撤销。');
+		if (confirmed) {
+			notificationService.clear();
+		}
 	}
 
 	/**
@@ -116,14 +91,8 @@
 	function openViewAllModal() {
 		isOpen = false; // 关闭下拉菜单
 		isModalOpen = true; // 打开模态框
-	}
-
-	/**
+	}	/**
 	 * 处理模态框切换
-	 * @param {CustomEvent} event
-	 */
-	/**
-	 * @param {any} event
 	 */
 	function handleModalToggle(event) {
 		isModalOpen = event.detail;
@@ -149,22 +118,31 @@
 							<span class="badge bg-soft-danger text-danger ms-1">{notificationState.unreadCount}</span>
 						{/if}
 					</h6>
-				</div>
-				<div class="col-auto">
-					{#if notificationState.items.length > 0}
-						<div class="d-flex gap-2">
+				</div>				<div class="col-auto">
+					<div class="d-flex gap-2">
+						{#if notificationState.items.length > 0}
 							{#if notificationState.unreadCount > 0}
-								<Link class="small text-decoration-underline" on:click={markAllAsRead}>
+								<button 
+									type="button"
+									class="btn btn-link small text-decoration-underline p-0 header-action-btn"
+									on:click={markAllAsRead}
+								>
 									{$_('Mark all read')}
-								</Link>
+								</button>
 							{/if}
-							<Link class="small text-muted" on:click={clearAllNotifications}>
+							<button 
+								type="button"
+								class="btn btn-link small text-muted p-0 header-action-btn"
+								on:click={clearAllNotifications}
+							>
 								{$_('Clear all')}
-							</Link>
-						</div>
-					{:else}
-						<Link class="small" disabled>{$_('View All')}</Link>
-					{/if}
+							</button>
+						{:else}
+							<span class="small text-muted">
+								{$_('No notifications')}
+							</span>
+						{/if}
+					</div>
 				</div>
 			</div>
 		</div>
@@ -176,7 +154,8 @@
 						<p>{$_('No notifications')}</p>
 					</div>
 				</div>
-			{:else}				{#each notificationState.items as notification (notification.id)}
+			{:else}
+				{#each notificationState.items as notification (notification.id)}
 					<div 
 						class="notification-item {notification.read ? 'read' : 'unread'}" 
 						on:click={() => handleNotificationClick(notification)}
@@ -590,17 +569,26 @@
 	}
 
 	/* 头部操作按钮 */
-	:global(.dropdown-menu-lg .d-flex.gap-2 a) {
-		font-size: 0.8rem;
-		padding: 0.25rem 0.5rem;
-		border-radius: 4px;
-		background: rgba(255, 255, 255, 0.2);
-		transition: all 0.2s ease;
+	:global(.header-action-btn) {
+		font-size: 0.8rem !important;
+		padding: 0.25rem 0.5rem !important;
+		border-radius: 4px !important;
+		background: rgba(255, 255, 255, 0.2) !important;
+		transition: all 0.2s ease !important;
+		border: none !important;
+		text-decoration: none !important;
 	}
 
-	:global(.dropdown-menu-lg .d-flex.gap-2 a:hover) {
-		background: rgba(255, 255, 255, 0.3);
+	:global(.header-action-btn:hover) {
+		background: rgba(255, 255, 255, 0.3) !important;
+		text-decoration: none !important;
 	}
+
+	:global(.header-action-btn:focus) {
+		outline: none !important;
+		box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.4) !important;
+	}
+
 	/* 响应式设计 */
 	@media (max-width: 768px) {
 		:global(.dropdown-menu-lg) {

@@ -52,11 +52,11 @@
 			}
 		};
 	});
-
 	$: if (isOpen) {
 		setTimeout(() => {
 			const modalElement = document.querySelector("#modal-notification-list");
 			if (modalElement) {
+				// @ts-ignore
 				OverlayScrollbars(modalElement, scrollbarOptions);
 			}
 		}, 100);
@@ -118,12 +118,13 @@
 	function markAllAsRead() {
 		notificationService.markAllAsRead();
 	}
-
 	/**
 	 * 清空所有通知
 	 */
 	function clearAllNotifications() {
-		if (confirm('确定要清空所有通知吗？此操作无法撤销。')) {
+		// 使用更好的确认对话框
+		const confirmed = confirm($_('Are you sure you want to clear all notifications? This action cannot be undone.') || '确定要清空所有通知吗？此操作无法撤销。');
+		if (confirmed) {
 			notificationService.clear();
 		}
 	}
@@ -157,13 +158,12 @@
 	$: updateFilteredNotifications(), filterType, sortBy;
 </script>
 
-<Modal {isOpen} {toggle} size="lg" centered>
-	<ModalHeader {toggle}>
-		<div class="d-flex align-items-center">
-			<i class="bx bx-bell me-2 text-primary"></i>
-			<span>{$_('Notifications')}</span>
+<Modal {isOpen} {toggle} size="lg" centered>	<ModalHeader {toggle}>
+		<div class="modal-title-container">
+			<i class="bx bx-bell me-2 text-primary modal-title-icon"></i>
+			<span class="modal-title-text">{$_('Notifications')}</span>
 			{#if notificationState.unreadCount > 0}
-				<Badge color="danger" class="ms-2">
+				<Badge color="danger" class="ms-2 modal-title-badge">
 					{notificationState.unreadCount}
 				</Badge>
 			{/if}
@@ -187,15 +187,14 @@
 						</Button>
 					{/if}
 				</div>
-			</div>
-
-			<!-- 过滤和排序控件 -->
-			<div class="d-flex justify-content-between align-items-center">
-				<div class="d-flex gap-2">
+			</div>			<!-- 过滤和排序控件 -->
+			<div class="filter-sort-container">
+				<div class="filter-buttons">
 					<Button 
 						color={filterType === 'all' ? 'primary' : 'outline-primary'} 
 						size="sm"
 						on:click={() => handleFilterChange('all')}
+						class="filter-btn"
 					>
 						全部 ({notificationState.items.length})
 					</Button>
@@ -203,6 +202,7 @@
 						color={filterType === 'unread' ? 'primary' : 'outline-primary'} 
 						size="sm"
 						on:click={() => handleFilterChange('unread')}
+						class="filter-btn"
 					>
 						未读 ({notificationState.unreadCount})
 					</Button>
@@ -210,15 +210,17 @@
 						color={filterType === 'read' ? 'primary' : 'outline-primary'} 
 						size="sm"
 						on:click={() => handleFilterChange('read')}
+						class="filter-btn"
 					>
 						已读 ({notificationState.items.length - notificationState.unreadCount})
 					</Button>
 				</div>
-				<div class="d-flex gap-2">
+				<div class="sort-buttons">
 					<Button 
 						color={sortBy === 'newest' ? 'success' : 'outline-success'} 
 						size="sm"
 						on:click={() => handleSortChange('newest')}
+						class="sort-btn"
 					>
 						<i class="bx bx-sort-down me-1"></i>
 						最新优先
@@ -227,6 +229,7 @@
 						color={sortBy === 'oldest' ? 'success' : 'outline-success'} 
 						size="sm"
 						on:click={() => handleSortChange('oldest')}
+						class="sort-btn"
 					>
 						<i class="bx bx-sort-up me-1"></i>
 						最旧优先
@@ -262,10 +265,10 @@
 				</div>
 			{:else}
 				<div class="notification-list p-2">
-					{#each filteredNotifications as notification (notification.id)}
-						<div 
+					{#each filteredNotifications as notification (notification.id)}						<div 
 							class="notification-modal-item {notification.read ? 'read' : 'unread'}" 
 							on:click={() => handleNotificationClick(notification)}
+							on:keydown={(e) => e.key === 'Enter' && handleNotificationClick(notification)}
 							role="button"
 							tabindex="0"
 						>
@@ -316,9 +319,76 @@
 	</ModalBody>
 </Modal>
 
-<style>
-	.notification-modal-header {
+<style>	.notification-modal-header {
 		border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+	}
+
+	/* 过滤和排序控件布局 */
+	.filter-sort-container {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		flex-wrap: wrap;
+		gap: 1rem;
+	}
+
+	.filter-buttons,
+	.sort-buttons {
+		display: flex;
+		gap: 0.5rem;
+		align-items: center;
+	}
+
+	/* 确保按钮在切换时保持一致的尺寸和对齐 */
+	:global(.filter-btn),
+	:global(.sort-btn) {
+		min-width: auto !important;
+		white-space: nowrap !important;
+		display: flex !important;
+		align-items: center !important;
+		justify-content: center !important;
+		text-align: center !important;
+		transition: all 0.2s ease !important;
+	}
+	/* 确保图标和文本在按钮中居中 */
+	:global(.sort-btn i) {
+		display: inline-flex !important;
+		align-items: center !important;
+		vertical-align: middle !important;
+	}
+
+	/* 模态框标题样式 */
+	.modal-title-container {
+		display: flex;
+		align-items: center;
+		justify-content: flex-start;
+		width: 100%;
+	}
+
+	.modal-title-icon {
+		font-size: 1.25rem;
+		display: flex;
+		align-items: center;
+		flex-shrink: 0;
+	}
+
+	.modal-title-text {
+		font-size: 1.1rem;
+		font-weight: 600;
+		display: flex;
+		align-items: center;
+		line-height: 1;
+	}
+
+	:global(.modal-title-badge) {
+		display: flex !important;
+		align-items: center !important;
+		justify-content: center !important;
+		min-width: 24px !important;
+		height: 20px !important;
+		font-size: 0.75rem !important;
+		line-height: 1 !important;
+		border-radius: 10px !important;
 	}
 
 	.notification-modal-list {
@@ -364,12 +434,12 @@
 		color: #2d3748;
 		font-size: 1rem;
 	}
-
 	.notification-message {
 		font-size: 0.9rem;
 		line-height: 1.5;
 		display: -webkit-box;
 		-webkit-line-clamp: 3;
+		line-clamp: 3;
 		-webkit-box-orient: vertical;
 		overflow: hidden;
 		text-overflow: ellipsis;
@@ -433,18 +503,30 @@
 	:global(#modal-notification-list .os-scrollbar-handle:hover) {
 		background: rgba(102, 126, 234, 0.5) !important;
 	}
-
 	@media (max-width: 768px) {
 		.notification-modal-item {
 			padding: 1rem;
 		}
 
-		.d-flex.justify-content-between {
+		.filter-sort-container {
 			flex-direction: column;
-			gap: 1rem;
+			align-items: stretch;
+			gap: 0.75rem;
+		}
+
+		.filter-buttons,
+		.sort-buttons {
+			justify-content: center;
+			flex-wrap: wrap;
+		}
+
+		/* 确保小屏幕下按钮文本不会被截断 */
+		:global(.filter-btn),
+		:global(.sort-btn) {
+			font-size: 0.8rem !important;
+			padding: 0.375rem 0.75rem !important;
 		}
 	}
-
 	/* 模态框空状态样式 */
 	.empty-notifications-modal {
 		display: flex;
@@ -452,12 +534,18 @@
 		justify-content: center;
 		min-height: 300px;
 		padding: 3rem 2rem;
+		width: 100%;
 	}
 
 	.empty-content-modal {
 		text-align: center;
 		color: #a0aec0;
 		max-width: 300px;
+		width: 100%;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
 	}
 
 	.empty-content-modal i {
@@ -466,6 +554,7 @@
 		margin-bottom: 1.5rem;
 		display: block;
 		opacity: 0.7;
+		line-height: 1;
 	}
 
 	.empty-content-modal h5 {
@@ -473,6 +562,8 @@
 		font-size: 1.25rem;
 		font-weight: 600;
 		color: #4a5568;
+		text-align: center;
+		width: 100%;
 	}
 
 	.empty-content-modal p {
@@ -480,5 +571,7 @@
 		font-size: 0.95rem;
 		color: #718096;
 		line-height: 1.5;
+		text-align: center;
+		width: 100%;
 	}
 </style>
