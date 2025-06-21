@@ -83,9 +83,8 @@
 	}
 </script>
 
-<Dropdown class="d-none d-lg-inline-block" {isOpen} toggle={toggleDropdown}>
-	<DropdownToggle type="button" color="" tag="a" class="btn header-item noti-icon waves-effect">
-		<i class="bx bx-bell bx-tada" />
+<Dropdown class="d-none d-lg-inline-block" {isOpen} toggle={toggleDropdown}>	<DropdownToggle type="button" color="" tag="a" class="btn header-item noti-icon waves-effect">
+		<i class="bx bx-bell {notificationState.unreadCount > 0 ? 'bx-tada' : ''}" />
 		{#if notificationState.unreadCount > 0}
 			<span class="badge bg-danger rounded-pill">
 				{notificationState.unreadCount > 99 ? '99+' : notificationState.unreadCount}
