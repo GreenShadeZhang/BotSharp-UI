@@ -234,15 +234,22 @@
 				</div>
 			</div>
 		</div>
-
 		<!-- 通知列表 -->
 		<div class="notification-modal-list" id="modal-notification-list" style="max-height: 500px; overflow-y: auto;">
 			{#if filteredNotifications.length === 0}
-				<div class="text-center py-5">
-					<div class="text-muted">
-						<i class="bx bx-bell-off display-4 d-block mb-3 text-muted"></i>
-						<h5>暂无通知</h5>
-						<p class="mb-0">
+				<div class="empty-notifications-modal">
+					<div class="empty-content-modal">
+						<i class="bx bx-bell-off"></i>
+						<h5>
+							{#if filterType === 'unread'}
+								{$_('No unread notifications')}
+							{:else if filterType === 'read'}
+								{$_('No read notifications')}
+							{:else}
+								{$_('No notifications')}
+							{/if}
+						</h5>
+						<p>
 							{#if filterType === 'unread'}
 								您没有未读通知
 							{:else if filterType === 'read'}
@@ -436,5 +443,42 @@
 			flex-direction: column;
 			gap: 1rem;
 		}
+	}
+
+	/* 模态框空状态样式 */
+	.empty-notifications-modal {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		min-height: 300px;
+		padding: 3rem 2rem;
+	}
+
+	.empty-content-modal {
+		text-align: center;
+		color: #a0aec0;
+		max-width: 300px;
+	}
+
+	.empty-content-modal i {
+		font-size: 4rem;
+		color: #cbd5e0;
+		margin-bottom: 1.5rem;
+		display: block;
+		opacity: 0.7;
+	}
+
+	.empty-content-modal h5 {
+		margin-bottom: 1rem;
+		font-size: 1.25rem;
+		font-weight: 600;
+		color: #4a5568;
+	}
+
+	.empty-content-modal p {
+		margin: 0;
+		font-size: 0.95rem;
+		color: #718096;
+		line-height: 1.5;
 	}
 </style>

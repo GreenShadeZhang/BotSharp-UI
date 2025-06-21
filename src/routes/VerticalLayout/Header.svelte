@@ -311,10 +311,12 @@
 		color: #667eea !important;
 		opacity: 0.7 !important;
 	}
-
 	/* Action Items */
 	.action-item {
 		position: relative;
+		/* 确保红点不被遮挡 */
+		overflow: visible;
+		z-index: 10;
 	}
 
 	.action-item:not(.profile-action) {

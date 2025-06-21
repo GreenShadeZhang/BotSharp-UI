@@ -21,9 +21,11 @@
 	};
 
 	/** @type {import('svelte/store').Unsubscriber} */
+	/** @type {any} */
 	let unsubscriber;
 	
 	/** @type {import('$lib/services/notification-service.js').NotificationState} */
+	/** @type {{ items: any[], unreadCount: number }} */
 	let notificationState = { items: [], unreadCount: 0 };
 
 	/** @type {boolean} */
@@ -57,6 +59,9 @@
 	 * 处理通知点击
 	 * @param {import('$lib/services/notification-service.js').NotificationItem} notification
 	 */
+	/**
+	 * @param {any} notification
+	 */
 	function handleNotificationClick(notification) {
 		// 标记为已读
 		notificationService.markAsRead(notification.id);
@@ -81,6 +86,10 @@
 	 * 删除通知
 	 * @param {import('$lib/services/notification-service.js').NotificationItem} notification
 	 * @param {Event} event
+	 */
+	/**
+	 * @param {any} notification
+	 * @param {any} event
 	 */
 	function deleteNotification(notification, event) {
 		event.stopPropagation();
@@ -112,6 +121,9 @@
 	/**
 	 * 处理模态框切换
 	 * @param {CustomEvent} event
+	 */
+	/**
+	 * @param {any} event
 	 */
 	function handleModalToggle(event) {
 		isModalOpen = event.detail;
@@ -156,59 +168,58 @@
 				</div>
 			</div>
 		</div>
-		
-		<div style="max-height: 400px;" id="notification">
+				<div style="max-height: 400px;" id="notification">
 			{#if notificationState.items.length === 0}
-				<div class="text-center py-4">
-					<div class="text-muted">
-						<i class="bx bx-bell-off font-size-24 d-block mb-2"></i>
-						<p class="mb-0">{$_('No notifications')}</p>
+				<div class="empty-notifications">
+					<div class="empty-content">
+						<i class="bx bx-bell-off"></i>
+						<p>{$_('No notifications')}</p>
 					</div>
 				</div>
-			{:else}
-				{#each notificationState.items as notification (notification.id)}
+			{:else}				{#each notificationState.items as notification (notification.id)}
 					<div 
 						class="notification-item {notification.read ? 'read' : 'unread'}" 
 						on:click={() => handleNotificationClick(notification)}
+						on:keydown={(e) => e.key === 'Enter' && handleNotificationClick(notification)}
 						role="button"
 						tabindex="0"
 					>
-						<div class="d-flex">
+						<div class="d-flex align-items-start">
 							<div class="avatar-xs me-3">
-								<span class="avatar-title bg-{notificationService.getTypeColor(notification.type)} rounded-circle font-size-16">
+								<span class="avatar-title bg-{notificationService.getTypeColor(notification.type)} rounded-circle">
 									<i class="{notification.icon}" />
 								</span>
 							</div>
-							<div class="flex-grow-1">
-								<h6 class="mb-1 notification-title">
+							<div class="notification-content flex-grow-1">
+								<div class="text-truncate">
 									{notification.title}
 									{#if !notification.read}
 										<span class="unread-dot"></span>
 									{/if}
-								</h6>
-								<div class="font-size-12 text-muted">
-									<p class="mb-1 notification-message">{notification.message}</p>
-									<p class="mb-0 d-flex justify-content-between align-items-center">
-										<span>
-											<i class="mdi mdi-clock-outline" /> 
-											<span>{notificationService.formatTime(notification.timestamp)}</span>
-										</span>
-										<button 
-											class="btn btn-sm btn-outline-danger notification-delete"
-											on:click={(e) => deleteNotification(notification, e)}
-											title="{$_('Delete notification')}"
-										>
-											<i class="bx bx-x font-size-12"></i>
-										</button>
-									</p>
 								</div>
-							</div>
-						</div>
+								<div class="small mb-2">
+									{notification.message}
+								</div>
+								<div class="d-flex justify-content-between align-items-center">
+									<span class="text-muted">
+										<i class="mdi mdi-clock-outline me-1" /> 
+										{notificationService.formatTime(notification.timestamp)}
+									</span>
+									<button 
+										class="btn btn-sm btn-outline-danger notification-delete"
+										on:click={(e) => deleteNotification(notification, e)}
+										title="{$_('Delete notification')}"
+									>
+										<i class="bx bx-x"></i>
+									</button>
+								</div>
+							</div>						</div>
 					</div>
 				{/each}
 			{/if}
 		</div>
-				{#if notificationState.items.length > 0}
+
+		{#if notificationState.items.length > 0}
 			<div class="p-2 border-top d-grid">
 				<button 
 					class="btn btn-sm btn-link text-center" 
@@ -247,30 +258,44 @@
 		background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 		color: white;
 		margin: 0;
+		padding: 1.25rem !important;
 	}
 
 	:global(.dropdown-menu-lg .p-3 h6) {
 		color: white !important;
 		font-weight: 600;
+		margin: 0;
+		font-size: 1.1rem;
+		line-height: 1.4;
 	}
 
 	:global(.dropdown-menu-lg .p-3 .badge) {
 		background: rgba(255, 255, 255, 0.2) !important;
 		color: white !important;
+		font-size: 0.8rem;
+		padding: 0.3rem 0.6rem;
+		border-radius: 8px;
+		font-weight: 600;
 	}
 
 	:global(.dropdown-menu-lg .p-3 a) {
 		color: rgba(255, 255, 255, 0.9) !important;
 		text-decoration: none !important;
+		font-size: 0.85rem;
+		padding: 0.3rem 0.6rem;
+		border-radius: 6px;
+		margin: -0.3rem -0.6rem;
+		display: inline-block;
+		transition: all 0.2s ease;
 	}
 
 	:global(.dropdown-menu-lg .p-3 a:hover) {
 		color: white !important;
-		text-decoration: underline !important;
-	}
-	/* 通知项样式 */
+		background: rgba(255, 255, 255, 0.1) !important;
+		text-decoration: none !important;
+	}	/* 通知项样式 */
 	.notification-item {
-		padding: 1.125rem;
+		padding: 1.125rem 1.25rem;
 		border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 		cursor: pointer;
 		transition: all 0.2s ease;
@@ -279,6 +304,67 @@
 		text-decoration: none;
 		color: inherit;
 		background: #fff;
+	}
+
+	.notification-item:hover {
+		background: rgba(102, 126, 234, 0.03);
+		border-left: 3px solid #667eea;
+		padding-left: 1.125rem; /* 调整左边距以配合边框 */
+	}
+
+	.notification-item:last-child {
+		border-bottom: none;
+	}
+
+	.notification-item.unread {
+		background: linear-gradient(90deg, rgba(102, 126, 234, 0.02) 0%, rgba(255, 255, 255, 1) 100%);
+		border-left: 3px solid #667eea;
+		padding-left: 1.125rem;
+	}
+
+	.notification-item.read {
+		opacity: 0.8;
+	}
+
+	.notification-item .avatar-xs {
+		width: 36px;
+		height: 36px;
+		flex-shrink: 0;
+	}
+
+	.notification-item .avatar-title {
+		width: 100%;
+		height: 100%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border-radius: 8px;
+		font-size: 1rem;
+	}
+
+	.notification-item .notification-content {
+		flex: 1;
+		min-width: 0; /* 防止内容溢出 */
+	}
+
+	.notification-item .notification-content .text-truncate {
+		font-weight: 600;
+		color: #334155;
+		font-size: 0.9rem;
+		line-height: 1.4;
+		margin-bottom: 0.25rem;
+	}
+
+	.notification-item .notification-content .small {
+		color: #64748b;
+		font-size: 0.8rem;
+		line-height: 1.3;
+		margin-bottom: 0.5rem;
+	}
+	.notification-item .notification-content .text-muted {
+		color: #94a3b8 !important;
+		font-size: 0.75rem;
+		font-weight: 500;
 	}
 
 	.notification-item:hover {
@@ -338,14 +424,14 @@
 			transform: scale(0.95);
 			box-shadow: 0 0 0 0 rgba(245, 101, 101, 0);
 		}
-	}
-	/* 通知消息 */
+	}	/* 通知消息 */
 	.notification-message {
 		color: #718096;
 		font-size: 0.825rem;
 		line-height: 1.4;
 		display: -webkit-box;
 		-webkit-line-clamp: 2;
+		line-clamp: 2;
 		-webkit-box-orient: vertical;
 		overflow: hidden;
 		text-overflow: ellipsis;
@@ -372,12 +458,34 @@
 	.notification-item:hover .notification-delete {
 		opacity: 1;
 	}
-
 	/* 空状态样式 */
-	.text-center .bx-bell-off {
-		color: #cbd5e0;
+	.empty-notifications {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		min-height: 200px;
+		padding: 2rem;
 	}
-	/* 徽章样式优化 - 红点位置修复 */
+
+	.empty-content {
+		text-align: center;
+		color: #a0aec0;
+	}
+
+	.empty-content i {
+		font-size: 3rem;
+		color: #cbd5e0;
+		margin-bottom: 1rem;
+		display: block;
+		opacity: 0.7;
+	}
+
+	.empty-content p {
+		margin: 0;
+		font-size: 0.95rem;
+		font-weight: 500;
+		color: #718096;
+	}/* 徽章样式优化 - 红点位置修复 */
 	:global(.badge.bg-danger) {
 		background-color: #f56565 !important;
 		font-size: 0.7rem;
@@ -394,7 +502,8 @@
 		font-weight: 600;
 		border: 2px solid #fff;
 		box-shadow: 0 2px 8px rgba(245, 101, 101, 0.4);
-		z-index: 10;
+		z-index: 1001 !important; /* 确保在最顶层 */
+		pointer-events: none; /* 防止干扰点击 */
 	}
 
 	@keyframes bounce {
@@ -411,7 +520,6 @@
 			transform: translate3d(0, -2px, 0);
 		}
 	}
-
 	/* 头部通知图标 */
 	:global(.noti-icon) {
 		position: relative;
@@ -424,6 +532,9 @@
 		transition: all 0.3s ease;
 		background: rgba(255, 255, 255, 0.1);
 		border: 1px solid rgba(255, 255, 255, 0.1);
+		/* 确保红点不被遮挡 */
+		overflow: visible !important;
+		z-index: 1;
 	}
 
 	:global(.noti-icon:hover) {
