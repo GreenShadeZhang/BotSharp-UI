@@ -2,29 +2,29 @@
 	import { Row, Col, Breadcrumb, BreadcrumbItem } from '@sveltestrap/sveltestrap';
 	import Link from 'svelte-link';
 	import { fly } from 'svelte/transition';
+	import { _ } from 'svelte-i18n';
 
 	 export let title = '';
 	export let pagetitle = '';
 </script>
 
 <Row>
-	<Col xs="12">
-		<div class="modern-page-title-box" in:fly={{ x: -30, duration: 600 }}>
+	<Col xs="12">		<div class="modern-page-title-box" in:fly={{ x: -30, duration: 600 }}>
 			<div class="page-title-content">
-				<h4 class="modern-page-title">{pagetitle}</h4>
+				<h4 class="modern-page-title">{$_(pagetitle)}</h4>
 				<div class="modern-breadcrumb">
 					<ol class="breadcrumb-list">
 						<BreadcrumbItem>
 							<Link class="breadcrumb-link" disabled>
 								<i class="bx bx-home-alt"></i>
-								{title}
+								{$_(title)}
 							</Link>
 						</BreadcrumbItem>
 						<BreadcrumbItem class="breadcrumb-separator">
 							<i class="bx bx-chevron-right"></i>
 						</BreadcrumbItem>
 						<BreadcrumbItem class="breadcrumb-active">
-							{pagetitle}
+							{$_(pagetitle)}
 						</BreadcrumbItem>
 					</ol>
 				</div>
