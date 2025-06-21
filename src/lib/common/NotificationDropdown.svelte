@@ -6,6 +6,7 @@
 	import { _ } from 'svelte-i18n';
 	import { onMount, onDestroy } from 'svelte';
 	import { notificationStore, notificationService } from '$lib/services/notification-service.js';
+	import NotificationModal from './NotificationModal.svelte';
 
 	const options = {
 		scrollbars: {
@@ -27,6 +28,9 @@
 
 	/** @type {boolean} */
 	let isOpen = false;
+
+	/** @type {boolean} */
+	let isModalOpen = false;
 
 	onMount(() => {
 		const menuElement = document.querySelector("#notification");
@@ -96,6 +100,22 @@
 	function toggleDropdown() {
 		isOpen = !isOpen;
 	}
+
+	/**
+	 * 打开查看全部通知的模态框
+	 */
+	function openViewAllModal() {
+		isOpen = false; // 关闭下拉菜单
+		isModalOpen = true; // 打开模态框
+	}
+
+	/**
+	 * 处理模态框切换
+	 * @param {CustomEvent} event
+	 */
+	function handleModalToggle(event) {
+		isModalOpen = event.detail;
+	}
 </script>
 
 <Dropdown class="d-none d-lg-inline-block" {isOpen} toggle={toggleDropdown}>
@@ -137,7 +157,7 @@
 			</div>
 		</div>
 		
-		<div style="max-height: 350px;" id="notification">
+		<div style="max-height: 400px;" id="notification">
 			{#if notificationState.items.length === 0}
 				<div class="text-center py-4">
 					<div class="text-muted">
@@ -188,27 +208,38 @@
 				{/each}
 			{/if}
 		</div>
-		
-		{#if notificationState.items.length > 0}
-			<div class="p-2 border-top d-grid">				<Link class="btn btn-sm btn-link text-center" href="/notifications">
+				{#if notificationState.items.length > 0}
+			<div class="p-2 border-top d-grid">
+				<button 
+					class="btn btn-sm btn-link text-center" 
+					on:click={openViewAllModal}
+					type="button"
+				>
 					<i class="mdi mdi-arrow-right-circle me-1"></i>
 					{$_('View all notifications')}
-				</Link>
+				</button>
 			</div>
 		{/if}
 	</DropdownMenu>
 </Dropdown>
 
-<style>	/* 通知下拉菜单样式 */
+<!-- 通知模态框 -->
+<NotificationModal 
+	bind:isOpen={isModalOpen} 
+	on:toggle={handleModalToggle}
+/>
+
+<style>	/* 通知下拉菜单样式 - 增大尺寸 */
 	:global(.dropdown-menu-lg) {
-		min-width: 380px !important;
-		max-width: 420px !important;
+		min-width: 420px !important;
+		max-width: 480px !important;
 		border: none !important;
 		box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15) !important;
 		border-radius: 12px !important;
 		overflow: hidden !important;
 		padding: 0 !important;
 		background: #fff !important;
+		max-height: 70vh !important;
 	}
 
 	/* 头部区域 */
@@ -237,10 +268,9 @@
 		color: white !important;
 		text-decoration: underline !important;
 	}
-
 	/* 通知项样式 */
 	.notification-item {
-		padding: 1rem;
+		padding: 1.125rem;
 		border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 		cursor: pointer;
 		transition: all 0.2s ease;
@@ -274,13 +304,14 @@
 	/* 通知标题 */
 	.notification-title {
 		font-weight: 600;
-		font-size: 0.875rem;
+		font-size: 0.9rem;
 		color: #2d3748;
 		position: relative;
 		display: flex;
 		align-items: center;
 		gap: 0.5rem;
 		margin-bottom: 0.25rem;
+		line-height: 1.3;
 	}
 
 	/* 未读标记点 */
@@ -308,11 +339,10 @@
 			box-shadow: 0 0 0 0 rgba(245, 101, 101, 0);
 		}
 	}
-
 	/* 通知消息 */
 	.notification-message {
 		color: #718096;
-		font-size: 0.8rem;
+		font-size: 0.825rem;
 		line-height: 1.4;
 		display: -webkit-box;
 		-webkit-line-clamp: 2;
@@ -347,22 +377,24 @@
 	.text-center .bx-bell-off {
 		color: #cbd5e0;
 	}
-
-	/* 徽章样式优化 */
+	/* 徽章样式优化 - 红点位置修复 */
 	:global(.badge.bg-danger) {
 		background-color: #f56565 !important;
 		font-size: 0.7rem;
-		min-width: 18px;
-		height: 18px;
+		min-width: 20px;
+		height: 20px;
 		border-radius: 50%;
 		display: flex;
 		align-items: center;
 		justify-content: center;
 		position: absolute;
-		top: -8px;
-		right: -8px;
+		top: -10px;
+		right: -10px;
 		animation: bounce 2s infinite;
 		font-weight: 600;
+		border: 2px solid #fff;
+		box-shadow: 0 2px 8px rgba(245, 101, 101, 0.4);
+		z-index: 10;
 	}
 
 	@keyframes bounce {
@@ -458,13 +490,13 @@
 	:global(.dropdown-menu-lg .d-flex.gap-2 a:hover) {
 		background: rgba(255, 255, 255, 0.3);
 	}
-
 	/* 响应式设计 */
 	@media (max-width: 768px) {
 		:global(.dropdown-menu-lg) {
-			min-width: 320px !important;
-			max-width: 350px !important;
-			left: -200px !important;
+			min-width: 350px !important;
+			max-width: 90vw !important;
+			left: -250px !important;
+			max-height: 60vh !important;
 		}
 		
 		.notification-item {
@@ -477,6 +509,13 @@
 
 		.notification-message {
 			font-size: 0.75rem;
+		}
+	}
+
+	@media (max-width: 480px) {
+		:global(.dropdown-menu-lg) {
+			min-width: 320px !important;
+			left: -280px !important;
 		}
 	}
 </style>

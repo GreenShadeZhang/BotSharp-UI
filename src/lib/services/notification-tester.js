@@ -110,18 +110,29 @@ export const notificationTester = {
             console.log('测试通知已添加，请刷新页面验证持久化功能');
             alert('测试通知已添加，请刷新页面验证持久化功能是否正常工作');
         }, 1000);
-    },
-
-    /**
+    },    /**
      * 测试查看全部页面功能
      */
-    testViewAllPage() {
-        // 添加一些通知后跳转到查看全部页面
+    testViewAllModal() {
+        // 添加一些通知后提示用户点击通知按钮测试模态框
         this.addTestNotifications();
         
         setTimeout(() => {
-            window.open('/notifications', '_blank');
+            alert('测试通知已添加！\n请点击右上角的通知图标，然后点击"查看所有通知"按钮测试模态框功能。');
         }, 2000);
+    },
+
+    /**
+     * 测试红点位置
+     */
+    testBadgePosition() {
+        globalNotificationManager.addSystemNotification(
+            '红点位置测试',
+            '请查看右上角通知图标的红点是否正确显示在按钮外部。',
+            'info'
+        );
+        
+        alert('请查看右上角通知图标的红点位置是否正确（应该在按钮外部）');
     }
 };
 
@@ -132,11 +143,11 @@ if (typeof window !== 'undefined' && import.meta.env.DEV) {
     // @ts-ignore
     window.globalNotificationManager = globalNotificationManager;
       console.log('通知测试工具已挂载到 window.notificationTester');
-    console.log('全局通知管理器已挂载到 window.globalNotificationManager');
-    console.log('可以使用以下命令测试：');
+    console.log('全局通知管理器已挂载到 window.globalNotificationManager');    console.log('可以使用以下命令测试：');
     console.log('- notificationTester.addTestNotifications() // 添加测试通知');
     console.log('- notificationTester.addBulkTestNotifications() // 添加批量通知');
     console.log('- notificationTester.addMultiConversationNotifications() // 添加多会话通知');
     console.log('- notificationTester.testPersistence() // 测试持久化功能');
-    console.log('- notificationTester.testViewAllPage() // 测试查看全部页面');
+    console.log('- notificationTester.testViewAllModal() // 测试查看全部模态框');
+    console.log('- notificationTester.testBadgePosition() // 测试红点位置');
 }
