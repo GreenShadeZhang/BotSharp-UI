@@ -229,15 +229,15 @@
 		handlePaneResize();
 		const messageDraft = getMessageDraft();
 		text = messageDraft || '';
-		
-		signalr.onMessageReceivedFromClient = onMessageReceivedFromClient;
+				signalr.onMessageReceivedFromClient = onMessageReceivedFromClient;
 		signalr.onMessageReceivedFromCsr = onMessageReceivedFromClient;
 		signalr.onMessageReceivedFromAssistant = onMessageReceivedFromAssistant;
 		signalr.onNotificationGenerated = onNotificationGenerated;
 		signalr.onConversationContentLogGenerated = onConversationContentLogGenerated;
 		signalr.onConversationStateLogGenerated = onConversationStateLogGenerated;
 		signalr.onStateChangeGenerated = onStateChangeGenerated;
-		signalr.onAgentQueueChanged = onAgentQueueChanged;		signalr.onSenderActionGenerated = onSenderActionGenerated;
+		signalr.onAgentQueueChanged = onAgentQueueChanged;
+		signalr.onSenderActionGenerated = onSenderActionGenerated;
 		signalr.onConversationMessageDeleted = onConversationMessageDeleted;
 		
 		// 集成全局通知管理器

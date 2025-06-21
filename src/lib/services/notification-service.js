@@ -1,5 +1,6 @@
 import { writable } from 'svelte/store';
 import { v4 as uuidv4 } from 'uuid';
+import { browser } from '$app/environment';
 
 /**
  * @typedef {Object} NotificationItem
@@ -7,7 +8,7 @@ import { v4 as uuidv4 } from 'uuid';
  * @property {string} title - 通知标题
  * @property {string} message - 通知内容
  * @property {string} type - 通知类型: 'info' | 'success' | 'warning' | 'error'
- * @property {Date} timestamp - 通知时间
+ * @property {string} timestamp - 通知时间（ISO字符串）
  * @property {boolean} read - 是否已读
  * @property {string} [conversationId] - 关联的会话ID
  * @property {string} [agentId] - 关联的代理ID
@@ -21,11 +22,63 @@ import { v4 as uuidv4 } from 'uuid';
  * @property {number} unreadCount - 未读数量
  */
 
+const STORAGE_KEY = 'botsharp_notifications';
+const MAX_STORAGE_ITEMS = 200; // 本地存储最多保留200条通知
+
+/**
+ * 从本地存储加载通知
+ * @returns {NotificationState}
+ */
+function loadFromStorage() {
+    if (!browser) return { items: [], unreadCount: 0 };
+    
+    try {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (!stored) return { items: [], unreadCount: 0 };
+        
+        const data = JSON.parse(stored);
+        // 确保时间戳是字符串格式
+        const items = (data.items || []).map(item => ({
+            ...item,
+            timestamp: typeof item.timestamp === 'string' ? item.timestamp : new Date(item.timestamp).toISOString()
+        }));
+        
+        const unreadCount = items.filter(item => !item.read).length;
+        
+        return { items, unreadCount };
+    } catch (error) {
+        console.warn('Failed to load notifications from storage:', error);
+        return { items: [], unreadCount: 0 };
+    }
+}
+
+/**
+ * 保存通知到本地存储
+ * @param {NotificationState} state 
+ */
+function saveToStorage(state) {
+    if (!browser) return;
+    
+    try {
+        // 只保留最新的通知
+        const itemsToSave = state.items.slice(0, MAX_STORAGE_ITEMS);
+        const dataToSave = {
+            items: itemsToSave,
+            unreadCount: state.unreadCount,
+            lastUpdated: new Date().toISOString()
+        };
+        
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
+    } catch (error) {
+        console.warn('Failed to save notifications to storage:', error);
+    }
+}
+
+// 初始化store，从本地存储加载数据
+const initialState = loadFromStorage();
+
 /** @type {import('svelte/store').Writable<NotificationState>} */
-export const notificationStore = writable({
-    items: [],
-    unreadCount: 0
-});
+export const notificationStore = writable(initialState);
 
 /**
  * 通知服务
@@ -35,13 +88,12 @@ export const notificationService = {
      * 添加新通知
      * @param {Partial<NotificationItem>} notification 
      */
-    add(notification) {
-        const newNotification = {
+    add(notification) {        const newNotification = {
             id: uuidv4(),
             title: notification.title || '新消息',
             message: notification.message || '',
             type: notification.type || 'info',
-            timestamp: new Date(),
+            timestamp: new Date().toISOString(), // 改为ISO字符串
             read: false,
             conversationId: notification.conversationId,
             agentId: notification.agentId,
@@ -56,10 +108,15 @@ export const notificationService = {
                 newItems.splice(100);
             }
             
-            return {
+            const newState = {
                 items: newItems,
                 unreadCount: state.unreadCount + 1
             };
+
+            // 保存到本地存储
+            saveToStorage(newState);
+            
+            return newState;
         });
 
         // 触发浏览器通知（如果用户允许）
@@ -72,28 +129,31 @@ export const notificationService = {
      * 标记通知为已读
      * @param {string} id 
      */
-    markAsRead(id) {
-        notificationStore.update(state => {
+    markAsRead(id) {        notificationStore.update(state => {
             const item = state.items.find(n => n.id === id);
             if (item && !item.read) {
                 item.read = true;
-                return {
+                const newState = {
                     items: state.items,
                     unreadCount: Math.max(0, state.unreadCount - 1)
                 };
+                saveToStorage(newState);
+                return newState;
             }
             return state;
         });
-    },
-
-    /**
+    },    /**
      * 标记所有通知为已读
      */
     markAllAsRead() {
-        notificationStore.update(state => ({
-            items: state.items.map(item => ({ ...item, read: true })),
-            unreadCount: 0
-        }));
+        notificationStore.update(state => {
+            const newState = {
+                items: state.items.map(item => ({ ...item, read: true })),
+                unreadCount: 0
+            };
+            saveToStorage(newState);
+            return newState;
+        });
     },
 
     /**
@@ -105,22 +165,37 @@ export const notificationService = {
             const item = state.items.find(n => n.id === id);
             const wasUnread = item && !item.read;
             
-            return {
+            const newState = {
                 items: state.items.filter(n => n.id !== id),
                 unreadCount: wasUnread ? Math.max(0, state.unreadCount - 1) : state.unreadCount
             };
+            saveToStorage(newState);
+            return newState;
         });
-    },
-
-    /**
+    },    /**
      * 清空所有通知
      */
     clear() {
-        notificationStore.set({
-            items: [],
-            unreadCount: 0
-        });
-    },    /**
+        const newState = { items: [], unreadCount: 0 };
+        notificationStore.set(newState);
+        saveToStorage(newState);
+    },
+
+    /**
+     * 清空本地存储的通知数据
+     */
+    clearStorage() {
+        if (browser) {
+            try {
+                localStorage.removeItem(STORAGE_KEY);
+                const newState = { items: [], unreadCount: 0 };
+                notificationStore.set(newState);
+                console.log('通知本地存储已清空');
+            } catch (error) {
+                console.warn('Failed to clear notification storage:', error);
+            }
+        }
+    },/**
      * 根据类型获取默认图标
      * @param {string} type 
      * @returns {string}
@@ -216,16 +291,15 @@ export const notificationService = {
             agentId: message?.agent_id,
             data: message
         });
-    },
-
-    /**
+    },    /**
      * 格式化时间显示
-     * @param {Date} timestamp 
+     * @param {string} timestamp 
      * @returns {string}
      */
     formatTime(timestamp) {
         const now = new Date();
-        const diff = now.getTime() - timestamp.getTime();
+        const time = new Date(timestamp);
+        const diff = now.getTime() - time.getTime();
         const minutes = Math.floor(diff / 60000);
         const hours = Math.floor(diff / 3600000);
         const days = Math.floor(diff / 86400000);
@@ -235,6 +309,6 @@ export const notificationService = {
         if (hours < 24) return `${hours}小时前`;
         if (days < 30) return `${days}天前`;
         
-        return timestamp.toLocaleDateString();
+        return time.toLocaleDateString();
     }
 };

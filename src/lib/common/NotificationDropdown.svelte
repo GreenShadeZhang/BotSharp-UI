@@ -190,8 +190,7 @@
 		</div>
 		
 		{#if notificationState.items.length > 0}
-			<div class="p-2 border-top d-grid">
-				<Link class="btn btn-sm btn-link text-center" href="/notifications">
+			<div class="p-2 border-top d-grid">				<Link class="btn btn-sm btn-link text-center" href="/notifications">
 					<i class="mdi mdi-arrow-right-circle me-1"></i>
 					{$_('View all notifications')}
 				</Link>
@@ -200,15 +199,43 @@
 	</DropdownMenu>
 </Dropdown>
 
-<style>
-	/* 通知下拉菜单样式 */
+<style>	/* 通知下拉菜单样式 */
 	:global(.dropdown-menu-lg) {
 		min-width: 380px !important;
 		max-width: 420px !important;
 		border: none !important;
-		box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12) !important;
+		box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15) !important;
 		border-radius: 12px !important;
 		overflow: hidden !important;
+		padding: 0 !important;
+		background: #fff !important;
+	}
+
+	/* 头部区域 */
+	:global(.dropdown-menu-lg .p-3) {
+		background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+		color: white;
+		margin: 0;
+	}
+
+	:global(.dropdown-menu-lg .p-3 h6) {
+		color: white !important;
+		font-weight: 600;
+	}
+
+	:global(.dropdown-menu-lg .p-3 .badge) {
+		background: rgba(255, 255, 255, 0.2) !important;
+		color: white !important;
+	}
+
+	:global(.dropdown-menu-lg .p-3 a) {
+		color: rgba(255, 255, 255, 0.9) !important;
+		text-decoration: none !important;
+	}
+
+	:global(.dropdown-menu-lg .p-3 a:hover) {
+		color: white !important;
+		text-decoration: underline !important;
 	}
 
 	/* 通知项样式 */
@@ -221,12 +248,14 @@
 		display: block;
 		text-decoration: none;
 		color: inherit;
+		background: #fff;
 	}
 
 	.notification-item:hover {
-		background-color: rgba(102, 126, 234, 0.05);
+		background-color: rgba(102, 126, 234, 0.04);
 		text-decoration: none;
 		color: inherit;
+		transform: translateX(2px);
 	}
 
 	.notification-item.unread {
@@ -235,7 +264,11 @@
 	}
 
 	.notification-item.read {
-		opacity: 0.8;
+		opacity: 0.85;
+	}
+
+	.notification-item:last-child {
+		border-bottom: none;
 	}
 
 	/* 通知标题 */
@@ -247,6 +280,7 @@
 		display: flex;
 		align-items: center;
 		gap: 0.5rem;
+		margin-bottom: 0.25rem;
 	}
 
 	/* 未读标记点 */
@@ -257,6 +291,7 @@
 		border-radius: 50%;
 		display: inline-block;
 		animation: pulse 2s infinite;
+		flex-shrink: 0;
 	}
 
 	@keyframes pulse {
@@ -284,15 +319,24 @@
 		-webkit-box-orient: vertical;
 		overflow: hidden;
 		text-overflow: ellipsis;
+		margin-bottom: 0;
 	}
 
 	/* 删除按钮 */
 	.notification-delete {
 		opacity: 0;
-		transition: opacity 0.2s ease;
+		transition: all 0.2s ease;
 		border: none !important;
 		padding: 0.25rem 0.5rem !important;
 		font-size: 0.75rem !important;
+		background: rgba(245, 101, 101, 0.1) !important;
+		color: #f56565 !important;
+		border-radius: 4px !important;
+	}
+
+	.notification-delete:hover {
+		background: rgba(245, 101, 101, 0.2) !important;
+		color: #e53e3e !important;
 	}
 
 	.notification-item:hover .notification-delete {
@@ -318,6 +362,7 @@
 		top: -8px;
 		right: -8px;
 		animation: bounce 2s infinite;
+		font-weight: 600;
 	}
 
 	@keyframes bounce {
@@ -340,15 +385,18 @@
 		position: relative;
 		width: 40px;
 		height: 40px;
-		border-radius: 8px;
+		border-radius: 10px;
 		display: flex !important;
 		align-items: center;
 		justify-content: center;
 		transition: all 0.3s ease;
+		background: rgba(255, 255, 255, 0.1);
+		border: 1px solid rgba(255, 255, 255, 0.1);
 	}
 
 	:global(.noti-icon:hover) {
 		background-color: rgba(102, 126, 234, 0.1) !important;
+		border-color: rgba(102, 126, 234, 0.2) !important;
 		transform: scale(1.05);
 	}
 
@@ -360,6 +408,24 @@
 	/* 软背景色 */
 	:global(.bg-soft-danger) {
 		background-color: rgba(245, 101, 101, 0.1) !important;
+	}
+
+	/* 底部链接区域 */
+	:global(.dropdown-menu-lg .border-top) {
+		background: #f8f9fa;
+		border-top: 1px solid rgba(0, 0, 0, 0.1) !important;
+	}
+
+	:global(.dropdown-menu-lg .border-top .btn-link) {
+		color: #667eea !important;
+		text-decoration: none !important;
+		font-weight: 500 !important;
+		padding: 0.75rem !important;
+	}
+
+	:global(.dropdown-menu-lg .border-top .btn-link:hover) {
+		color: #764ba2 !important;
+		background: rgba(102, 126, 234, 0.05) !important;
 	}
 
 	/* 滚动条样式 */
@@ -380,15 +446,37 @@
 		background: rgba(102, 126, 234, 0.5) !important;
 	}
 
+	/* 头部操作按钮 */
+	:global(.dropdown-menu-lg .d-flex.gap-2 a) {
+		font-size: 0.8rem;
+		padding: 0.25rem 0.5rem;
+		border-radius: 4px;
+		background: rgba(255, 255, 255, 0.2);
+		transition: all 0.2s ease;
+	}
+
+	:global(.dropdown-menu-lg .d-flex.gap-2 a:hover) {
+		background: rgba(255, 255, 255, 0.3);
+	}
+
 	/* 响应式设计 */
 	@media (max-width: 768px) {
 		:global(.dropdown-menu-lg) {
 			min-width: 320px !important;
 			max-width: 350px !important;
+			left: -200px !important;
 		}
 		
 		.notification-item {
 			padding: 0.75rem;
+		}
+
+		.notification-title {
+			font-size: 0.8rem;
+		}
+
+		.notification-message {
+			font-size: 0.75rem;
 		}
 	}
 </style>
