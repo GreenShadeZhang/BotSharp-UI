@@ -1,24 +1,11 @@
 <script>
 	import { Dropdown, DropdownToggle, DropdownMenu } from '@sveltestrap/sveltestrap';
-	import "overlayscrollbars/overlayscrollbars.css";
-	import { OverlayScrollbars } from "overlayscrollbars";
 	import { _ } from 'svelte-i18n';
 	import { onMount, onDestroy } from 'svelte';
 	import { notificationStore, notificationService } from '$lib/services/notification-service.js';
 	import NotificationModal from './NotificationModal.svelte';
+	let unsubscriber = null;
 
-	const options = {
-		scrollbars: {
-			visibility: "auto",
-			autoHide: "move",
-			autoHideDelay: 100,
-			dragScroll: true,
-			clickScroll: false,
-			theme: "os-theme-light",
-			pointers: ["mouse", "touch", "pen"],
-		},
-	};	let unsubscriber = null;
-	
 	// 使用reactive statements来订阅notificationStore
 	$: notificationState = $notificationStore || { items: [], unreadCount: 0 };
 
@@ -27,31 +14,25 @@
 
 	/** @type {boolean} */
 	let isModalOpen = false;
+
 	onMount(() => {
 		// 请求浏览器通知权限
 		notificationService.requestPermission();
-
-		// 初始化滚动条
-		const menuElement = document.querySelector("#notification");
-		if (menuElement) {
-			// @ts-ignore
-			OverlayScrollbars(menuElement, options);
-		}
 	});
 	onDestroy(() => {
 		// 清理工作已通过reactive statements自动处理
-	});/**
+	}); /**
 	 * 处理通知点击
 	 */
 	function handleNotificationClick(notification) {
 		// 标记为已读
 		notificationService.markAsRead(notification.id);
-		
+
 		// 如果有关联的会话，跳转到对应页面
 		if (notification.conversationId && notification.agentId) {
 			window.location.href = `/chat/${notification.agentId}/${notification.conversationId}`;
 		}
-		
+
 		// 关闭下拉菜单
 		isOpen = false;
 	}
@@ -61,7 +42,7 @@
 	 */
 	function markAllAsRead() {
 		notificationService.markAllAsRead();
-	}	/**
+	} /**
 	 * 删除通知
 	 */
 	function deleteNotification(notification, event) {
@@ -72,7 +53,10 @@
 	 * 清空所有通知
 	 */
 	function clearAllNotifications() {
-		const confirmed = confirm($_('Are you sure you want to clear all notifications? This action cannot be undone.') || '确定要清空所有通知吗？此操作无法撤销。');
+		const confirmed = confirm(
+			$_('Are you sure you want to clear all notifications? This action cannot be undone.') ||
+				'确定要清空所有通知吗？此操作无法撤销。'
+		);
 		if (confirmed) {
 			notificationService.clear();
 		}
@@ -91,7 +75,7 @@
 	function openViewAllModal() {
 		isOpen = false; // 关闭下拉菜单
 		isModalOpen = true; // 打开模态框
-	}	/**
+	} /**
 	 * 处理模态框切换
 	 */
 	function handleModalToggle(event) {
@@ -113,16 +97,19 @@
 			<div class="row align-items-center">
 				<div class="col">
 					<h6 class="m-0">
-						{$_('Notifications')} 
+						{$_('Notifications')}
 						{#if notificationState.unreadCount > 0}
-							<span class="badge bg-soft-danger text-danger ms-1">{notificationState.unreadCount}</span>
+							<span class="badge bg-soft-danger text-danger ms-1"
+								>{notificationState.unreadCount}</span
+							>
 						{/if}
 					</h6>
-				</div>				<div class="col-auto">
+				</div>
+				<div class="col-auto">
 					<div class="d-flex gap-2">
 						{#if notificationState.items.length > 0}
 							{#if notificationState.unreadCount > 0}
-								<button 
+								<button
 									type="button"
 									class="btn btn-link small text-decoration-underline p-0 header-action-btn"
 									on:click={markAllAsRead}
@@ -130,7 +117,7 @@
 									{$_('Mark all read')}
 								</button>
 							{/if}
-							<button 
+							<button
 								type="button"
 								class="btn btn-link small text-muted p-0 header-action-btn"
 								on:click={clearAllNotifications}
@@ -144,9 +131,8 @@
 						{/if}
 					</div>
 				</div>
-			</div>
-		</div>
-				<div style="max-height: 400px;" id="notification">
+			</div>		</div>
+		<div class="notification-scrollable-container">
 			{#if notificationState.items.length === 0}
 				<div class="empty-notifications">
 					<div class="empty-content">
@@ -156,8 +142,8 @@
 				</div>
 			{:else}
 				{#each notificationState.items as notification (notification.id)}
-					<div 
-						class="notification-item {notification.read ? 'read' : 'unread'}" 
+					<div
+						class="notification-item {notification.read ? 'read' : 'unread'}"
 						on:click={() => handleNotificationClick(notification)}
 						on:keydown={(e) => e.key === 'Enter' && handleNotificationClick(notification)}
 						role="button"
@@ -165,8 +151,12 @@
 					>
 						<div class="d-flex align-items-start">
 							<div class="avatar-xs me-3">
-								<span class="avatar-title bg-{notificationService.getTypeColor(notification.type)} rounded-circle">
-									<i class="{notification.icon}" />
+								<span
+									class="avatar-title bg-{notificationService.getTypeColor(
+										notification.type
+									)} rounded-circle"
+								>
+									<i class={notification.icon} />
 								</span>
 							</div>
 							<div class="notification-content flex-grow-1">
@@ -181,18 +171,19 @@
 								</div>
 								<div class="d-flex justify-content-between align-items-center">
 									<span class="text-muted">
-										<i class="mdi mdi-clock-outline me-1" /> 
+										<i class="mdi mdi-clock-outline me-1" />
 										{notificationService.formatTime(notification.timestamp)}
 									</span>
-									<button 
+									<button
 										class="btn btn-sm btn-outline-danger notification-delete"
 										on:click={(e) => deleteNotification(notification, e)}
-										title="{$_('Delete notification')}"
+										title={$_('Delete notification')}
 									>
 										<i class="bx bx-x"></i>
 									</button>
 								</div>
-							</div>						</div>
+							</div>
+						</div>
 					</div>
 				{/each}
 			{/if}
@@ -200,11 +191,7 @@
 
 		{#if notificationState.items.length > 0}
 			<div class="p-2 border-top d-grid">
-				<button 
-					class="btn btn-sm btn-link text-center" 
-					on:click={openViewAllModal}
-					type="button"
-				>
+				<button class="btn btn-sm btn-link text-center" on:click={openViewAllModal} type="button">
 					<i class="mdi mdi-arrow-right-circle me-1"></i>
 					{$_('View all notifications')}
 				</button>
@@ -214,12 +201,10 @@
 </Dropdown>
 
 <!-- 通知模态框 -->
-<NotificationModal 
-	bind:isOpen={isModalOpen} 
-	on:toggle={handleModalToggle}
-/>
+<NotificationModal bind:isOpen={isModalOpen} on:toggle={handleModalToggle} />
 
-<style>	/* 通知下拉菜单样式 - 增大尺寸 */
+<style>
+	/* 通知下拉菜单样式 - 增大尺寸 */
 	:global(.dropdown-menu-lg) {
 		min-width: 420px !important;
 		max-width: 480px !important;
@@ -272,7 +257,7 @@
 		color: white !important;
 		background: rgba(255, 255, 255, 0.1) !important;
 		text-decoration: none !important;
-	}	/* 通知项样式 */
+	} /* 通知项样式 */
 	.notification-item {
 		padding: 1.125rem 1.25rem;
 		border-bottom: 1px solid rgba(0, 0, 0, 0.05);
@@ -283,6 +268,20 @@
 		text-decoration: none;
 		color: inherit;
 		background: #fff;
+		width: 100%;
+		box-sizing: border-box;
+	}
+
+	/* 确保下拉菜单中的flex布局正确 */
+	.notification-item .d-flex {
+		display: flex !important;
+		width: 100% !important;
+		align-items: flex-start !important;
+	}
+
+	.notification-item .flex-grow-1 {
+		flex: 1 !important;
+		min-width: 0 !important;
 	}
 
 	.notification-item:hover {
@@ -294,15 +293,22 @@
 	.notification-item:last-child {
 		border-bottom: none;
 	}
-
 	.notification-item.unread {
 		background: linear-gradient(90deg, rgba(102, 126, 234, 0.02) 0%, rgba(255, 255, 255, 1) 100%);
 		border-left: 3px solid #667eea;
 		padding-left: 1.125rem;
+		/* 确保布局不受影响 */
+		width: 100% !important;
+		display: block !important;
+		box-sizing: border-box !important;
 	}
 
 	.notification-item.read {
 		opacity: 0.8;
+		/* 确保已读状态不影响布局 */
+		width: 100% !important;
+		display: block !important;
+		box-sizing: border-box !important;
 	}
 
 	.notification-item .avatar-xs {
@@ -403,7 +409,7 @@
 			transform: scale(0.95);
 			box-shadow: 0 0 0 0 rgba(245, 101, 101, 0);
 		}
-	}	/* 通知消息 */
+	} /* 通知消息 */
 	.notification-message {
 		color: #718096;
 		font-size: 0.825rem;
@@ -436,19 +442,27 @@
 
 	.notification-item:hover .notification-delete {
 		opacity: 1;
-	}
-	/* 空状态样式 */
+	} /* 空状态样式 - 强化居中显示 */
 	.empty-notifications {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		min-height: 200px;
-		padding: 2rem;
+		display: flex !important;
+		align-items: center !important;
+		justify-content: center !important;
+		min-height: 200px !important;
+		padding: 2rem !important;
+		width: 100% !important;
+		box-sizing: border-box !important;
+		position: relative !important;
 	}
 
 	.empty-content {
-		text-align: center;
-		color: #a0aec0;
+		text-align: center !important;
+		color: #a0aec0 !important;
+		width: 100% !important;
+		display: flex !important;
+		flex-direction: column !important;
+		align-items: center !important;
+		justify-content: center !important;
+		margin: 0 auto !important;
 	}
 
 	.empty-content i {
@@ -464,7 +478,7 @@
 		font-size: 0.95rem;
 		font-weight: 500;
 		color: #718096;
-	}/* 徽章样式优化 - 红点位置修复 */
+	} /* 徽章样式优化 - 红点位置修复 */
 	:global(.badge.bg-danger) {
 		background-color: #f56565 !important;
 		font-size: 0.7rem;
@@ -486,10 +500,15 @@
 	}
 
 	@keyframes bounce {
-		0%, 20%, 53%, 80%, 100% {
+		0%,
+		20%,
+		53%,
+		80%,
+		100% {
 			transform: translate3d(0, 0, 0);
 		}
-		40%, 43% {
+		40%,
+		43% {
 			transform: translate3d(0, -8px, 0);
 		}
 		70% {
@@ -549,25 +568,6 @@
 		color: #764ba2 !important;
 		background: rgba(102, 126, 234, 0.05) !important;
 	}
-
-	/* 滚动条样式 */
-	:global(#notification .os-scrollbar) {
-		width: 4px !important;
-	}
-
-	:global(#notification .os-scrollbar-track) {
-		background: rgba(0, 0, 0, 0.05) !important;
-	}
-
-	:global(#notification .os-scrollbar-handle) {
-		background: rgba(102, 126, 234, 0.3) !important;
-		border-radius: 2px !important;
-	}
-
-	:global(#notification .os-scrollbar-handle:hover) {
-		background: rgba(102, 126, 234, 0.5) !important;
-	}
-
 	/* 头部操作按钮 */
 	:global(.header-action-btn) {
 		font-size: 0.8rem !important;
@@ -588,6 +588,35 @@
 		outline: none !important;
 		box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.4) !important;
 	}
+	/* 通知容器样式 - 使用原生滚动 */
+	.notification-scrollable-container {
+		max-height: 400px !important;
+		overflow-y: auto !important;
+		overflow-x: hidden !important;
+		width: 100% !important;
+		position: relative !important;
+		display: flex !important;
+		flex-direction: column !important;
+	}
+
+	/* 原生滚动条样式优化 */
+	.notification-scrollable-container::-webkit-scrollbar {
+		width: 6px;
+	}
+
+	.notification-scrollable-container::-webkit-scrollbar-track {
+		background: rgba(0, 0, 0, 0.05);
+		border-radius: 3px;
+	}
+
+	.notification-scrollable-container::-webkit-scrollbar-thumb {
+		background: rgba(102, 126, 234, 0.3);
+		border-radius: 3px;
+	}
+
+	.notification-scrollable-container::-webkit-scrollbar-thumb:hover {
+		background: rgba(102, 126, 234, 0.5);
+	}
 
 	/* 响应式设计 */
 	@media (max-width: 768px) {
@@ -597,7 +626,7 @@
 			left: -250px !important;
 			max-height: 60vh !important;
 		}
-		
+
 		.notification-item {
 			padding: 0.75rem;
 		}

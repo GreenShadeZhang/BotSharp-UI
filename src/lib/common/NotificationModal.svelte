@@ -3,8 +3,8 @@
 	import { _ } from 'svelte-i18n';
 	import { Modal, ModalBody, ModalHeader, Button, Badge } from '@sveltestrap/sveltestrap';
 	import { notificationStore, notificationService } from '$lib/services/notification-service.js';
-	import "overlayscrollbars/overlayscrollbars.css";
-	import { OverlayScrollbars } from "overlayscrollbars";
+	import 'overlayscrollbars/overlayscrollbars.css';
+	import { OverlayScrollbars } from 'overlayscrollbars';
 	import { onMount } from 'svelte';
 
 	const dispatch = createEventDispatcher();
@@ -29,19 +29,19 @@
 
 	const scrollbarOptions = {
 		scrollbars: {
-			visibility: "auto",
-			autoHide: "move",
+			visibility: 'auto',
+			autoHide: 'move',
 			autoHideDelay: 100,
 			dragScroll: true,
 			clickScroll: false,
-			theme: "os-theme-light",
-			pointers: ["mouse", "touch", "pen"],
-		},
+			theme: 'os-theme-light',
+			pointers: ['mouse', 'touch', 'pen']
+		}
 	};
 
 	onMount(() => {
 		// 订阅通知状态
-		unsubscriber = notificationStore.subscribe(state => {
+		unsubscriber = notificationStore.subscribe((state) => {
 			notificationState = state;
 			updateFilteredNotifications();
 		});
@@ -51,13 +51,12 @@
 				unsubscriber();
 			}
 		};
-	});
-	$: if (isOpen) {
+	});	$: if (isOpen) {
 		setTimeout(() => {
-			const modalElement = document.querySelector("#modal-notification-list");
-			if (modalElement) {
+			const modalElement = document.querySelector('#modal-notification-list');
+			if (modalElement && !scrollbarInstance) {
 				// @ts-ignore
-				OverlayScrollbars(modalElement, scrollbarOptions);
+				scrollbarInstance = OverlayScrollbars(modalElement, scrollbarOptions);
 			}
 		}, 100);
 	}
@@ -70,9 +69,9 @@
 
 		// 按类型过滤
 		if (filterType === 'unread') {
-			filtered = filtered.filter(item => !item.read);
+			filtered = filtered.filter((item) => !item.read);
 		} else if (filterType === 'read') {
-			filtered = filtered.filter(item => item.read);
+			filtered = filtered.filter((item) => item.read);
 		}
 
 		// 排序
@@ -92,7 +91,7 @@
 	function handleNotificationClick(notification) {
 		// 标记为已读
 		notificationService.markAsRead(notification.id);
-		
+
 		// 如果有关联的会话，跳转到对应页面
 		if (notification.conversationId && notification.agentId) {
 			// 关闭模态框
@@ -123,7 +122,10 @@
 	 */
 	function clearAllNotifications() {
 		// 使用更好的确认对话框
-		const confirmed = confirm($_('Are you sure you want to clear all notifications? This action cannot be undone.') || '确定要清空所有通知吗？此操作无法撤销。');
+		const confirmed = confirm(
+			$_('Are you sure you want to clear all notifications? This action cannot be undone.') ||
+				'确定要清空所有通知吗？此操作无法撤销。'
+		);
 		if (confirmed) {
 			notificationService.clear();
 		}
@@ -146,19 +148,41 @@
 		sortBy = sort;
 		updateFilteredNotifications();
 	}
-
 	/**
 	 * 切换模态框
 	 */
 	function toggle() {
 		isOpen = !isOpen;
+		
+		// 如果模态框关闭，清理OverlayScrollbars实例
+		if (!isOpen && scrollbarInstance) {
+			scrollbarInstance.destroy();
+			scrollbarInstance = null;
+		}
+		
 		dispatch('toggle', isOpen);
 	}
-
 	$: updateFilteredNotifications(), filterType, sortBy;
+	// 当过滤器变化时重新初始化滚动条 - 优化版本
+	let scrollbarInstance = null;
+	$: if (filterType || sortBy) {
+		setTimeout(() => {
+			const modalElement = document.querySelector('#modal-notification-list');
+			if (modalElement) {
+				// 销毁现有实例
+				if (scrollbarInstance) {
+					scrollbarInstance.destroy();
+				}
+				// 创建新实例
+				// @ts-ignore
+				scrollbarInstance = OverlayScrollbars(modalElement, scrollbarOptions);
+			}
+		}, 100);
+	}
 </script>
 
-<Modal {isOpen} {toggle} size="lg" centered>	<ModalHeader {toggle}>
+<Modal {isOpen} {toggle} size="lg" centered>
+	<ModalHeader {toggle}>
 		<div class="modal-title-container">
 			<i class="bx bx-bell me-2 text-primary modal-title-icon"></i>
 			<span class="modal-title-text">{$_('Notifications')}</span>
@@ -187,27 +211,28 @@
 						</Button>
 					{/if}
 				</div>
-			</div>			<!-- 过滤和排序控件 -->
+			</div>
+			<!-- 过滤和排序控件 -->
 			<div class="filter-sort-container">
 				<div class="filter-buttons">
-					<Button 
-						color={filterType === 'all' ? 'primary' : 'outline-primary'} 
+					<Button
+						color={filterType === 'all' ? 'primary' : 'outline-primary'}
 						size="sm"
 						on:click={() => handleFilterChange('all')}
 						class="filter-btn"
 					>
 						全部 ({notificationState.items.length})
 					</Button>
-					<Button 
-						color={filterType === 'unread' ? 'primary' : 'outline-primary'} 
+					<Button
+						color={filterType === 'unread' ? 'primary' : 'outline-primary'}
 						size="sm"
 						on:click={() => handleFilterChange('unread')}
 						class="filter-btn"
 					>
 						未读 ({notificationState.unreadCount})
 					</Button>
-					<Button 
-						color={filterType === 'read' ? 'primary' : 'outline-primary'} 
+					<Button
+						color={filterType === 'read' ? 'primary' : 'outline-primary'}
 						size="sm"
 						on:click={() => handleFilterChange('read')}
 						class="filter-btn"
@@ -216,8 +241,8 @@
 					</Button>
 				</div>
 				<div class="sort-buttons">
-					<Button 
-						color={sortBy === 'newest' ? 'success' : 'outline-success'} 
+					<Button
+						color={sortBy === 'newest' ? 'success' : 'outline-success'}
 						size="sm"
 						on:click={() => handleSortChange('newest')}
 						class="sort-btn"
@@ -225,8 +250,8 @@
 						<i class="bx bx-sort-down me-1"></i>
 						最新优先
 					</Button>
-					<Button 
-						color={sortBy === 'oldest' ? 'success' : 'outline-success'} 
+					<Button
+						color={sortBy === 'oldest' ? 'success' : 'outline-success'}
 						size="sm"
 						on:click={() => handleSortChange('oldest')}
 						class="sort-btn"
@@ -238,7 +263,11 @@
 			</div>
 		</div>
 		<!-- 通知列表 -->
-		<div class="notification-modal-list" id="modal-notification-list" style="max-height: 500px; overflow-y: auto;">
+		<div
+			class="notification-modal-list"
+			id="modal-notification-list"
+			style="max-height: 500px; overflow-y: auto;"
+		>
 			{#if filteredNotifications.length === 0}
 				<div class="empty-notifications-modal">
 					<div class="empty-content-modal">
@@ -265,8 +294,9 @@
 				</div>
 			{:else}
 				<div class="notification-list p-2">
-					{#each filteredNotifications as notification (notification.id)}						<div 
-							class="notification-modal-item {notification.read ? 'read' : 'unread'}" 
+					{#each filteredNotifications as notification (notification.id)}
+						<div
+							class="notification-modal-item {notification.read ? 'read' : 'unread'}"
 							on:click={() => handleNotificationClick(notification)}
 							on:keydown={(e) => e.key === 'Enter' && handleNotificationClick(notification)}
 							role="button"
@@ -274,8 +304,12 @@
 						>
 							<div class="d-flex">
 								<div class="notification-icon me-3">
-									<span class="avatar-title bg-{notificationService.getTypeColor(notification.type)} rounded-circle">
-										<i class="{notification.icon}"></i>
+									<span
+										class="avatar-title bg-{notificationService.getTypeColor(
+											notification.type
+										)} rounded-circle"
+									>
+										<i class={notification.icon}></i>
 									</span>
 								</div>
 								<div class="flex-grow-1">
@@ -290,10 +324,10 @@
 											<small class="text-muted">
 												{notificationService.formatTime(notification.timestamp)}
 											</small>
-											<button 
+											<button
 												class="btn btn-sm btn-outline-danger notification-delete"
 												on:click={(e) => deleteNotification(notification, e)}
-												title="{$_('Delete notification')}"
+												title={$_('Delete notification')}
 											>
 												<i class="bx bx-x font-size-12"></i>
 											</button>
@@ -304,7 +338,10 @@
 									</p>
 									{#if notification.type}
 										<div class="mt-2">
-											<Badge color="{notificationService.getTypeColor(notification.type)}" class="badge-soft">
+											<Badge
+												color={notificationService.getTypeColor(notification.type)}
+												class="badge-soft"
+											>
 												{notification.type}
 											</Badge>
 										</div>
@@ -319,7 +356,8 @@
 	</ModalBody>
 </Modal>
 
-<style>	.notification-modal-header {
+<style>
+	.notification-modal-header {
 		border-bottom: 1px solid rgba(0, 0, 0, 0.1);
 	}
 
@@ -390,11 +428,20 @@
 		line-height: 1 !important;
 		border-radius: 10px !important;
 	}
-
 	.notification-modal-list {
 		background: #f8f9fa;
+		width: 100%;
+		display: flex;
+		flex-direction: column;
+		position: relative;
 	}
 
+	.notification-list {
+		width: 100%;
+		display: flex;
+		flex-direction: column;
+		position: relative;
+	}
 	.notification-modal-item {
 		padding: 1.25rem;
 		border: 1px solid rgba(0, 0, 0, 0.05);
@@ -403,6 +450,21 @@
 		cursor: pointer;
 		transition: all 0.2s ease;
 		background: #fff;
+		width: 100%;
+		display: flex;
+		flex-direction: column;
+	}
+
+	/* 确保通知项内部的flex布局正确 */
+	.notification-modal-item .d-flex {
+		display: flex !important;
+		width: 100% !important;
+		align-items: flex-start !important;
+	}
+
+	.notification-modal-item .flex-grow-1 {
+		flex: 1 !important;
+		min-width: 0 !important;
 	}
 
 	.notification-modal-item:hover {
@@ -410,14 +472,21 @@
 		box-shadow: 0 4px 15px rgba(102, 126, 234, 0.1);
 		transform: translateY(-2px);
 	}
-
 	.notification-modal-item.unread {
 		background-color: rgba(102, 126, 234, 0.02);
 		border-left: 4px solid #667eea;
+		/* 确保布局不受影响 */
+		width: 100%;
+		display: flex;
+		flex-direction: column;
 	}
 
 	.notification-modal-item.read {
 		opacity: 0.8;
+		/* 确保已读状态不影响布局 */
+		width: 100%;
+		display: flex;
+		flex-direction: column;
 	}
 
 	.notification-icon .avatar-title {
@@ -526,26 +595,29 @@
 			font-size: 0.8rem !important;
 			padding: 0.375rem 0.75rem !important;
 		}
-	}
-	/* 模态框空状态样式 */
+	} /* 模态框空状态样式 - 强制居中 */
 	.empty-notifications-modal {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		min-height: 300px;
-		padding: 3rem 2rem;
-		width: 100%;
+		display: flex !important;
+		align-items: center !important;
+		justify-content: center !important;
+		min-height: 300px !important;
+		padding: 3rem 2rem !important;
+		width: 100% !important;
+		box-sizing: border-box !important;
+		position: relative !important;
 	}
 
 	.empty-content-modal {
-		text-align: center;
-		color: #a0aec0;
-		max-width: 300px;
-		width: 100%;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
+		text-align: center !important;
+		color: #a0aec0 !important;
+		max-width: 300px !important;
+		width: 100% !important;
+		display: flex !important;
+		flex-direction: column !important;
+		align-items: center !important;
+		justify-content: center !important;
+		margin: 0 auto !important;
+		position: relative !important;
 	}
 
 	.empty-content-modal i {
@@ -573,5 +645,25 @@
 		line-height: 1.5;
 		text-align: center;
 		width: 100%;
+	}
+
+	/* OverlayScrollbars 布局修复 */
+	:global([data-overlayscrollbars-viewport]) {
+		width: 100% !important;
+		display: flex !important;
+		flex-direction: column !important;
+	}
+
+	:global([data-overlayscrollbars-contents]) {
+		width: 100% !important;
+		display: flex !important;
+		flex-direction: column !important;
+	}
+
+	/* 确保notification-list在OverlayScrollbars中正确显示 */
+	:global(.notification-list) {
+		width: 100% !important;
+		display: flex !important;
+		flex-direction: column !important;
 	}
 </style>
