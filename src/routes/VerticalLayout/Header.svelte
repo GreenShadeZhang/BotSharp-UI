@@ -9,7 +9,16 @@
 	import { OverlayScrollbars } from 'overlayscrollbars';
 	import { PUBLIC_LOGO_URL, PUBLIC_BRAND_NAME } from '$env/static/public';
 	import { globalEventStore } from '$lib/helpers/store';
-	import { GlobalEvent } from '$lib/helpers/enums';
+	import { GlobalEvent } from '$lib/helpers/enums';	import { onMount } from 'svelte';
+	import { globalNotificationManager } from '$lib/services/global-notification-manager.js';
+	
+	// 在开发环境下导入测试工具
+	let notificationTester;
+	if (import.meta.env.DEV) {
+		import('$lib/services/notification-tester.js').then(module => {
+			notificationTester = module.notificationTester;
+		});
+	}
 
 	/** @type {any} */
 	export let user;
@@ -18,6 +27,11 @@
 	export let toggleRightBar;
 	/** @type {string} */
 	let searchText = '';
+
+	onMount(() => {
+		// 初始化全局通知管理器
+		globalNotificationManager.initialize();
+	});
 
 	const toggleSideBar = () => {
 		if (browser) {

@@ -66,11 +66,11 @@
 	import ChatFileUploader from './chat-util/chat-file-uploader.svelte';
 	import ChatFileGallery from './chat-util/chat-file-gallery.svelte';
 	import ChatBigMessage from './chat-util/chat-big-message.svelte';
-	import PersistLog from './persist-log/persist-log.svelte';
-	import InstantLog from './instant-log/instant-log.svelte';
+	import PersistLog from './persist-log/persist-log.svelte';	import InstantLog from './instant-log/instant-log.svelte';
 	import LocalStorageManager from '$lib/helpers/utils/storage-manager';
 	import { realtimeChat } from '$lib/services/realtime-chat-service';
 	import { webSpeech } from '$lib/services/web-speech';
+	import { globalNotificationManager } from '$lib/services/global-notification-manager.js';
 
 	
 	const options = {
@@ -237,9 +237,12 @@
 		signalr.onConversationContentLogGenerated = onConversationContentLogGenerated;
 		signalr.onConversationStateLogGenerated = onConversationStateLogGenerated;
 		signalr.onStateChangeGenerated = onStateChangeGenerated;
-		signalr.onAgentQueueChanged = onAgentQueueChanged;
-		signalr.onSenderActionGenerated = onSenderActionGenerated;
+		signalr.onAgentQueueChanged = onAgentQueueChanged;		signalr.onSenderActionGenerated = onSenderActionGenerated;
 		signalr.onConversationMessageDeleted = onConversationMessageDeleted;
+		
+		// 集成全局通知管理器
+		await globalNotificationManager.integrateChatNotifications(params.conversationId);
+		
 		await signalr.start(params.conversationId);
 
 		scrollbars = [
