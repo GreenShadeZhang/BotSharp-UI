@@ -37,9 +37,8 @@
 	/** @type {import('$conversationTypes').ChatResponseModel[]} */
 	let streamingMessages = []; // 流式消息数组
 	/** @type {Map<string, import('$conversationTypes').ChatResponseModel>} */
-	let streamingMessageCache = new Map(); // 流式消息缓存，用于文本拼接
-	/** @type {{ [s: string]: any; }} */
-	let groupedDialogs = [];
+	let streamingMessageCache = new Map(); // 流式消息缓存，用于文本拼接	/** @type {{ [s: string]: any; }} */
+	let groupedDialogs = {};
 
 	/** @type {import('$conversationTypes').ChatResponseModel?} */
 	let lastBotMsg;
@@ -72,7 +71,6 @@
 	async function initializeChat() {
 		try {
 			isLoading = true;
-
 			if (conversationId === 'new') {
 				// Create new conversation
 				conversation = await newConversation(agentId);
@@ -84,12 +82,21 @@
 
 				// Initialize empty dialogs for new conversation
 				dialogs = [];
+				console.log('[WorkspaceChat] 创建新对话:', conversation.id);
 			} else {
 				// Load existing conversation
 				conversation = await getConversation(conversationId, true);
 				if (conversation) {
 					dialogs = await getDialogs(conversationId, 50);
 					if (!dialogs) dialogs = [];
+					// 确保加载的消息具有正确的标记
+					dialogs = dialogs.map((msg) => ({
+						...msg,
+						is_chat_message: true
+					}));
+					console.log(
+						`[WorkspaceChat] 加载现有对话: ${conversationId}, 消息数量: ${dialogs.length}`
+					);
 				} else {
 					throw new Error('Conversation not found');
 				}
@@ -98,14 +105,15 @@
 			// Initialize SignalR connection with comprehensive event handlers
 			if (conversation) {
 				signalr.onMessageReceivedFromClient = onMessageReceivedFromClient;
+				signalr.onMessageReceivedFromCsr = onMessageReceivedFromClient;
 				signalr.onMessageReceivedFromAssistant = onMessageReceivedFromAssistant;
 				signalr.onStreamMessageReceivedFromAssistant = onStreamMessageReceivedFromAssistant;
 				signalr.onNotificationGenerated = onNotificationGenerated;
-				signalr.onSenderActionGenerated = onSenderActionGenerated;
-
-				// 集成全局通知管理器
+				signalr.onSenderActionGenerated = onSenderActionGenerated; // 集成全局通知管理器
 				await globalNotificationManager.integrateChatNotifications(conversationId);
+				console.log('[WorkspaceChat] 开始SignalR连接:', conversation.id);
 				await signalr.start(conversation.id);
+				console.log('[WorkspaceChat] SignalR连接成功');
 			}
 
 			await refresh();
@@ -117,7 +125,6 @@
 			isLoading = false;
 		}
 	}
-
 	/** @param {import('$conversationTypes').ChatResponseModel} message */
 	function onMessageReceivedFromClient(message) {
 		console.log('[WorkspaceChat] 收到用户消息:', message);
@@ -126,9 +133,8 @@
 			is_chat_message: true
 		});
 		refresh();
-		messageInput = '';
+		messageInput = ''; // 清空输入框
 	}
-
 	/** @param {import('$conversationTypes').ChatResponseModel} message */
 	function onMessageReceivedFromAssistant(message) {
 		// 只处理 AI 助手的消息
@@ -176,7 +182,9 @@
 			console.log(`[WorkspaceChat] 添加新助手消息，ID: ${message.message_id}`);
 		}
 
+		// 重要：关闭发送状态并刷新界面
 		isSendingMsg = false;
+		isThinking = false;
 		refresh();
 	}
 	/** @param {import('$conversationTypes').ChatResponseModel} message */
@@ -286,14 +294,20 @@
 			(a, b) => new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime()
 		);
 
+		console.log(
+			`[WorkspaceChat] Refresh: 总消息数 ${allMessages.length}, 常规消息 ${dialogs.length}, 流式消息 ${streamingMessages.length}`
+		);
+
 		// trigger UI render - 使用合并后的消息进行显示
 		lastBotMsg = null;
 		await tick();
 		lastBotMsg = findLastBotMessage(allMessages); // 在合并后的消息中查找
 		lastMsg = allMessages.slice(-1)[0]; // 从合并后的消息中获取最后一条
 		groupedDialogs = groupDialogs(allMessages); // 对合并后的消息进行分组
-		await tick();
 
+		console.log(`[WorkspaceChat] Grouped dialogs:`, Object.keys(groupedDialogs), 'isEmpty:', Object.keys(groupedDialogs).length === 0);
+
+		await tick();
 		autoScrollToBottom();
 	}
 
@@ -309,9 +323,14 @@
 		const lastMsg = dialogs.slice(-1)[0];
 		return BOT_SENDERS.includes(lastMsg?.sender?.role || '') ? lastMsg : null;
 	}
-	/** @param {any} dialogs */
+
+	/** @param {import('$conversationTypes').ChatResponseModel[]} dialogs */
 	function groupDialogs(dialogs) {
-		if (!!!dialogs) return {};
+		if (!dialogs || dialogs.length === 0) {
+			console.log('[WorkspaceChat] groupDialogs: 没有消息需要分组');
+			return {};
+		}
+
 		const format = 'MMM D, YYYY';
 		/** @type {{ [key: string]: import('$conversationTypes').ChatResponseModel[] }} */
 		const grouped = {};
@@ -332,7 +351,7 @@
 			}
 			grouped[dateKey].push(dialog);
 		});
-
+		console.log(`[WorkspaceChat] groupDialogs: 分组结果`, Object.keys(grouped), grouped);
 		return grouped;
 	}
 
@@ -346,8 +365,10 @@
 		isSendingMsg = true;
 		const currentInput = messageInput.trim();
 		messageInput = '';
+
 		try {
 			await sendMessageToHub(agentId, conversation.id, currentInput);
+			// 注意：isSendingMsg = false 将在 onMessageReceivedFromAssistant 中设置
 		} catch (error) {
 			console.error('Failed to send message:', error);
 			// Create a minimal error message that matches ChatResponseModel structure
@@ -375,6 +396,7 @@
 			// @ts-ignore - Adding as any to avoid type checking issues
 			dialogs.push(errorMessage);
 			isSendingMsg = false;
+			isThinking = false;
 			refresh();
 		}
 	}
@@ -459,18 +481,20 @@
 					<span class="visually-hidden">Loading...</span>
 				</div>
 				<p class="mt-2 text-muted">Loading conversation...</p>
-			</div>
-		{:else if Object.keys(groupedDialogs).length === 0}
+			</div>		{:else if Object.keys(groupedDialogs).length === 0}
 			<div class="empty-chat">
 				<i class="fas fa-comments fa-3x text-muted mb-3"></i>
 				<p class="text-muted">Start a conversation with {agent?.name || 'the assistant'}</p>
+				<!-- Debug info -->
+				<small class="text-muted">
+					Debug: dialogs={dialogs.length}, streaming={streamingMessages.length}, grouped={JSON.stringify(Object.keys(groupedDialogs))}
+				</small>
 			</div>
-		{:else}
-			{#each Object.entries(groupedDialogs) as [date, messages] (date)}
+		{:else}			{#each Object.entries(groupedDialogs) as [date, messages]}
 				<div class="date-separator">
 					<span class="date-label">{date}</span>
 				</div>
-				{#each messages as message (message.message_id || message.id)}
+				{#each messages as message}
 					<div
 						class="message-container {isUserMessage(message)
 							? 'user-message'
