@@ -62,14 +62,31 @@
 		{
 			icon: 'fas fa-chart-line',
 			titleKey: 'homepage.features.real_time_analytics.title',
-			descKey: 'homepage.features.real_time_analytics.description'		}
+			descKey: 'homepage.features.real_time_analytics.description'
+		}
 	];
 
 	const stats = [
-		{ titleKey: 'homepage.stats.conversation_title', labelKey: 'homepage.stats.conversation', icon: 'fas fa-comments' },
-		{ titleKey: 'homepage.stats.multimodal_title', labelKey: 'homepage.stats.multimodal', icon: 'fas fa-brain' },
-		{ titleKey: 'homepage.stats.realtime_title', labelKey: 'homepage.stats.realtime', icon: 'fas fa-bolt' },
-		{ titleKey: 'homepage.stats.available_title', labelKey: 'homepage.stats.available', icon: 'fas fa-clock' }
+		{
+			titleKey: 'homepage.stats.conversation_title',
+			labelKey: 'homepage.stats.conversation',
+			icon: 'fas fa-comments'
+		},
+		{
+			titleKey: 'homepage.stats.multimodal_title',
+			labelKey: 'homepage.stats.multimodal',
+			icon: 'fas fa-brain'
+		},
+		{
+			titleKey: 'homepage.stats.realtime_title',
+			labelKey: 'homepage.stats.realtime',
+			icon: 'fas fa-bolt'
+		},
+		{
+			titleKey: 'homepage.stats.available_title',
+			labelKey: 'homepage.stats.available',
+			icon: 'fas fa-clock'
+		}
 	];
 
 	/**
@@ -94,7 +111,12 @@
 		<div class="nav-content">
 			<!-- Brand Logo -->
 			<div class="brand">
-				<a href={PUBLIC_COMPANY_WEBSITE} class="brand-link">
+				<a
+					href={PUBLIC_COMPANY_WEBSITE}
+					class="brand-link"
+					target="_blank"
+					rel="noopener noreferrer"
+				>
 					<img src={PUBLIC_LOGO_URL} alt="logo" class="brand-logo" />
 					<span class="brand-name">{PUBLIC_BRAND_NAME}</span>
 				</a>
@@ -197,7 +219,9 @@
 <section class="stats-section">
 	<Container>
 		<Row>
-			{#each stats as stat, i}				<Col lg="3" md="6" class="mb-4">					{#if mounted}
+			{#each stats as stat, i}
+				<Col lg="3" md="6" class="mb-4">
+					{#if mounted}
 						<div in:fly={{ y: 30, duration: 600, delay: 600 + i * 100 }} class="stat-item">
 							<div class="stat-icon">
 								<i class={stat.icon}></i>
@@ -676,7 +700,9 @@
 		border-radius: 15px;
 		background: white;
 		box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
-		transition: transform 0.3s ease, box-shadow 0.3s ease;
+		transition:
+			transform 0.3s ease,
+			box-shadow 0.3s ease;
 	}
 
 	.stat-item:hover {
@@ -695,7 +721,8 @@
 		border-radius: 50%;
 		color: white;
 		font-size: 1.5rem;
-	}	.stat-number {
+	}
+	.stat-number {
 		font-size: 1.4rem;
 		font-weight: 700;
 		color: #2c3e50;
