@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import { isAuthenticated } from '$lib/services/oidc-auth-service.js';
 	import { goto } from '$app/navigation';
+	import { _ } from 'svelte-i18n';
 	import '../../lib/scss/app.scss';
 
 	let authenticated = false;
@@ -32,7 +33,7 @@
 	<div class="auth-check">
 		<div class="loading-spinner">
 			<i class="fas fa-spinner fa-spin"></i>
-			<p>Loading workspace...</p>
+			<p>{$_('loading.workspace')}</p>
 		</div>
 	</div>
 {:else}

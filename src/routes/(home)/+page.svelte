@@ -87,14 +87,13 @@
 			labelKey: 'homepage.stats.available',
 			icon: 'fas fa-clock'
 		}
-	];
-	/**
+	];	/**
 	 * Handle login button click
 	 */
 	function handleLogin() {
 		if (userAuthenticated) {
-			// User is already authenticated, redirect to workspace
-			window.location.href = '/workspace';
+			// User is already authenticated, redirect to dashboard
+			window.location.href = '/page/dashboard';
 		} else {
 			// Initiate OIDC login flow
 			initiateLogin();
@@ -131,32 +130,30 @@
 					<span class="brand-name">{PUBLIC_BRAND_NAME}</span>
 				</a>
 			</div>			<!-- Navigation Actions -->
-			<div class="nav-actions">
-				<!-- Workspace Button (only show if authenticated) -->
+			<div class="nav-actions">				<!-- Workspace Button (only show if authenticated) -->
 				{#if userAuthenticated}
 					<Button
 						on:click={goToWorkspace}
 						color="secondary"
 						class="workspace-btn me-2"
-						title="Personal Workspace"
+						title={$_('navigation.personal_workspace')}
 					>
 						<i class="fas fa-workspace me-2"></i>
-						Workspace
+						{$_('navigation.workspace')}
 					</Button>
 				{/if}
 				<!-- Custom Language Selector -->
 				<div class="language-selector" title="Select Language / 选择语言">
 					<LanguageDropdown />
-				</div>
-				<!-- Login Button -->
+				</div>				<!-- Login Button -->
 				<Button
 					on:click={handleLogin}
 					color="primary"
 					class="login-btn"
-					title={userAuthenticated ? 'Dashboard' : 'Login'}
+					title={userAuthenticated ? $_('navigation.dashboard') : $_('navigation.login')}
 				>
 					<i class="fas fa-user-circle me-2"></i>
-					{userAuthenticated ? 'Dashboard' : 'Login'}
+					{userAuthenticated ? $_('navigation.dashboard') : $_('navigation.login')}
 				</Button>
 			</div>
 		</div>
@@ -198,7 +195,7 @@
 									class="me-3 hero-btn-primary"
 								>
 									<i class="fas fa-workspace me-2"></i>
-									Personal Workspace
+									{$_('navigation.personal_workspace')}
 								</Button>
 								<Button
 									on:click={handleLogin}
@@ -208,7 +205,7 @@
 									class="hero-btn-secondary"
 								>
 									<i class="fas fa-cog me-2"></i>
-									Dashboard
+									{$_('navigation.dashboard')}
 								</Button>
 							{:else}
 								<Button
@@ -328,11 +325,11 @@
 							{#if userAuthenticated}
 								<Button on:click={goToWorkspace} color="primary" size="lg" class="me-3">
 									<i class="fas fa-workspace me-2"></i>
-									Enter Personal Workspace
+									{$_('navigation.personal_workspace')}
 								</Button>
 								<Button on:click={handleLogin} outline color="light" size="lg">
 									<i class="fas fa-cog me-2"></i>
-									Admin Dashboard
+									{$_('navigation.dashboard')}
 								</Button>
 							{:else}
 								<Button on:click={handleLogin} color="primary" size="lg" class="me-3">

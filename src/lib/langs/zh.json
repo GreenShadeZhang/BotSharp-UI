@@ -534,6 +534,67 @@
   "Relation Knowledge": "关系知识",
   "Knowledges": "知识库",
   "Text": "文本",
+  "workspace": {
+    "title": "个人工作区",
+    "subtitle": "在统一界面中管理您的AI对话和智能体",
+    "quick_actions": "快速操作",
+    "recent_activity": "最近活动",
+    "no_recent_activity": "暂无最近活动",
+    "start_conversation_hint": "开始您的第一次对话以在此处查看活动",
+    "actions": {
+      "start_chat": {
+        "title": "开始新对话",
+        "description": "与AI智能体开始对话"
+      },
+      "manage_sessions": {
+        "title": "管理会话",
+        "description": "查看和组织您的对话历史"
+      },
+      "agent_management": {
+        "title": "智能体管理",
+        "description": "自定义和配置您的AI智能体"
+      },
+      "workspace_settings": {
+        "title": "工作区设置",
+        "description": "配置您的个人工作区偏好"
+      }
+    },
+    "coming_soon": "即将推出",
+    "chat": {
+      "title": "新对话",
+      "select_agent": "选择AI智能体",
+      "select_agent_description": "选择一个AI智能体开始对话",
+      "type_message": "输入您的消息...",
+      "send": "发送",
+      "loading": "发送中...",
+      "no_agents": "暂无可用智能体",
+      "start_conversation": "开始对话"
+    },
+    "sessions": {
+      "title": "聊天会话",
+      "subtitle": "管理和查看您的对话历史",
+      "no_sessions": "未找到聊天会话",
+      "no_sessions_description": "开始新对话以在此处查看会话",
+      "search_placeholder": "搜索会话...",
+      "sort_by": "排序方式",
+      "sort_newest": "最新在前",
+      "sort_oldest": "最旧在前",
+      "sort_most_active": "最活跃",
+      "message_count": "条消息",
+      "last_activity": "最后活动",
+      "open_session": "打开会话",
+      "delete_session": "删除会话"
+    }
+  },
+  "navigation": {
+    "workspace": "工作区",
+    "dashboard": "仪表盘",
+    "login": "登录",
+    "personal_workspace": "个人工作区"
+  },
+  "loading": {
+    "workspace": "正在加载工作区..."
+  },
   "homepage": {
     "badge": "智能化平台技术展示",
     "title": "探索智能体技术，体验智能化服务魅力",

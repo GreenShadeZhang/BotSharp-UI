@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { fade, fly } from 'svelte/transition';
+	import { _ } from 'svelte-i18n';
 
 	let mounted = false;
 
@@ -20,30 +21,28 @@
 </script>
 
 <div class="workspace-home">
-	{#if mounted}
-		<div class="workspace-header" in:fade={{ duration: 600 }}>
+	{#if mounted}		<div class="workspace-header" in:fade={{ duration: 600 }}>
 			<div class="header-content">
 				<h1 class="workspace-title">
 					<i class="fas fa-workspace me-3"></i>
-					Personal Workspace
+					{$_('workspace.title')}
 				</h1>
 				<p class="workspace-subtitle">
-					Manage your AI conversations and agents in a unified interface
+					{$_('workspace.subtitle')}
 				</p>
 			</div>
 		</div>
-
 		<div class="workspace-content" in:fly={{ y: 30, duration: 800, delay: 200 }}>
 			<div class="quick-actions">
-				<h2 class="section-title">Quick Actions</h2>
+				<h2 class="section-title">{$_('workspace.quick_actions')}</h2>
 				<div class="action-grid">
 					<div class="action-card" on:click={navigateToChat} on:keydown={navigateToChat} role="button" tabindex="0">
 						<div class="action-icon">
 							<i class="fas fa-comments"></i>
 						</div>
 						<div class="action-content">
-							<h3>Start New Chat</h3>
-							<p>Begin a conversation with an AI agent</p>
+							<h3>{$_('workspace.actions.start_chat.title')}</h3>
+							<p>{$_('workspace.actions.start_chat.description')}</p>
 						</div>
 						<div class="action-arrow">
 							<i class="fas fa-arrow-right"></i>
@@ -55,8 +54,8 @@
 							<i class="fas fa-history"></i>
 						</div>
 						<div class="action-content">
-							<h3>Manage Sessions</h3>
-							<p>View and organize your conversation history</p>
+							<h3>{$_('workspace.actions.manage_sessions.title')}</h3>
+							<p>{$_('workspace.actions.manage_sessions.description')}</p>
 						</div>
 						<div class="action-arrow">
 							<i class="fas fa-arrow-right"></i>
@@ -68,9 +67,9 @@
 							<i class="fas fa-robot"></i>
 						</div>
 						<div class="action-content">
-							<h3>Agent Management</h3>
-							<p>Customize and configure your AI agents</p>
-							<span class="coming-soon">Coming Soon</span>
+							<h3>{$_('workspace.actions.agent_management.title')}</h3>
+							<p>{$_('workspace.actions.agent_management.description')}</p>
+							<span class="coming-soon">{$_('workspace.coming_soon')}</span>
 						</div>
 						<div class="action-arrow">
 							<i class="fas fa-arrow-right"></i>
@@ -82,9 +81,9 @@
 							<i class="fas fa-cog"></i>
 						</div>
 						<div class="action-content">
-							<h3>Workspace Settings</h3>
-							<p>Configure your personal workspace preferences</p>
-							<span class="coming-soon">Coming Soon</span>
+							<h3>{$_('workspace.actions.workspace_settings.title')}</h3>
+							<p>{$_('workspace.actions.workspace_settings.description')}</p>
+							<span class="coming-soon">{$_('workspace.coming_soon')}</span>
 						</div>
 						<div class="action-arrow">
 							<i class="fas fa-arrow-right"></i>
@@ -94,11 +93,11 @@
 			</div>
 
 			<div class="recent-activity" in:fly={{ y: 30, duration: 800, delay: 400 }}>
-				<h2 class="section-title">Recent Activity</h2>
+				<h2 class="section-title">{$_('workspace.recent_activity')}</h2>
 				<div class="activity-placeholder">
 					<i class="fas fa-inbox"></i>
-					<p>No recent activity</p>
-					<span>Start your first conversation to see activity here</span>
+					<p>{$_('workspace.no_recent_activity')}</p>
+					<span>{$_('workspace.start_conversation_hint')}</span>
 				</div>
 			</div>
 		</div>

@@ -339,6 +339,67 @@
     "Relation Knowledge": "Relation Knowledge",
     "Knowledges": "Knowledges",
     "Text": "Text",
+    "workspace": {
+        "title": "Personal Workspace",
+        "subtitle": "Manage your AI conversations and agents in a unified interface",
+        "quick_actions": "Quick Actions",
+        "recent_activity": "Recent Activity",
+        "no_recent_activity": "No recent activity",
+        "start_conversation_hint": "Start your first conversation to see activity here",
+        "actions": {
+            "start_chat": {
+                "title": "Start New Chat",
+                "description": "Begin a conversation with an AI agent"
+            },
+            "manage_sessions": {
+                "title": "Manage Sessions", 
+                "description": "View and organize your conversation history"
+            },
+            "agent_management": {
+                "title": "Agent Management",
+                "description": "Customize and configure your AI agents"
+            },
+            "workspace_settings": {
+                "title": "Workspace Settings",
+                "description": "Configure your personal workspace preferences"
+            }
+        },
+        "coming_soon": "Coming Soon",
+        "chat": {
+            "title": "New Chat",
+            "select_agent": "Select an AI Agent",
+            "select_agent_description": "Choose an AI agent to start your conversation",
+            "type_message": "Type your message...",
+            "send": "Send",
+            "loading": "Sending...",
+            "no_agents": "No agents available",
+            "start_conversation": "Start Conversation"
+        },
+        "sessions": {
+            "title": "Chat Sessions",
+            "subtitle": "Manage and view your conversation history",
+            "no_sessions": "No chat sessions found",
+            "no_sessions_description": "Start a new conversation to see your sessions here",
+            "search_placeholder": "Search sessions...",
+            "sort_by": "Sort by",
+            "sort_newest": "Newest First",
+            "sort_oldest": "Oldest First",
+            "sort_most_active": "Most Active",
+            "message_count": "messages",
+            "last_activity": "Last activity",
+            "open_session": "Open Session",
+            "delete_session": "Delete Session"
+        }
+    },
+    "navigation": {
+        "workspace": "Workspace",
+        "dashboard": "Dashboard",
+        "login": "Login",
+        "personal_workspace": "Personal Workspace"
+    },
+    "loading": {
+        "workspace": "Loading workspace..."
+    },
     "homepage": {
         "badge": "AI Intelligence Platform Demo",
         "title": "Experience AI Agent Technology, Discover Intelligent Services",
