@@ -305,7 +305,12 @@
 		lastMsg = allMessages.slice(-1)[0]; // 从合并后的消息中获取最后一条
 		groupedDialogs = groupDialogs(allMessages); // 对合并后的消息进行分组
 
-		console.log(`[WorkspaceChat] Grouped dialogs:`, Object.keys(groupedDialogs), 'isEmpty:', Object.keys(groupedDialogs).length === 0);
+		console.log(
+			`[WorkspaceChat] Grouped dialogs:`,
+			Object.keys(groupedDialogs),
+			'isEmpty:',
+			Object.keys(groupedDialogs).length === 0
+		);
 
 		await tick();
 		autoScrollToBottom();
@@ -481,16 +486,20 @@
 					<span class="visually-hidden">Loading...</span>
 				</div>
 				<p class="mt-2 text-muted">Loading conversation...</p>
-			</div>		{:else if Object.keys(groupedDialogs).length === 0}
+			</div>
+		{:else if Object.keys(groupedDialogs).length === 0}
 			<div class="empty-chat">
 				<i class="fas fa-comments fa-3x text-muted mb-3"></i>
 				<p class="text-muted">Start a conversation with {agent?.name || 'the assistant'}</p>
 				<!-- Debug info -->
 				<small class="text-muted">
-					Debug: dialogs={dialogs.length}, streaming={streamingMessages.length}, grouped={JSON.stringify(Object.keys(groupedDialogs))}
+					Debug: dialogs={dialogs.length}, streaming={streamingMessages.length}, grouped={JSON.stringify(
+						Object.keys(groupedDialogs)
+					)}
 				</small>
 			</div>
-		{:else}			{#each Object.entries(groupedDialogs) as [date, messages]}
+		{:else}
+			{#each Object.entries(groupedDialogs) as [date, messages]}
 				<div class="date-separator">
 					<span class="date-label">{date}</span>
 				</div>
@@ -760,7 +769,6 @@
 		flex-direction: column;
 		gap: 0.25rem;
 	}
-
 	.message-bubble {
 		padding: 0.75rem 1rem;
 		border-radius: 1rem;
@@ -768,24 +776,24 @@
 		box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 		word-wrap: break-word;
 		position: relative;
+		color: #343a40; /* 确保文字颜色为深色 */
 	}
-
 	.user-message .message-bubble {
 		background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 		color: white;
 	}
 
-	.message-bubble.error-message {
-		background: #f8d7da;
-		color: #721c24;
-		border: 1px solid #f5c6cb;
+	/* 确保用户消息中的Markdown内容也是白色 */
+	.user-message .message-bubble :global(.markdown),
+	.user-message .message-bubble :global(.markdown p),
+	.user-message .message-bubble :global(.markdown h1),
+	.user-message .message-bubble :global(.markdown h2),
+	.user-message .message-bubble :global(.markdown h3),
+	.user-message .message-bubble :global(.markdown h4),
+	.user-message .message-bubble :global(.markdown h5),
+	.user-message .message-bubble :global(.markdown h6) {
+		color: white !important;
 	}
-
-	.message-bubble.thinking {
-		background: #f8f9fa;
-		padding: 1rem;
-	}
-
 	.message-bubble.streaming-message {
 		border-left: 3px solid #667eea;
 		animation: pulse 2s infinite;
@@ -946,10 +954,62 @@
 		cursor: not-allowed;
 		transform: none;
 	}
-
 	/* Rich Content Styles */
 	.rich-content {
 		width: 100%;
+		color: #343a40; /* 确保富文本内容有正确的颜色 */
+	}
+
+	/* Markdown内容样式 */
+	.message-bubble :global(.markdown) {
+		color: #343a40 !important;
+	}
+
+	.message-bubble :global(.markdown p) {
+		color: #343a40 !important;
+		margin: 0;
+	}
+
+	.message-bubble :global(.markdown h1),
+	.message-bubble :global(.markdown h2),
+	.message-bubble :global(.markdown h3),
+	.message-bubble :global(.markdown h4),
+	.message-bubble :global(.markdown h5),
+	.message-bubble :global(.markdown h6) {
+		color: #343a40 !important;
+	}
+
+	.message-bubble :global(.markdown code) {
+		background: #f8f9fa;
+		color: #e83e8c;
+		padding: 0.125rem 0.25rem;
+		border-radius: 0.25rem;
+	}
+	.message-bubble :global(.markdown pre) {
+		background: #f8f9fa;
+		color: #343a40;
+		padding: 0.75rem;
+		border-radius: 0.375rem;
+		overflow-x: auto;
+	}
+
+	/* 确保错误消息的文字颜色正确 */
+	.message-bubble.error-message {
+		background: #f8d7da;
+		color: #721c24;
+		border: 1px solid #f5c6cb;
+	}
+
+	.message-bubble.error-message :global(.markdown),
+	.message-bubble.error-message :global(.markdown p) {
+		color: #721c24 !important;
+	}
+
+	/* 确保思考状态的文字颜色正确 */
+	.message-bubble.thinking {
+		background: #f8f9fa;
+		padding: 1rem;
+		color: #6c757d;
 	}
 
 	/* Responsive Design */
