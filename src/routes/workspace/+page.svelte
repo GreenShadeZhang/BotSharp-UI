@@ -9,9 +9,7 @@
 	let mounted = false;
 	let showAgentModal = false;
 	let showSessionsSidebar = false;
-
 	onMount(() => {
-		console.log('Workspace page mounted');
 		mounted = true;
 	});
 
@@ -25,27 +23,21 @@
 
 	/**
 	 * @param {any} agent
-	 */
-	function handleAgentSelected(agent) {
-		console.log('Selected agent:', agent);
+	 */ function handleAgentSelected(agent) {
 		// Start new chat with selected agent
 		goto(`/workspace/chat?agent=${agent.id}`);
 	}
 
 	/**
 	 * @param {string} sessionId
-	 */
-	function handleSessionSelected(sessionId) {
-		console.log('Selected session:', sessionId);
+	 */ function handleSessionSelected(sessionId) {
 		// Navigate to existing chat session
 		goto(`/workspace/chat/${sessionId}`);
 	}
 
 	/**
 	 * @param {string} sessionId
-	 */
-	function handleSessionDeleted(sessionId) {
-		console.log('Deleted session:', sessionId);
+	 */ function handleSessionDeleted(sessionId) {
 		// Handle session deletion if needed
 	}
 
@@ -61,7 +53,8 @@
 </script>
 
 <div class="workspace-home">
-	{#if mounted}		<div class="workspace-header" in:fade={{ duration: 600 }}>
+	{#if mounted}
+		<div class="workspace-header" in:fade={{ duration: 600 }}>
 			<div class="header-content">
 				<h1 class="workspace-title">
 					<i class="fas fa-workspace me-3"></i>
@@ -75,7 +68,14 @@
 		<div class="workspace-content" in:fly={{ y: 30, duration: 800, delay: 200 }}>
 			<div class="quick-actions">
 				<h2 class="section-title">{$_('workspace.quick_actions')}</h2>
-				<div class="action-grid">					<div class="action-card" on:click={navigateToChat} on:keydown={(e) => e.key === 'Enter' && navigateToChat()} role="button" tabindex="0">
+				<div class="action-grid">
+					<div
+						class="action-card"
+						on:click={navigateToChat}
+						on:keydown={(e) => e.key === 'Enter' && navigateToChat()}
+						role="button"
+						tabindex="0"
+					>
 						<div class="action-icon">
 							<i class="fas fa-comments"></i>
 						</div>
@@ -89,7 +89,13 @@
 						</div>
 					</div>
 
-					<div class="action-card" on:click={navigateToSessions} on:keydown={(e) => e.key === 'Enter' && navigateToSessions()} role="button" tabindex="0">
+					<div
+						class="action-card"
+						on:click={navigateToSessions}
+						on:keydown={(e) => e.key === 'Enter' && navigateToSessions()}
+						role="button"
+						tabindex="0"
+					>
 						<div class="action-icon">
 							<i class="fas fa-history"></i>
 						</div>
@@ -140,23 +146,24 @@
 					<p>{$_('workspace.no_recent_activity')}</p>
 					<span>{$_('workspace.start_conversation_hint')}</span>
 				</div>
-			</div>		</div>
+			</div>
+		</div>
 	{/if}
 </div>
 
 <!-- Agent Selection Modal -->
-<AgentSelectionModal 
-	bind:isOpen={showAgentModal} 
+<AgentSelectionModal
+	bind:isOpen={showAgentModal}
 	onAgentSelected={handleAgentSelected}
-	onClose={() => showAgentModal = false}
+	onClose={() => (showAgentModal = false)}
 />
 
 <!-- Sessions Sidebar -->
-<SessionsSidebar 
+<SessionsSidebar
 	bind:isOpen={showSessionsSidebar}
 	onSessionSelected={handleSessionSelected}
 	onSessionDeleted={handleSessionDeleted}
-	onClose={() => showSessionsSidebar = false}
+	onClose={() => (showSessionsSidebar = false)}
 />
 
 <style>

@@ -52,7 +52,6 @@
 			// If agent ID is provided in URL, auto-select that agent
 			const preSelectedAgent = agents.find((a) => a.id === agentId);
 			if (preSelectedAgent) {
-				console.log('Auto-selecting agent from URL:', preSelectedAgent.name);
 				await selectAgent(preSelectedAgent);
 			} else {
 				console.warn('Agent with ID not found:', agentId);
@@ -66,13 +65,11 @@
 			};
 			const response = await getAgents(filter, true);
 			agents = response?.items?.map((t) => ({ ...t })) || [];
-			console.log('Agents loaded:', agents.length);
 		} catch (error) {
 			console.error('Failed to load agents:', error);
 		}
 	}
 	async function loadSession(id) {
-		console.log('Loading session:', id);
 		try {
 			isLoading = true;
 
@@ -123,7 +120,6 @@
 			await signalr.start(conversation.id);
 
 			showAgentSelect = false;
-			console.log('Session loaded successfully');
 		} catch (error) {
 			console.error('Failed to load session:', error);
 			// Fallback to agent selection
@@ -224,17 +220,14 @@
 	}
 	function goBack() {
 		goto('/workspace/sessions');
-	} /**
+	}
+	/**
 	 * Handle message received from assistant
-	 */
-	function onMessageReceivedFromAssistant(message) {
+	 */ function onMessageReceivedFromAssistant(message) {
 		// 只处理 AI 助手的消息
 		if (!message.sender || message.sender.role !== 'assistant') {
-			console.log(`[Workspace Chat] 忽略非助手消息，角色: ${message.sender?.role}`);
 			return;
 		}
-
-		console.log(`[Workspace Chat] 收到最终助手消息，ID: ${message.message_id}`);
 
 		// 检查是否为流式消息的最终版本
 		const messageId = message.message_id;
@@ -256,11 +249,8 @@
 			// 从流式消息数组中移除
 			streamingMessages = streamingMessages.filter((m) => m.message_id !== messageId);
 			// 从缓存中移除
-			streamingMessageCache.delete(messageId);
-
-			// 添加到最终消息数组
+			streamingMessageCache.delete(messageId); // 添加到最终消息数组
 			messages = [...messages, finalMessage];
-			console.log(`[Workspace Chat] 流式消息转换为最终消息，ID: ${messageId}`);
 		} else {
 			// 普通助手消息
 			const assistantMessage = {
@@ -275,9 +265,7 @@
 				is_streaming: false,
 				is_chat_message: true
 			};
-
 			messages = [...messages, assistantMessage];
-			console.log(`[Workspace Chat] 添加新助手消息，ID: ${message.message_id}`);
 		}
 
 		isSendingMsg = false;
@@ -293,17 +281,11 @@
 
 	/**
 	 * Handle streaming message from assistant
-	 */
-	function onStreamMessageReceivedFromAssistant(message) {
+	 */ function onStreamMessageReceivedFromAssistant(message) {
 		// 只处理 AI 助手的消息
 		if (!message.sender || message.sender.role !== 'assistant') {
-			console.log(`[Workspace Chat] 忽略非助手流式消息，角色: ${message.sender?.role}`);
 			return;
 		}
-
-		console.log(
-			`[Workspace Chat] 收到流式消息片段，ID: ${message.message_id}, 片段长度: ${message.text?.length || 0}`
-		);
 
 		const messageId = message.message_id;
 
@@ -330,10 +312,6 @@
 			if (existingIndex !== -1) {
 				streamingMessages[existingIndex] = updatedMessage;
 			}
-
-			console.log(
-				`[Workspace Chat] 更新流式消息，ID: ${messageId}, 累积长度: ${updatedMessage.content?.length || 0}`
-			);
 		} else {
 			// 新的流式消息
 			const newStreamingMessage = {
@@ -350,11 +328,8 @@
 			};
 
 			// 添加到缓存
-			streamingMessageCache.set(messageId, newStreamingMessage);
-
-			// 添加到显示数组
+			streamingMessageCache.set(messageId, newStreamingMessage); // 添加到显示数组
 			streamingMessages.push(newStreamingMessage);
-			console.log(`[Workspace Chat] 添加新流式消息，ID: ${messageId}`);
 		}
 
 		streamingMessages = [...streamingMessages];

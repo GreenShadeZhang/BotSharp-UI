@@ -7,12 +7,9 @@
 
 	let authenticated = false;
 	let loading = true;
-
 	onMount(() => {
-		console.log('Workspace layout mounting...');
 		try {
 			authenticated = isAuthenticated();
-			console.log('Authentication status:', authenticated);
 		} catch (error) {
 			console.error('Authentication error:', error);
 			// 在开发阶段，如果认证失败，默认允许访问
@@ -23,7 +20,6 @@
 
 		// 在开发阶段注释掉重定向
 		if (!authenticated) {
-			console.log('User not authenticated, would redirect to home');
 			// goto('/');
 		}
 	});
