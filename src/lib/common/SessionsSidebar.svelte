@@ -6,8 +6,7 @@
 
 	/** @type {boolean} */
 	export let isOpen = false;
-
-	/** @type {(sessionId: string) => void} */
+	/** @type {(sessionId: string, agentId: string) => void} */
 	export let onSessionSelected = () => {};
 
 	/** @type {(sessionId: string) => void} */
@@ -25,7 +24,6 @@
 	onMount(async () => {
 		await loadSessions();
 	});
-
 	async function loadSessions() {
 		try {
 			isLoading = true;
@@ -35,6 +33,7 @@
 					id: '1',
 					title: 'Code Review Assistant',
 					agent: 'GPT-4 Developer',
+					agentId: 'gpt4-dev',
 					lastMessage: 'Can you help me review this JavaScript function?',
 					timestamp: new Date('2025-06-22T10:30:00'),
 					messageCount: 15
@@ -43,6 +42,7 @@
 					id: '2',
 					title: 'Marketing Strategy Discussion',
 					agent: 'Business Advisor',
+					agentId: 'business-advisor',
 					lastMessage: 'What are the best practices for social media marketing?',
 					timestamp: new Date('2025-06-21T16:45:00'),
 					messageCount: 8
@@ -51,6 +51,7 @@
 					id: '3',
 					title: 'Technical Documentation',
 					agent: 'Technical Writer',
+					agentId: 'tech-writer',
 					lastMessage: 'How should I structure the API documentation?',
 					timestamp: new Date('2025-06-20T14:20:00'),
 					messageCount: 23
@@ -59,6 +60,7 @@
 					id: '4',
 					title: 'UI/UX Design Consultation',
 					agent: 'Design Expert',
+					agentId: 'design-expert',
 					lastMessage: 'Could you help me improve the user interface?',
 					timestamp: new Date('2025-06-19T09:15:00'),
 					messageCount: 12
@@ -67,6 +69,7 @@
 					id: '5',
 					title: 'Database Optimization',
 					agent: 'Database Specialist',
+					agentId: 'db-specialist',
 					lastMessage: 'How can I optimize these SQL queries?',
 					timestamp: new Date('2025-06-18T14:30:00'),
 					messageCount: 7
@@ -97,12 +100,12 @@
 			return `${days} ${$_('time.days_ago')}`;
 		}
 	}
-
 	/**
 	 * @param {string} sessionId
+	 * @param {string} agentId
 	 */
-	function selectSession(sessionId) {
-		onSessionSelected(sessionId);
+	function selectSession(sessionId, agentId) {
+		onSessionSelected(sessionId, agentId);
 		closeSidebar();
 	}
 
@@ -179,7 +182,7 @@
 							<div class="session-item">
 								<!-- svelte-ignore a11y-click-events-have-key-events -->
 								<!-- svelte-ignore a11y-no-static-element-interactions -->
-								<div class="session-content" on:click={() => selectSession(session.id)}>
+								<div class="session-content" on:click={() => selectSession(session.id, session.agentId)}>
 									<div class="session-header">
 										<h6 class="session-title">{session.title}</h6>
 										<span class="session-time">{formatTimestamp(session.timestamp)}</span>

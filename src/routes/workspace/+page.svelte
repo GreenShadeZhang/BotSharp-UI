@@ -9,11 +9,12 @@
 	let mounted = false;
 	let showAgentModal = false;
 	let showSessionsSidebar = false;
+
 	onMount(() => {
 		mounted = true;
 	});
 
-	function openAgentSelection() {
+	function startNewChat() {
 		showAgentModal = true;
 	}
 
@@ -23,32 +24,27 @@
 
 	/**
 	 * @param {any} agent
-	 */ function handleAgentSelected(agent) {
-		// Start new chat with selected agent
-		goto(`/workspace/chat?agent=${agent.id}`);
+	 */
+	function handleAgentSelected(agent) {
+		// Start new chat with selected agent - navigate to new route structure
+		goto(`/workspace/chat/${agent.id}/new`);
 	}
 
 	/**
 	 * @param {string} sessionId
-	 */ function handleSessionSelected(sessionId) {
-		// Navigate to existing chat session
-		goto(`/workspace/chat/${sessionId}`);
+	 * @param {string} agentId
+	 */
+	function handleSessionSelected(sessionId, agentId) {
+		// Navigate to existing chat session with proper route structure
+		goto(`/workspace/chat/${agentId}/${sessionId}`);
 	}
 
 	/**
 	 * @param {string} sessionId
-	 */ function handleSessionDeleted(sessionId) {
+	 */
+	function handleSessionDeleted(sessionId) {
 		// Handle session deletion if needed
-	}
-
-	function navigateToChat() {
-		// Open agent selection modal instead of direct navigation
-		openAgentSelection();
-	}
-
-	function navigateToSessions() {
-		// Open sessions sidebar instead of navigation
-		openSessionsManager();
+		console.log('Session deleted:', sessionId);
 	}
 </script>
 
@@ -68,11 +64,10 @@
 		<div class="workspace-content" in:fly={{ y: 30, duration: 800, delay: 200 }}>
 			<div class="quick-actions">
 				<h2 class="section-title">{$_('workspace.quick_actions')}</h2>
-				<div class="action-grid">
-					<div
+				<div class="action-grid">					<div
 						class="action-card"
-						on:click={navigateToChat}
-						on:keydown={(e) => e.key === 'Enter' && navigateToChat()}
+						on:click={startNewChat}
+						on:keydown={(e) => e.key === 'Enter' && startNewChat()}
 						role="button"
 						tabindex="0"
 					>
@@ -87,12 +82,10 @@
 						<div class="action-arrow">
 							<i class="fas fa-arrow-right"></i>
 						</div>
-					</div>
-
-					<div
+					</div>					<div
 						class="action-card"
-						on:click={navigateToSessions}
-						on:keydown={(e) => e.key === 'Enter' && navigateToSessions()}
+						on:click={openSessionsManager}
+						on:keydown={(e) => e.key === 'Enter' && openSessionsManager()}
 						role="button"
 						tabindex="0"
 					>
