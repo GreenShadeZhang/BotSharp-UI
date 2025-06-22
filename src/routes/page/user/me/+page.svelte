@@ -253,16 +253,15 @@
 											<div class="detail-label">
 												<i class="fas fa-link text-primary me-2"></i>
 												{$_('Account Origin')}
-											</div>
-											<div class="detail-value">
-												<Badge color="primary" class="origin-badge">
+											</div>											<div class="detail-value">
+												<span class="origin-text">
 													<i class="fas fa-external-link-alt me-1"></i>
 													{currentUser?.source || 'Local'}
 													{#if currentUser?.external_id}
 														<span class="badge-separator">•</span>
 														<span class="external-id">{currentUser.external_id}</span>
 													{/if}
-												</Badge>
+												</span>
 											</div>
 										</div>
 									</Col>
@@ -829,16 +828,11 @@
 		font-size: 0.95rem;
 		word-break: break-word;
 	}
-
-	/* Enhanced Origin Badge */
-	.origin-badge {
-		font-size: 0.85rem;
-		padding: 8px 12px;
-		border-radius: 10px;
+	/* Origin Text Style */
+	.origin-text {
+		font-size: 0.95rem;
 		font-weight: 500;
-		background: linear-gradient(45deg, #667eea, #764ba2) !important;
-		border: none !important;
-		color: white !important;
+		color: #333;
 		display: inline-flex;
 		align-items: center;
 		gap: 4px;
