@@ -1,21 +1,28 @@
 <script>
-	import { onMount, tick } from 'svelte';
+	import { onMount, tick, setContext } from 'svelte';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import { fade, fly } from 'svelte/transition';
 	import { Button, Input } from '@sveltestrap/sveltestrap';
-	import { 
+	import { v4 as uuidv4 } from 'uuid';
+	import moment from 'moment';
+	import {
 		newConversation,
 		sendMessageToHub,
 		getConversation,
 		getDialogs
 	} from '$lib/services/conversation-service.js';
 	import { signalr } from '$lib/services/signalr-service.js';
+	import { BOT_SENDERS, USER_SENDERS, TRAINING_MODE } from '$lib/helpers/constants';
+	import { SenderAction } from '$lib/helpers/enums';
 	import Markdown from '$lib/common/markdown/Markdown.svelte';
-	import { _ } from 'svelte-i18n';
-
+	import LoadingDots from '$lib/common/LoadingDots.svelte';
+	import { globalNotificationManager } from '$lib/services/global-notification-manager.js';
 	/** @type {import('$userTypes').UserModel} */
 	export let currentUser;
+
+	// Use currentUser for potential future features like user avatar or permissions
+	$: userInitials = currentUser?.id?.charAt(0)?.toUpperCase() || 'U';
 
 	/** @type {import('$agentTypes').AgentModel} */
 	export let agent;
@@ -24,13 +31,38 @@
 	let conversationId = params.conversationId;
 	let agentId = params.agentId;
 
-	let messages = [];
+	// Core message and conversation data
+	/** @type {import('$conversationTypes').ChatResponseModel[]} */
+	let dialogs = [];
+	/** @type {import('$conversationTypes').ChatResponseModel[]} */
+	let streamingMessages = []; // 流式消息数组
+	/** @type {Map<string, import('$conversationTypes').ChatResponseModel>} */
+	let streamingMessageCache = new Map(); // 流式消息缓存，用于文本拼接
+	/** @type {{ [s: string]: any; }} */
+	let groupedDialogs = [];
+
+	/** @type {import('$conversationTypes').ChatResponseModel?} */
+	let lastBotMsg;
+	/** @type {import('$conversationTypes').ChatResponseModel?} */
+	let lastMsg;
+
 	let messageInput = '';
 	let isLoading = false;
 	let isSendingMsg = false;
+	let isThinking = false;
+	/** @type {HTMLElement} */
 	let chatContainer;
+	/** @type {import('$conversationTypes').ConversationModel | null} */
 	let conversation = null;
 	let mounted = false;
+	let indication = '';
+	let notificationText = '';
+	let isDisplayNotification = false;
+	/** @type {any} */
+	let notificationTimeout = undefined;
+	setContext('workspace-chat-context', {
+		autoScrollToBottom: autoScrollToBottom
+	});
 
 	onMount(async () => {
 		mounted = true;
@@ -45,48 +77,38 @@
 				// Create new conversation
 				conversation = await newConversation(agentId);
 				conversationId = conversation.id;
-				
+
 				// Update URL to reflect the new conversation ID
 				const newUrl = `/workspace/chat/${agentId}/${conversationId}`;
 				window.history.replaceState({}, '', newUrl);
 
-				// Add welcome message
-				messages = [{
-					id: 'welcome',
-					content: `Hello! I'm ${agent?.name || 'your assistant'}. How can I help you today?`,
-					isUser: false,
-					timestamp: new Date(),
-					agent: agent
-				}];
+				// Initialize empty dialogs for new conversation
+				dialogs = [];
 			} else {
 				// Load existing conversation
-				conversation = await getConversation(conversationId);
+				conversation = await getConversation(conversationId, true);
 				if (conversation) {
-					const dialogsResponse = await getDialogs(conversationId);
-					if (dialogsResponse && dialogsResponse.length > 0) {
-						messages = dialogsResponse.map((dialog) => ({
-							id: dialog.message_id || dialog.id || Date.now().toString(),
-							content: dialog.text || dialog.rich_content?.message?.text || '',
-							isUser: dialog.sender?.role === 'user',
-							timestamp: new Date(dialog.created_at || Date.now()),
-							agent: agent,
-							rich_content: dialog.rich_content,
-							message_id: dialog.message_id,
-							sender: dialog.sender
-						}));
-					}
+					dialogs = await getDialogs(conversationId, 50);
+					if (!dialogs) dialogs = [];
 				} else {
 					throw new Error('Conversation not found');
 				}
 			}
 
-			// Initialize SignalR connection
+			// Initialize SignalR connection with comprehensive event handlers
 			if (conversation) {
+				signalr.onMessageReceivedFromClient = onMessageReceivedFromClient;
 				signalr.onMessageReceivedFromAssistant = onMessageReceivedFromAssistant;
 				signalr.onStreamMessageReceivedFromAssistant = onStreamMessageReceivedFromAssistant;
+				signalr.onNotificationGenerated = onNotificationGenerated;
+				signalr.onSenderActionGenerated = onSenderActionGenerated;
+
+				// 集成全局通知管理器
+				await globalNotificationManager.integrateChatNotifications(conversationId);
 				await signalr.start(conversation.id);
 			}
 
+			await refresh();
 		} catch (error) {
 			console.error('Failed to initialize chat:', error);
 			// Redirect back to workspace on error
@@ -96,77 +118,274 @@
 		}
 	}
 
+	/** @param {import('$conversationTypes').ChatResponseModel} message */
+	function onMessageReceivedFromClient(message) {
+		console.log('[WorkspaceChat] 收到用户消息:', message);
+		dialogs.push({
+			...message,
+			is_chat_message: true
+		});
+		refresh();
+		messageInput = '';
+	}
+
+	/** @param {import('$conversationTypes').ChatResponseModel} message */
 	function onMessageReceivedFromAssistant(message) {
-		const assistantMessage = {
-			id: message.id || Date.now().toString(),
-			content: message.text || '',
-			isUser: false,
-			timestamp: new Date(),
-			agent: agent,
-			rich_content: message.rich_content,
-			message_id: message.message_id,
-			sender: message.sender
-		};
-
-		messages = [...messages, assistantMessage];
-		isSendingMsg = false;
-		scrollToBottom();
-	}
-
-	function onStreamMessageReceivedFromAssistant(message) {
-		// Handle streaming messages
-		// This is a simplified version - you might need to implement proper streaming logic
-		const lastMessage = messages[messages.length - 1];
-		if (lastMessage && !lastMessage.isUser) {
-			lastMessage.content += message.text || '';
-			messages = [...messages];
-		} else {
-			onMessageReceivedFromAssistant(message);
+		// 只处理 AI 助手的消息
+		if (!message.sender || message.sender.role !== 'assistant') {
+			console.log(`[WorkspaceChat] 忽略非助手消息，角色: ${message.sender?.role}`);
+			return;
 		}
-		scrollToBottom();
+
+		console.log(`[WorkspaceChat] 收到最终消息，ID: ${message.message_id}, 替换流式消息`);
+
+		const messageId = message.message_id;
+
+		// 清理流式消息缓存
+		if (streamingMessageCache.has(messageId)) {
+			streamingMessageCache.delete(messageId);
+			console.log(`[WorkspaceChat] 清理流式消息缓存，ID: ${messageId}`);
+		}
+
+		// 检查是否有对应的流式消息需要替换
+		const streamingIndex = streamingMessages.findIndex((m) => m.message_id === messageId);
+		if (streamingIndex !== -1) {
+			// 移除流式消息
+			streamingMessages.splice(streamingIndex, 1);
+			streamingMessages = [...streamingMessages];
+			console.log(`[WorkspaceChat] 移除流式消息，ID: ${messageId}`);
+		}
+
+		// 检查 dialogs 中是否已存在该助手消息
+		const existingIndex = dialogs.findIndex(
+			(m) => m.message_id === message.message_id && m.sender && m.sender.role === 'assistant'
+		);
+		if (existingIndex !== -1) {
+			// 替换现有的助手消息
+			dialogs[existingIndex] = {
+				...message,
+				is_chat_message: true
+			};
+			console.log(`[WorkspaceChat] 替换现有助手消息，ID: ${message.message_id}`);
+		} else {
+			// 添加新的助手消息
+			dialogs.push({
+				...message,
+				is_chat_message: true
+			});
+			console.log(`[WorkspaceChat] 添加新助手消息，ID: ${message.message_id}`);
+		}
+
+		isSendingMsg = false;
+		refresh();
+	}
+	/** @param {import('$conversationTypes').ChatResponseModel} message */
+	function onStreamMessageReceivedFromAssistant(message) {
+		// 只处理 AI 助手的消息
+		if (!message.sender || message.sender.role !== 'assistant') {
+			console.log(`[WorkspaceChat] 忽略非助手流式消息，角色: ${message.sender?.role}`);
+			return;
+		}
+
+		console.log(
+			`[WorkspaceChat] 收到流式消息片段，ID: ${message.message_id}, 片段长度: ${message.text?.length || 0}`
+		);
+
+		const messageId = message.message_id;
+
+		// 处理流式消息的增量更新
+		if (streamingMessageCache.has(messageId)) {
+			// 更新现有的流式消息 - 进行增量拼接
+			const existingMessage = streamingMessageCache.get(messageId);
+			if (existingMessage) {
+				const updatedMessage = {
+					...existingMessage,
+					// 进行增量拼接文本内容
+					text: (existingMessage.text || '') + (message.text || ''),
+					// 合并其他可能的字段
+					rich_content: message.rich_content || existingMessage.rich_content,
+					created_at: existingMessage.created_at || message.created_at,
+					sender: existingMessage.sender || message.sender,
+					conversation_id: existingMessage.conversation_id || message.conversation_id,
+					is_chat_message: true,
+					is_streaming: true // 标记为流式消息
+				};
+
+				// 更新缓存
+				streamingMessageCache.set(messageId, updatedMessage);
+
+				// 更新显示数组中的对应消息
+				const existingIndex = streamingMessages.findIndex((m) => m.message_id === messageId);
+				if (existingIndex !== -1) {
+					streamingMessages[existingIndex] = updatedMessage;
+				}
+
+				console.log(
+					`[WorkspaceChat] 更新流式消息，ID: ${messageId}, 累积长度: ${updatedMessage.text?.length || 0}`
+				);
+			}
+		} else {
+			// 新的流式消息
+			const newStreamingMessage = {
+				...message,
+				text: message.text || '',
+				is_chat_message: true,
+				is_streaming: true // 标记为流式消息
+			};
+
+			// 添加到缓存
+			streamingMessageCache.set(messageId, newStreamingMessage);
+
+			// 添加到显示数组
+			streamingMessages.push(newStreamingMessage);
+			console.log(`[WorkspaceChat] 添加新流式消息，ID: ${messageId}`);
+		}
+
+		streamingMessages = [...streamingMessages];
+		refresh();
 	}
 
+	/** @param {import('$conversationTypes').ChatResponseModel} message */
+	function onNotificationGenerated(message) {
+		sendReceivedNotification(message);
+	}
+
+	/** @param {import('$conversationTypes').ConversationSenderActionModel} data */
+	function onSenderActionGenerated(data) {
+		if (data?.sender_action == SenderAction.TypingOn) {
+			isThinking = true;
+			const retIndication = data.indication || '';
+			indication = retIndication.split('|')[0];
+		} else if (data?.sender_action == SenderAction.TypingOff) {
+			isThinking = false;
+			indication = '';
+		}
+	}
+
+	/** @param {import('$conversationTypes').ChatResponseModel} message */
+	function sendReceivedNotification(message) {
+		if (notificationTimeout) {
+			clearTimeout(notificationTimeout);
+		}
+
+		notificationText = message?.rich_content?.message?.text || message.text || '';
+		isDisplayNotification = true;
+		notificationTimeout = setTimeout(
+			() => {
+				isDisplayNotification = false;
+				notificationText = '';
+			},
+			notificationText?.length > 200 ? 8000 : 3000
+		);
+	}
+	async function refresh() {
+		// 合并常规对话和流式消息进行显示
+		const allMessages = [...dialogs, ...streamingMessages];
+		// 按创建时间排序
+		allMessages.sort(
+			(a, b) => new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime()
+		);
+
+		// trigger UI render - 使用合并后的消息进行显示
+		lastBotMsg = null;
+		await tick();
+		lastBotMsg = findLastBotMessage(allMessages); // 在合并后的消息中查找
+		lastMsg = allMessages.slice(-1)[0]; // 从合并后的消息中获取最后一条
+		groupedDialogs = groupDialogs(allMessages); // 对合并后的消息进行分组
+		await tick();
+
+		autoScrollToBottom();
+	}
+
+	function autoScrollToBottom() {
+		if (chatContainer) {
+			setTimeout(() => {
+				chatContainer.scrollTo({ top: chatContainer.scrollHeight, behavior: 'smooth' });
+			}, 200);
+		}
+	}
+	/** @param {import('$conversationTypes').ChatResponseModel[]} dialogs */
+	function findLastBotMessage(dialogs) {
+		const lastMsg = dialogs.slice(-1)[0];
+		return BOT_SENDERS.includes(lastMsg?.sender?.role || '') ? lastMsg : null;
+	}
+	/** @param {any} dialogs */
+	function groupDialogs(dialogs) {
+		if (!!!dialogs) return {};
+		const format = 'MMM D, YYYY';
+		/** @type {{ [key: string]: import('$conversationTypes').ChatResponseModel[] }} */
+		const grouped = {};
+
+		dialogs.forEach((/** @type {any} */ dialog) => {
+			const createDate = moment.utc(dialog.created_at).local().format(format);
+			let dateKey;
+			if (createDate == moment.utc().local().format(format)) {
+				dateKey = 'Today';
+			} else if (createDate == moment.utc().local().subtract(1, 'days').format(format)) {
+				dateKey = 'Yesterday';
+			} else {
+				dateKey = createDate;
+			}
+
+			if (!grouped[dateKey]) {
+				grouped[dateKey] = [];
+			}
+			grouped[dateKey].push(dialog);
+		});
+
+		return grouped;
+	}
+
+	function clearStreamingMessages() {
+		streamingMessages = [];
+		streamingMessageCache.clear();
+	}
 	async function sendMessage() {
 		if (!messageInput.trim() || isLoading || isSendingMsg || !conversation) return;
 
-		const userMessage = {
-			id: Date.now().toString(),
-			content: messageInput.trim(),
-			isUser: true,
-			timestamp: new Date()
-		};
-
-		messages = [...messages, userMessage];
-		const currentInput = messageInput;
-		messageInput = '';
 		isSendingMsg = true;
-
-		scrollToBottom();
-
+		const currentInput = messageInput.trim();
+		messageInput = '';
 		try {
 			await sendMessageToHub(agentId, conversation.id, currentInput);
 		} catch (error) {
 			console.error('Failed to send message:', error);
-			// Add error message
-			messages = [...messages, {
-				id: Date.now().toString(),
-				content: 'Sorry, there was an error sending your message. Please try again.',
-				isUser: false,
-				timestamp: new Date(),
-				isError: true
-			}];
+			// Create a minimal error message that matches ChatResponseModel structure
+			const errorMessage = {
+				message_id: uuidv4(),
+				uuid: uuidv4(),
+				text: 'Sorry, there was an error sending your message. Please try again.',
+				sender: {
+					id: 'system',
+					role: 'assistant',
+					source: 'system',
+					permissions: [],
+					agent_actions: []
+				},
+				created_at: new Date(),
+				is_chat_message: true,
+				conversation_id: conversation.id,
+				editor: null,
+				function: null,
+				rich_content: null,
+				post_action_disclaimer: null,
+				has_message_files: false,
+				data: null
+			};
+			// @ts-ignore - Adding as any to avoid type checking issues
+			dialogs.push(errorMessage);
 			isSendingMsg = false;
+			refresh();
 		}
 	}
 
 	function scrollToBottom() {
 		tick().then(() => {
-			if (chatContainer) {
-				chatContainer.scrollTop = chatContainer.scrollHeight;
-			}
+			autoScrollToBottom();
 		});
 	}
 
+	/** @param {KeyboardEvent} event */
 	function handleKeyPress(event) {
 		if (event.key === 'Enter' && !event.shiftKey) {
 			event.preventDefault();
@@ -178,11 +397,34 @@
 		goto('/workspace');
 	}
 
+	/** @param {string | Date} timestamp */
 	function formatTimestamp(timestamp) {
-		return new Date(timestamp).toLocaleTimeString([], { 
-			hour: '2-digit', 
-			minute: '2-digit' 
-		});
+		return moment.utc(timestamp).local().format('HH:mm');
+	}
+
+	/** @param {string | Date} date */
+	function formatDateHeader(date) {
+		const messageDate = moment.utc(date).local();
+		const today = moment();
+		const yesterday = moment().subtract(1, 'day');
+
+		if (messageDate.isSame(today, 'day')) {
+			return 'Today';
+		} else if (messageDate.isSame(yesterday, 'day')) {
+			return 'Yesterday';
+		} else {
+			return messageDate.format('MMMM DD, YYYY');
+		}
+	}
+
+	/** @param {import('$conversationTypes').ChatResponseModel} message */
+	function isUserMessage(message) {
+		return USER_SENDERS.includes(message.sender?.role || '');
+	}
+
+	/** @param {import('$conversationTypes').ChatResponseModel} message */
+	function isBotMessage(message) {
+		return BOT_SENDERS.includes(message.sender?.role || '');
 	}
 </script>
 
@@ -209,7 +451,6 @@
 			<!-- Add any header actions here -->
 		</div>
 	</div>
-
 	<!-- Chat Messages -->
 	<div class="chat-messages" bind:this={chatContainer}>
 		{#if isLoading}
@@ -219,51 +460,72 @@
 				</div>
 				<p class="mt-2 text-muted">Loading conversation...</p>
 			</div>
-		{:else if messages.length === 0}
+		{:else if Object.keys(groupedDialogs).length === 0}
 			<div class="empty-chat">
 				<i class="fas fa-comments fa-3x text-muted mb-3"></i>
 				<p class="text-muted">Start a conversation with {agent?.name || 'the assistant'}</p>
 			</div>
 		{:else}
-			{#each messages as message (message.id)}
-				<div class="message-container {message.isUser ? 'user-message' : 'assistant-message'}"
-					 in:fly={{ y: 20, duration: 300 }}>
-					{#if !message.isUser}
-						<div class="message-avatar">
-							<i class="fas fa-robot"></i>
-						</div>
-					{/if}
-					<div class="message-content">
-						<div class="message-bubble {message.isError ? 'error-message' : ''}">
-							{#if message.rich_content}
-								<!-- Handle rich content if needed -->
-								<div class="rich-content">
-									<Markdown content={message.content} />
-								</div>
-							{:else}
-								<Markdown content={message.content} />
-							{/if}
-						</div>
-						<div class="message-time">
-							{formatTimestamp(message.timestamp)}
-						</div>
-					</div>
-					{#if message.isUser}
-						<div class="message-avatar user-avatar">
-							<i class="fas fa-user"></i>
-						</div>
-					{/if}
+			{#each Object.entries(groupedDialogs) as [date, messages] (date)}
+				<div class="date-separator">
+					<span class="date-label">{date}</span>
 				</div>
+				{#each messages as message (message.message_id || message.id)}
+					<div
+						class="message-container {isUserMessage(message)
+							? 'user-message'
+							: 'assistant-message'}"
+						in:fly={{ y: 20, duration: 300 }}
+					>
+						{#if !isUserMessage(message)}
+							<div class="message-avatar">
+								<i class="fas fa-robot"></i>
+							</div>
+						{/if}
+						<div class="message-content">
+							<div
+								class="message-bubble {message.text?.includes('Sorry, there was an error')
+									? 'error-message'
+									: ''} {message.is_streaming ? 'streaming-message' : ''}"
+							>
+								{#if message.rich_content}
+									<!-- Handle rich content if needed -->
+									<div class="rich-content">
+										<Markdown text={message.text || message.rich_content?.message?.text || ''} />
+									</div>
+								{:else}
+									<Markdown text={message.text || ''} />
+								{/if}
+								{#if message.is_streaming}
+									<span class="streaming-indicator">
+										<LoadingDots />
+									</span>
+								{/if}
+							</div>
+							<div class="message-time">
+								{formatTimestamp(message.created_at || message.timestamp)}
+							</div>
+						</div>
+						{#if isUserMessage(message)}
+							<div class="message-avatar user-avatar">
+								<i class="fas fa-user"></i>
+							</div>
+						{/if}
+					</div>
+				{/each}
 			{/each}
 		{/if}
 
-		{#if isSendingMsg}
+		{#if isSendingMsg || isThinking}
 			<div class="message-container assistant-message" in:fade>
 				<div class="message-avatar">
 					<i class="fas fa-robot"></i>
 				</div>
 				<div class="message-content">
 					<div class="message-bubble thinking">
+						{#if indication}
+							<div class="thinking-text">{indication}</div>
+						{/if}
 						<div class="typing-indicator">
 							<span></span>
 							<span></span>
@@ -274,6 +536,16 @@
 			</div>
 		{/if}
 	</div>
+
+	<!-- Notification Banner -->
+	{#if isDisplayNotification && notificationText}
+		<div class="notification-banner" in:fade out:fade>
+			<div class="notification-content">
+				<i class="fas fa-bell"></i>
+				<span>{notificationText}</span>
+			</div>
+		</div>
+	{/if}
 
 	<!-- Input Area -->
 	<div class="chat-input-area">
@@ -286,7 +558,7 @@
 				class="message-input"
 				disabled={isLoading || isSendingMsg}
 			></textarea>
-			<button 
+			<button
 				class="send-btn"
 				on:click={sendMessage}
 				disabled={!messageInput.trim() || isLoading || isSendingMsg}
@@ -303,6 +575,7 @@
 		flex-direction: column;
 		height: 100vh;
 		background: #f8f9fa;
+		position: relative;
 	}
 
 	/* Header Styles */
@@ -313,7 +586,8 @@
 		padding: 1rem 1.5rem;
 		background: white;
 		border-bottom: 1px solid #e9ecef;
-		box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+		z-index: 10;
 	}
 
 	.header-left {
@@ -378,7 +652,8 @@
 		gap: 1rem;
 	}
 
-	.loading-container, .empty-chat {
+	.loading-container,
+	.empty-chat {
 		display: flex;
 		flex-direction: column;
 		align-items: center;
@@ -387,10 +662,42 @@
 		text-align: center;
 	}
 
+	/* Date Separator */
+	.date-separator {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		margin: 1rem 0;
+		position: relative;
+	}
+
+	.date-separator::before {
+		content: '';
+		position: absolute;
+		top: 50%;
+		left: 0;
+		right: 0;
+		height: 1px;
+		background: #dee2e6;
+		z-index: 1;
+	}
+
+	.date-label {
+		background: #f8f9fa;
+		color: #6c757d;
+		padding: 0.25rem 1rem;
+		border-radius: 1rem;
+		font-size: 0.8rem;
+		font-weight: 500;
+		z-index: 2;
+		position: relative;
+	}
+
 	.message-container {
 		display: flex;
 		gap: 0.75rem;
 		max-width: 80%;
+		margin-bottom: 0.5rem;
 	}
 
 	.message-container.user-message {
@@ -411,6 +718,7 @@
 		justify-content: center;
 		font-size: 0.8rem;
 		flex-shrink: 0;
+		margin-top: auto;
 	}
 
 	.message-avatar:not(.user-avatar) {
@@ -433,8 +741,9 @@
 		padding: 0.75rem 1rem;
 		border-radius: 1rem;
 		background: white;
-		box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+		box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 		word-wrap: break-word;
+		position: relative;
 	}
 
 	.user-message .message-bubble {
@@ -451,6 +760,38 @@
 	.message-bubble.thinking {
 		background: #f8f9fa;
 		padding: 1rem;
+	}
+
+	.message-bubble.streaming-message {
+		border-left: 3px solid #667eea;
+		animation: pulse 2s infinite;
+	}
+
+	@keyframes pulse {
+		0% {
+			border-left-color: #667eea;
+		}
+		50% {
+			border-left-color: #764ba2;
+		}
+		100% {
+			border-left-color: #667eea;
+		}
+	}
+
+	.streaming-indicator {
+		display: inline-flex;
+		align-items: center;
+		margin-left: 0.5rem;
+		font-size: 0.8rem;
+		color: #6c757d;
+	}
+
+	.thinking-text {
+		color: #6c757d;
+		font-style: italic;
+		margin-bottom: 0.5rem;
+		font-size: 0.9rem;
 	}
 
 	.message-time {
@@ -478,12 +819,49 @@
 		animation: typing 1.4s infinite ease-in-out;
 	}
 
-	.typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
-	.typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
+	.typing-indicator span:nth-child(1) {
+		animation-delay: -0.32s;
+	}
+	.typing-indicator span:nth-child(2) {
+		animation-delay: -0.16s;
+	}
 
 	@keyframes typing {
-		0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
-		40% { transform: scale(1); opacity: 1; }
+		0%,
+		80%,
+		100% {
+			transform: scale(0.8);
+			opacity: 0.5;
+		}
+		40% {
+			transform: scale(1);
+			opacity: 1;
+		}
+	}
+
+	/* Notification Banner */
+	.notification-banner {
+		position: absolute;
+		top: 80px;
+		left: 1rem;
+		right: 1rem;
+		background: #d1ecf1;
+		border: 1px solid #bee5eb;
+		border-radius: 0.5rem;
+		z-index: 20;
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+	}
+
+	.notification-content {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		padding: 0.75rem 1rem;
+		color: #0c5460;
+	}
+
+	.notification-content i {
+		flex-shrink: 0;
 	}
 
 	/* Input Area */
@@ -491,6 +869,7 @@
 		padding: 1rem 1.5rem;
 		background: white;
 		border-top: 1px solid #e9ecef;
+		z-index: 10;
 	}
 
 	.input-container {
@@ -544,21 +923,51 @@
 		transform: none;
 	}
 
+	/* Rich Content Styles */
+	.rich-content {
+		width: 100%;
+	}
+
+	/* Responsive Design */
 	@media (max-width: 768px) {
 		.message-container {
 			max-width: 95%;
 		}
-		
+
 		.chat-header {
 			padding: 0.75rem 1rem;
 		}
-		
+
 		.agent-details h3 {
 			font-size: 1rem;
 		}
-		
+
 		.agent-details p {
 			font-size: 0.8rem;
 		}
+
+		.notification-banner {
+			left: 0.5rem;
+			right: 0.5rem;
+		}
+	}
+
+	/* Scrollbar Styling */
+	.chat-messages::-webkit-scrollbar {
+		width: 6px;
+	}
+
+	.chat-messages::-webkit-scrollbar-track {
+		background: #f1f1f1;
+		border-radius: 3px;
+	}
+
+	.chat-messages::-webkit-scrollbar-thumb {
+		background: #c1c1c1;
+		border-radius: 3px;
+	}
+
+	.chat-messages::-webkit-scrollbar-thumb:hover {
+		background: #a8a8a8;
 	}
 </style>
