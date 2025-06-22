@@ -95,8 +95,7 @@
 				<p class="text-muted">{$_('workspace.select_agent.no_agents')}</p>
 			</div>
 		{:else}
-			<Row>				{#each filteredAgents as agent (agent.id)}
-					<Col md="6" class="mb-3">
+			<Row>				{#each filteredAgents as agent (agent.id)}					<Col md="6" class="mb-4">
 						<!-- svelte-ignore a11y-click-events-have-key-events -->
 						<!-- svelte-ignore a11y-no-static-element-interactions -->
 						<div 
@@ -105,9 +104,13 @@
 							role="button"
 							tabindex={0}
 						>
-							<div class="card-body d-flex flex-column">
+							<div class="card-body d-flex flex-column p-4">
 								<div class="agent-icon mb-3">
-									<i class="fas fa-robot"></i>
+									{#if agent.icon_url}
+										<img src={agent.icon_url} alt={agent.name} class="agent-image" />
+									{:else}
+										<img src="images/users/bot.png" alt={agent.name} class="agent-image" />
+									{/if}
 								</div>
 								<h6 class="agent-name">{agent.name}</h6>
 								<p class="agent-description text-muted small flex-grow-1">
@@ -157,46 +160,59 @@
 		border-color: #667eea;
 		box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
 	}
-
 	.agent-card {
 		border: 2px solid #e9ecef;
-		border-radius: 10px;
+		border-radius: 12px;
 		transition: all 0.3s ease;
 		cursor: pointer;
 		height: 100%;
+		margin-bottom: 0.75rem;
 	}
 
 	.agent-card:hover {
 		border-color: #667eea;
-		transform: translateY(-2px);
-		box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
+		transform: translateY(-3px);
+		box-shadow: 0 10px 30px rgba(102, 126, 234, 0.2);
 	}
 
 	.agent-icon {
-		width: 50px;
-		height: 50px;
-		border-radius: 10px;
+		width: 60px;
+		height: 60px;
+		border-radius: 12px;
 		background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 		display: flex;
 		align-items: center;
 		justify-content: center;
 		color: white;
 		font-size: 1.5rem;
+		overflow: hidden;
+		position: relative;
+	}
+
+	.agent-image {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		border-radius: 12px;
 	}
 
 	.agent-name {
 		font-weight: 600;
 		color: #2c3e50;
-		margin-bottom: 0.5rem;
+		margin-bottom: 0.75rem;
+		font-size: 1.1rem;
 	}
 
 	.agent-description {
-		line-height: 1.4;
+		line-height: 1.5;
 		margin-bottom: 1rem;
+		min-height: 2.5em;
 	}
 
 	.agent-meta {
 		margin-top: auto;
+		padding-top: 0.5rem;
+		border-top: 1px solid #f8f9fa;
 	}
 
 	@media (max-width: 768px) {
