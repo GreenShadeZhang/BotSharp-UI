@@ -363,7 +363,7 @@
 <div class="workspace-layout">
 	<!-- Floating Toggle Button (shown when sidebar is closed) -->
 	{#if !showLeftSidebar}
-		<div class="floating-toggle" transition:fade={{ duration: 200 }}>
+		<div class="floating-toggle" transition:fade={{ duration: 300, delay: 100 }}>
 			<Button
 				color="primary"
 				class="floating-btn"
@@ -374,11 +374,10 @@
 			</Button>
 		</div>
 	{/if}
-
 	<!-- Left Sidebar for Conversations -->
 	<div class="sidebar-left {showLeftSidebar ? 'sidebar-open' : 'sidebar-closed'}">
 		{#if showLeftSidebar}
-			<div class="sidebar-header">
+			<div class="sidebar-header" in:fly={{ x: -100, duration: 300, delay: 100 }}>
 				<div class="sidebar-title">
 					<i class="fas fa-comments me-2"></i>
 					{$_('Conversations')}
@@ -399,9 +398,9 @@
 			</div>
 		{/if}
 		{#if showLeftSidebar}
-			<div class="sidebar-content">
+			<div class="sidebar-content" in:fly={{ x: -100, duration: 300, delay: 150 }}>
 				<!-- Search and Filter Section -->
-				<div class="filter-section">
+				<div class="filter-section" in:slide={{ duration: 300, delay: 200 }}>
 					<div class="filter-header">
 						<span class="filter-title">
 							<i class="fas fa-filter me-2"></i>
@@ -524,7 +523,7 @@
 					{/if}
 				</div>
 				<!-- Conversations List -->
-				<div class="conversations-list">
+				<div class="conversations-list" in:fade={{ duration: 300, delay: 250 }}>
 					{#if isLoading && !sidebarDataLoaded}
 						<div class="loading-state">
 							<div class="spinner-border spinner-border-sm me-2" role="status"></div>
@@ -772,23 +771,22 @@
 	.floating-btn i {
 		font-size: 1.2rem;
 		color: white;
-	}
-	/* Left Sidebar Styles */
+	} /* Left Sidebar Styles */
 	.sidebar-left {
 		width: 320px;
 		background: white;
 		border-right: 1px solid #e9ecef;
 		display: flex;
 		flex-direction: column;
-		transition: all 0.3s ease;
+		transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 		box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
 		position: relative;
 		z-index: 1000;
+		overflow: hidden;
 	}
 
 	.sidebar-left.sidebar-closed {
 		width: 0;
-		overflow: hidden;
 		border-right: none;
 		box-shadow: none;
 	}
@@ -801,22 +799,14 @@
 		background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 		color: white;
 		min-width: 320px; /* 确保header不会被压缩 */
+		flex-shrink: 0;
 	}
-
 	.sidebar-title {
 		font-weight: 600;
 		font-size: 1rem;
 		white-space: nowrap;
 		overflow: hidden;
 		flex: 1;
-	}
-
-	.sidebar-closed .sidebar-title {
-		display: none;
-	}
-
-	.sidebar-closed .sidebar-header {
-		display: none;
 	}
 
 	.sidebar-actions {
@@ -829,10 +819,7 @@
 		display: flex;
 		flex-direction: column;
 		min-width: 320px; /* 确保内容不会被压缩 */
-	}
-
-	.sidebar-closed .sidebar-content {
-		display: none;
+		background: white;
 	}
 	.filter-section {
 		padding: 1rem;
@@ -1120,12 +1107,11 @@
 		color: #6c757d;
 		font-weight: 500;
 	}
-
 	/* Main Content Styles */
 	.main-content {
 		flex: 1;
 		overflow-y: auto;
-		transition: all 0.3s ease;
+		transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 	}
 
 	.main-content.with-sidebar {
