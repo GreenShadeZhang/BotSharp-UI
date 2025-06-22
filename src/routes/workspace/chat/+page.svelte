@@ -1,5 +1,4 @@
-<script>
-	import { onMount } from 'svelte';
+<script>	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import { fade, fly } from 'svelte/transition';
@@ -7,7 +6,9 @@
 	import { newConversation, sendMessageToHub } from '$lib/services/conversation-service.js';
 	import { myInfo } from '$lib/services/auth-service.js';
 	import { signalr } from '$lib/services/signalr-service.js';
-	let mounted = false;
+	import Markdown from '$lib/common/markdown/Markdown.svelte';
+	import RichContent from '../../chat/[agentId]/[conversationId]/rich-content/rich-content.svelte';
+	import RcMessage from '../../chat/[agentId]/[conversationId]/rich-content/rc-message.svelte';	let mounted = false;
 	let selectedAgent = null;
 	let agents = [];
 	let messages = [];
@@ -20,6 +21,10 @@
 	let conversation = null;
 	let isSendingMsg = false;
 	let isThinking = false;
+
+	// 流式消息处理相关变量
+	let streamingMessages = []; // 流式消息数组
+	let streamingMessageCache = new Map(); // 流式消息缓存，用于文本拼接
 
 	// Get session ID from URL if exists
 	const sessionId = $page.params.id;
@@ -147,23 +152,62 @@
 	}
 	function goBack() {
 		goto('/workspace/sessions');
-	}
-
-	/**
+	}	/**
 	 * Handle message received from assistant
-	 * @param {any} message
 	 */
 	function onMessageReceivedFromAssistant(message) {
-		const assistantMessage = {
-			id: message.id || Date.now().toString(),
-			content: message.text || message.rich_content?.message?.text || '',
-			isUser: false,
-			timestamp: new Date(),
-			agent: selectedAgent,
-			rich_content: message.rich_content
-		};
+		// 只处理 AI 助手的消息
+		if (!message.sender || message.sender.role !== 'assistant') {
+			console.log(`[Workspace Chat] 忽略非助手消息，角色: ${message.sender?.role}`);
+			return;
+		}
 
-		messages = [...messages, assistantMessage];
+		console.log(`[Workspace Chat] 收到最终助手消息，ID: ${message.message_id}`);
+
+		// 检查是否为流式消息的最终版本
+		const messageId = message.message_id;
+		if (streamingMessageCache.has(messageId)) {
+			// 将流式消息转换为最终消息
+			const finalMessage = {
+				id: message.message_id || Date.now().toString(),
+				content: message.text || message.rich_content?.message?.text || '',
+				isUser: false,
+				timestamp: new Date(message.created_at || Date.now()),
+				agent: selectedAgent,
+				rich_content: message.rich_content,
+				message_id: message.message_id,
+				sender: message.sender,
+				is_streaming: false,
+				is_chat_message: true
+			};
+
+			// 从流式消息数组中移除
+			streamingMessages = streamingMessages.filter(m => m.message_id !== messageId);
+			// 从缓存中移除
+			streamingMessageCache.delete(messageId);
+			
+			// 添加到最终消息数组
+			messages = [...messages, finalMessage];
+			console.log(`[Workspace Chat] 流式消息转换为最终消息，ID: ${messageId}`);
+		} else {
+			// 普通助手消息
+			const assistantMessage = {
+				id: message.message_id || Date.now().toString(),
+				content: message.text || message.rich_content?.message?.text || '',
+				isUser: false,
+				timestamp: new Date(message.created_at || Date.now()),
+				agent: selectedAgent,
+				rich_content: message.rich_content,
+				message_id: message.message_id,
+				sender: message.sender,
+				is_streaming: false,
+				is_chat_message: true
+			};
+
+			messages = [...messages, assistantMessage];
+			console.log(`[Workspace Chat] 添加新助手消息，ID: ${message.message_id}`);
+		}
+
 		isSendingMsg = false;
 		isThinking = false;
 
@@ -177,29 +221,78 @@
 
 	/**
 	 * Handle streaming message from assistant
-	 * @param {any} message
 	 */
 	function onStreamMessageReceivedFromAssistant(message) {
-		// Handle streaming messages if needed
-		if (message.text) {
-			const lastMessage = messages[messages.length - 1];
-			if (lastMessage && !lastMessage.isUser && lastMessage.id === message.id) {
-				// Update existing message
-				lastMessage.content = message.text;
-				messages = [...messages];
-			} else {
-				// Create new message
-				const streamMessage = {
-					id: message.id || Date.now().toString(),
-					content: message.text,
-					isUser: false,
-					timestamp: new Date(),
-					agent: selectedAgent,
-					isStreaming: true
-				};
-				messages = [...messages, streamMessage];
-			}
+		// 只处理 AI 助手的消息
+		if (!message.sender || message.sender.role !== 'assistant') {
+			console.log(`[Workspace Chat] 忽略非助手流式消息，角色: ${message.sender?.role}`);
+			return;
 		}
+
+		console.log(
+			`[Workspace Chat] 收到流式消息片段，ID: ${message.message_id}, 片段长度: ${message.text?.length || 0}`
+		);
+
+		const messageId = message.message_id;
+
+		// 处理流式消息的增量更新
+		if (streamingMessageCache.has(messageId)) {
+			// 更新现有的流式消息 - 进行增量拼接
+			const existingMessage = streamingMessageCache.get(messageId);
+			const updatedMessage = {
+				...existingMessage,
+				// 进行增量拼接文本内容
+				content: (existingMessage.content || '') + (message.text || ''),
+				text: (existingMessage.text || '') + (message.text || ''),
+				// 合并其他可能的字段
+				rich_content: message.rich_content || existingMessage.rich_content,
+				timestamp: new Date(),
+				is_streaming: true // 标记为流式消息
+			};
+
+			// 更新缓存
+			streamingMessageCache.set(messageId, updatedMessage);
+
+			// 更新显示数组中的对应消息
+			const existingIndex = streamingMessages.findIndex((m) => m.message_id === messageId);
+			if (existingIndex !== -1) {
+				streamingMessages[existingIndex] = updatedMessage;
+			}
+
+			console.log(
+				`[Workspace Chat] 更新流式消息，ID: ${messageId}, 累积长度: ${updatedMessage.content?.length || 0}`
+			);
+		} else {
+			// 新的流式消息
+			const newStreamingMessage = {
+				id: messageId || Date.now().toString(),
+				content: message.text || '',
+				text: message.text || '',
+				isUser: false,
+				timestamp: new Date(),
+				agent: selectedAgent,
+				rich_content: message.rich_content,
+				message_id: messageId,
+				sender: message.sender,
+				is_streaming: true // 标记为流式消息
+			};
+
+			// 添加到缓存
+			streamingMessageCache.set(messageId, newStreamingMessage);
+
+			// 添加到显示数组
+			streamingMessages.push(newStreamingMessage);
+			console.log(`[Workspace Chat] 添加新流式消息，ID: ${messageId}`);
+		}
+
+		streamingMessages = [...streamingMessages];
+
+		// Scroll to bottom
+		setTimeout(() => {
+			if (chatContainer) {
+				chatContainer.scrollTop = chatContainer.scrollHeight;
+			}
+		}, 50);
 	}
 
 	function formatTime(timestamp) {
@@ -291,8 +384,9 @@
 				<!-- Chat Content -->
 				<div class="chat-content">
 					<!-- Messages Panel -->
-					<div class="messages-panel">
-						<div class="messages-container" bind:this={chatContainer}>							{#each messages as message (message.id)}
+					<div class="messages-panel">						<div class="messages-container" bind:this={chatContainer}>
+							<!-- 显示最终消息 -->
+							{#each messages as message (message.id)}
 								<div
 									class="message {message.isUser ? 'user-message' : 'ai-message'}"
 									in:fly={{ y: 20, duration: 400 }}
@@ -308,7 +402,15 @@
 									{/if}
 									<div class="message-content">
 										<div class="message-bubble">
-											<p>{message.content}</p>
+											{#if message.rich_content}
+												<!-- 使用RcMessage组件渲染富文本内容 -->
+												<RcMessage message={message} containerClasses="workspace-message" />
+												<!-- 渲染富文本交互组件 -->
+												<RichContent message={message} />
+											{:else}
+												<!-- 使用Markdown组件渲染普通文本 -->
+												<Markdown text={message.content || message.text || ''} containerClasses="text-dark workspace-markdown" rawText />
+											{/if}
 										</div>
 										<div class="message-meta">
 											<span class="message-time">{formatTime(message.timestamp)}</span>
@@ -323,7 +425,42 @@
 										</div>
 									{/if}
 								</div>
-							{/each}							{#if isSendingMsg || isThinking}
+							{/each}
+
+							<!-- 显示流式消息 -->
+							{#each streamingMessages as streamMessage (streamMessage.message_id)}
+								<div
+									class="message ai-message streaming-message"
+									in:fly={{ y: 20, duration: 400 }}
+								>
+									<div class="message-avatar">
+										{#if streamMessage.agent?.icon_url}
+											<img src={streamMessage.agent.icon_url} alt={streamMessage.agent.name} class="message-avatar-image" />
+										{:else}
+											<img src="images/users/bot.png" alt={streamMessage.agent?.name || 'Agent'} class="message-avatar-image" />
+										{/if}
+									</div>
+									<div class="message-content">
+										<div class="message-bubble">
+											{#if streamMessage.rich_content}
+												<!-- 流式富文本消息 -->
+												<RcMessage message={streamMessage} containerClasses="workspace-message" />
+											{:else}
+												<!-- 流式普通文本消息 -->
+												<Markdown text={streamMessage.content || streamMessage.text || ''} containerClasses="text-dark workspace-markdown" rawText />
+												<span class="streaming-cursor">|</span>
+											{/if}
+										</div>
+										<div class="message-meta">
+											<span class="message-time">{formatTime(streamMessage.timestamp)}</span>
+											<span class="message-agent">{streamMessage.agent?.name}</span>
+											<span class="streaming-indicator">正在输入...</span>
+										</div>
+									</div>
+								</div>
+							{/each}
+
+							{#if isSendingMsg || isThinking}
 								<div class="message ai-message" in:fade={{ duration: 300 }}>
 									<div class="message-avatar">
 										{#if selectedAgent?.icon_url}
@@ -721,15 +858,9 @@
 		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 		border: 1px solid #e9ecef;
 	}
-
 	.user-message .message-bubble {
 		background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 		color: white;
-	}
-
-	.message-bubble p {
-		margin: 0;
-		line-height: 1.4;
 	}
 
 	.message-meta {
@@ -981,7 +1112,6 @@
 	.output-placeholder span {
 		font-size: 0.8rem;
 	}
-
 	@media (max-width: 768px) {
 		.output-panel {
 			display: none;
@@ -1003,5 +1133,96 @@
 		.message {
 			max-width: 95%;
 		}
+	}
+
+	/* 流式消息样式 */
+	.streaming-message {
+		opacity: 0.9;
+	}
+
+	.streaming-cursor {
+		animation: blink 1s infinite;
+		color: #667eea;
+		font-weight: bold;
+		margin-left: 2px;
+	}
+
+	@keyframes blink {
+		0%, 50% { opacity: 1; }
+		51%, 100% { opacity: 0; }
+	}
+
+	.streaming-indicator {
+		color: #667eea;
+		font-size: 0.75rem;
+		font-style: italic;
+		margin-left: 0.5rem;
+	}
+
+	/* Markdown和富文本内容样式 */
+	:global(.workspace-message) {
+		background: transparent !important;
+		color: #2c3e50 !important;
+	}
+
+	:global(.workspace-markdown) {
+		color: #2c3e50 !important;
+	}
+
+	:global(.workspace-markdown h1),
+	:global(.workspace-markdown h2),
+	:global(.workspace-markdown h3),
+	:global(.workspace-markdown h4),
+	:global(.workspace-markdown h5),
+	:global(.workspace-markdown h6) {
+		color: #2c3e50 !important;
+		margin-top: 1rem;
+		margin-bottom: 0.5rem;
+	}
+
+	:global(.workspace-markdown code) {
+		background: #f8f9fa;
+		color: #e83e8c;
+		padding: 0.2rem 0.4rem;
+		border-radius: 3px;
+		font-size: 0.875em;
+	}
+
+	:global(.workspace-markdown pre) {
+		background: #f8f9fa;
+		border: 1px solid #e9ecef;
+		border-radius: 6px;
+		padding: 1rem;
+		overflow-x: auto;
+		margin: 0.5rem 0;
+	}
+
+	:global(.workspace-markdown pre code) {
+		background: none;
+		color: #2c3e50;
+		padding: 0;
+	}
+
+	:global(.workspace-markdown ul),
+	:global(.workspace-markdown ol) {
+		margin: 0.5rem 0;
+		padding-left: 1.5rem;
+	}
+
+	:global(.workspace-markdown blockquote) {
+		border-left: 4px solid #667eea;
+		margin: 0.5rem 0;
+		padding-left: 1rem;
+		color: #7f8c8d;
+		font-style: italic;
+	}
+
+	:global(.workspace-markdown a) {
+		color: #667eea;
+		text-decoration: none;
+	}
+
+	:global(.workspace-markdown a:hover) {
+		text-decoration: underline;
 	}
 </style>
