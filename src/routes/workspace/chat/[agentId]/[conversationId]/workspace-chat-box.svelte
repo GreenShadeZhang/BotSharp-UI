@@ -520,15 +520,20 @@
 								class="message-bubble {message.text?.includes('Sorry, there was an error')
 									? 'error-message'
 									: ''} {message.is_streaming ? 'streaming-message' : ''}"
-							>
-								{#if message.rich_content}
-									<!-- Handle rich content if needed -->
-									<div class="rich-content">
-										<Markdown text={message.text || message.rich_content?.message?.text || ''} />
-									</div>
-								{:else}
-									<Markdown text={message.text || ''} />
-								{/if}								{#if message.is_streaming}
+							>							{#if message.rich_content}
+								<!-- Handle rich content if needed -->
+								<div class="rich-content">
+									<Markdown 
+										text={message.text || message.rich_content?.message?.text || ''} 
+										containerClasses={isUserMessage(message) ? 'text-white' : 'text-dark'}
+									/>
+								</div>
+							{:else}
+								<Markdown 
+									text={message.text || ''} 
+									containerClasses={isUserMessage(message) ? 'text-white' : 'text-dark'}
+								/>
+							{/if}{#if message.is_streaming}
 									<span class="streaming-indicator">
 										<LoadingDots size="8" gap="4" color="#6c757d" />
 									</span>
