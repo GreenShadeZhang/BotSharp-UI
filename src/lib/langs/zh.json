@@ -540,15 +540,16 @@
     "quick_actions": "快速操作",
     "recent_activity": "最近活动",
     "no_recent_activity": "暂无最近活动",
-    "start_conversation_hint": "开始您的第一次对话以在此处查看活动",
-    "actions": {
+    "start_conversation_hint": "开始您的第一次对话以在此处查看活动",    "actions": {
       "start_chat": {
         "title": "开始新对话",
-        "description": "与AI智能体开始对话"
+        "description": "与AI智能体开始对话",
+        "hint": "点击选择智能体并开始对话"
       },
       "manage_sessions": {
         "title": "管理会话",
-        "description": "查看和组织您的对话历史"
+        "description": "查看和组织您的对话历史",
+        "hint": "快速访问所有对话记录"
       },
       "agent_management": {
         "title": "智能体管理",
@@ -560,6 +561,13 @@
       }
     },
     "coming_soon": "即将推出",
+    "select_agent": {
+      "title": "选择AI智能体",
+      "search_placeholder": "搜索智能体...",
+      "loading": "正在加载智能体...",
+      "no_agents": "暂无可用智能体",
+      "no_description": "暂无描述"
+    },
     "chat": {
       "title": "新对话",
       "select_agent": "选择AI智能体",
@@ -573,6 +581,7 @@
     "sessions": {
       "title": "聊天会话",
       "subtitle": "管理和查看您的对话历史",
+      "loading": "正在加载会话...",
       "no_sessions": "未找到聊天会话",
       "no_sessions_description": "开始新对话以在此处查看会话",
       "search_placeholder": "搜索会话...",
@@ -580,10 +589,16 @@
       "sort_newest": "最新在前",
       "sort_oldest": "最旧在前",
       "sort_most_active": "最活跃",
+      "messages": "条消息",
       "message_count": "条消息",
       "last_activity": "最后活动",
       "open_session": "打开会话",
-      "delete_session": "删除会话"
+      "delete": "删除会话",
+      "delete_session": "删除会话",
+      "delete_confirm": {
+        "title": "删除会话",
+        "message": "确定要删除此会话吗？此操作无法撤销。"
+      }
     }
   },
   "navigation": {
@@ -632,11 +647,21 @@
       "title": "感受智能化带来的便利",
       "description": "体验智能体技术如何让工作和生活更加高效便捷",
       "action": "开始智能体验"
-    },
-    "floating_cards": {
+    },    "floating_cards": {
       "iot_device": "智能设备",
       "ai_agent": "智能体",
       "cloud": "云端服务"
     }
+  },
+  "time": {
+    "minutes_ago": "分钟前",
+    "hours_ago": "小时前",
+    "days_ago": "天前"
+  },
+  "common": {
+    "cancel": "取消",
+    "delete": "删除",
+    "confirm": "确认",
+    "close": "关闭"
   }
 }

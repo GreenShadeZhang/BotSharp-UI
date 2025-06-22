@@ -345,15 +345,16 @@
         "quick_actions": "Quick Actions",
         "recent_activity": "Recent Activity",
         "no_recent_activity": "No recent activity",
-        "start_conversation_hint": "Start your first conversation to see activity here",
-        "actions": {
+        "start_conversation_hint": "Start your first conversation to see activity here",        "actions": {
             "start_chat": {
                 "title": "Start New Chat",
-                "description": "Begin a conversation with an AI agent"
+                "description": "Begin a conversation with an AI agent",
+                "hint": "Click to select an agent and start chatting"
             },
             "manage_sessions": {
                 "title": "Manage Sessions", 
-                "description": "View and organize your conversation history"
+                "description": "View and organize your conversation history",
+                "hint": "Quick access to all your conversations"
             },
             "agent_management": {
                 "title": "Agent Management",
@@ -365,6 +366,13 @@
             }
         },
         "coming_soon": "Coming Soon",
+        "select_agent": {
+            "title": "Select AI Agent",
+            "search_placeholder": "Search agents...",
+            "loading": "Loading agents...",
+            "no_agents": "No agents available",
+            "no_description": "No description available"
+        },
         "chat": {
             "title": "New Chat",
             "select_agent": "Select an AI Agent",
@@ -378,6 +386,7 @@
         "sessions": {
             "title": "Chat Sessions",
             "subtitle": "Manage and view your conversation history",
+            "loading": "Loading sessions...",
             "no_sessions": "No chat sessions found",
             "no_sessions_description": "Start a new conversation to see your sessions here",
             "search_placeholder": "Search sessions...",
@@ -385,10 +394,16 @@
             "sort_newest": "Newest First",
             "sort_oldest": "Oldest First",
             "sort_most_active": "Most Active",
+            "messages": "messages",
             "message_count": "messages",
             "last_activity": "Last activity",
             "open_session": "Open Session",
-            "delete_session": "Delete Session"
+            "delete": "Delete Session",
+            "delete_session": "Delete Session",
+            "delete_confirm": {
+                "title": "Delete Session",
+                "message": "Are you sure you want to delete this session? This action cannot be undone."
+            }
         }
     },
     "navigation": {
@@ -437,11 +452,21 @@
             "title": "Experience the Convenience of Intelligence",
             "description": "Discover how AI agent technology makes work and life more efficient and convenient",
             "action": "Start AI Experience"
-        },
-        "floating_cards": {
+        },        "floating_cards": {
             "iot_device": "Smart Device",
             "ai_agent": "AI Agent",
             "cloud": "Cloud Service"
         }
+    },
+    "time": {
+        "minutes_ago": "minutes ago",
+        "hours_ago": "hours ago",
+        "days_ago": "days ago"
+    },
+    "common": {
+        "cancel": "Cancel",
+        "delete": "Delete",
+        "confirm": "Confirm",
+        "close": "Close"
     }
 }

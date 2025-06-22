@@ -3,20 +3,60 @@
 	import { goto } from '$app/navigation';
 	import { fade, fly } from 'svelte/transition';
 	import { _ } from 'svelte-i18n';
+	import AgentSelectionModal from '$lib/common/AgentSelectionModal.svelte';
+	import SessionsSidebar from '$lib/common/SessionsSidebar.svelte';
 
 	let mounted = false;
+	let showAgentModal = false;
+	let showSessionsSidebar = false;
 
 	onMount(() => {
 		console.log('Workspace page mounted');
 		mounted = true;
 	});
 
+	function openAgentSelection() {
+		showAgentModal = true;
+	}
+
+	function openSessionsManager() {
+		showSessionsSidebar = true;
+	}
+
+	/**
+	 * @param {any} agent
+	 */
+	function handleAgentSelected(agent) {
+		console.log('Selected agent:', agent);
+		// Start new chat with selected agent
+		goto(`/workspace/chat?agent=${agent.id}`);
+	}
+
+	/**
+	 * @param {string} sessionId
+	 */
+	function handleSessionSelected(sessionId) {
+		console.log('Selected session:', sessionId);
+		// Navigate to existing chat session
+		goto(`/workspace/chat/${sessionId}`);
+	}
+
+	/**
+	 * @param {string} sessionId
+	 */
+	function handleSessionDeleted(sessionId) {
+		console.log('Deleted session:', sessionId);
+		// Handle session deletion if needed
+	}
+
 	function navigateToChat() {
-		goto('/workspace/chat');
+		// Open agent selection modal instead of direct navigation
+		openAgentSelection();
 	}
 
 	function navigateToSessions() {
-		goto('/workspace/sessions');
+		// Open sessions sidebar instead of navigation
+		openSessionsManager();
 	}
 </script>
 
@@ -35,27 +75,28 @@
 		<div class="workspace-content" in:fly={{ y: 30, duration: 800, delay: 200 }}>
 			<div class="quick-actions">
 				<h2 class="section-title">{$_('workspace.quick_actions')}</h2>
-				<div class="action-grid">
-					<div class="action-card" on:click={navigateToChat} on:keydown={navigateToChat} role="button" tabindex="0">
+				<div class="action-grid">					<div class="action-card" on:click={navigateToChat} on:keydown={(e) => e.key === 'Enter' && navigateToChat()} role="button" tabindex="0">
 						<div class="action-icon">
 							<i class="fas fa-comments"></i>
 						</div>
 						<div class="action-content">
 							<h3>{$_('workspace.actions.start_chat.title')}</h3>
 							<p>{$_('workspace.actions.start_chat.description')}</p>
+							<span class="action-hint">{$_('workspace.actions.start_chat.hint')}</span>
 						</div>
 						<div class="action-arrow">
 							<i class="fas fa-arrow-right"></i>
 						</div>
 					</div>
 
-					<div class="action-card" on:click={navigateToSessions} on:keydown={navigateToSessions} role="button" tabindex="0">
+					<div class="action-card" on:click={navigateToSessions} on:keydown={(e) => e.key === 'Enter' && navigateToSessions()} role="button" tabindex="0">
 						<div class="action-icon">
 							<i class="fas fa-history"></i>
 						</div>
 						<div class="action-content">
 							<h3>{$_('workspace.actions.manage_sessions.title')}</h3>
 							<p>{$_('workspace.actions.manage_sessions.description')}</p>
+							<span class="action-hint">{$_('workspace.actions.manage_sessions.hint')}</span>
 						</div>
 						<div class="action-arrow">
 							<i class="fas fa-arrow-right"></i>
@@ -99,10 +140,24 @@
 					<p>{$_('workspace.no_recent_activity')}</p>
 					<span>{$_('workspace.start_conversation_hint')}</span>
 				</div>
-			</div>
-		</div>
+			</div>		</div>
 	{/if}
 </div>
+
+<!-- Agent Selection Modal -->
+<AgentSelectionModal 
+	bind:isOpen={showAgentModal} 
+	onAgentSelected={handleAgentSelected}
+	onClose={() => showAgentModal = false}
+/>
+
+<!-- Sessions Sidebar -->
+<SessionsSidebar 
+	bind:isOpen={showSessionsSidebar}
+	onSessionSelected={handleSessionSelected}
+	onSessionDeleted={handleSessionDeleted}
+	onClose={() => showSessionsSidebar = false}
+/>
 
 <style>
 	.workspace-home {
@@ -217,14 +272,20 @@
 		margin-bottom: 0.5rem;
 		color: inherit;
 	}
-
 	.action-content p {
 		font-size: 0.9rem;
 		color: #7f8c8d;
-		margin: 0;
+		margin: 0 0 0.5rem 0;
 	}
 
-	.action-card:hover:not(.disabled) .action-content p {
+	.action-hint {
+		font-size: 0.75rem;
+		color: #95a5a6;
+		font-style: italic;
+	}
+
+	.action-card:hover:not(.disabled) .action-content p,
+	.action-card:hover:not(.disabled) .action-hint {
 		color: rgba(255, 255, 255, 0.8);
 	}
 
