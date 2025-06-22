@@ -25,6 +25,7 @@
 	let mounted = false;
 	let showAgentModal = false;
 	let showLeftSidebar = false; // 默认隐藏侧边栏
+	let sidebarDataLoaded = false; // 跟踪侧边栏数据是否已加载
 	let isLoading = false;
 	let isComplete = false;
 	let showStateSearch = false;
@@ -73,11 +74,11 @@
 
 	/** @type {{key: string, value: string | null}[]} */
 	let states = [{ key: '', value: '' }];
-
 	onMount(async () => {
 		mounted = true;
+		// 只加载基础数据，不加载会话列表
 		isLoading = true;
-		Promise.all([loadAgentOptions(), loadSearchOption(), loadConversations()]).finally(() => {
+		Promise.all([loadAgentOptions(), loadSearchOption()]).finally(() => {
 			isLoading = false;
 		});
 	});
@@ -323,9 +324,16 @@
 	function startNewChat() {
 		showAgentModal = true;
 	}
-
 	function openSessionsManager() {
 		showLeftSidebar = true;
+		// 首次打开侧边栏时加载会话数据
+		if (!sidebarDataLoaded) {
+			isLoading = true;
+			loadConversations().finally(() => {
+				isLoading = false;
+				sidebarDataLoaded = true;
+			});
+		}
 	}
 
 	function toggleSidebar() {
@@ -353,27 +361,43 @@
 <LoadingToComplete {isLoading} {isComplete} successText={'Delete completed!'} />
 
 <div class="workspace-layout">
+	<!-- Floating Toggle Button (shown when sidebar is closed) -->
+	{#if !showLeftSidebar}
+		<div class="floating-toggle" transition:fade={{ duration: 200 }}>
+			<Button
+				color="primary"
+				class="floating-btn"
+				on:click={openSessionsManager}
+				title="Show Conversations"
+			>
+				<i class="fas fa-comments"></i>
+			</Button>
+		</div>
+	{/if}
+
 	<!-- Left Sidebar for Conversations -->
 	<div class="sidebar-left {showLeftSidebar ? 'sidebar-open' : 'sidebar-closed'}">
-		<div class="sidebar-header">
-			<div class="sidebar-title">
-				<i class="fas fa-comments me-2"></i>
-				{$_('Conversations')}
+		{#if showLeftSidebar}
+			<div class="sidebar-header">
+				<div class="sidebar-title">
+					<i class="fas fa-comments me-2"></i>
+					{$_('Conversations')}
+				</div>
+				<div class="sidebar-actions">
+					<Button size="sm" color="primary" on:click={startNewChat} title="Start New Chat">
+						<i class="fas fa-plus"></i>
+					</Button>
+					<Button
+						size="sm"
+						color="secondary"
+						on:click={toggleSidebar}
+						title={showLeftSidebar ? 'Hide Sidebar' : 'Show Sidebar'}
+					>
+						<i class="fas fa-times"></i>
+					</Button>
+				</div>
 			</div>
-			<div class="sidebar-actions">
-				<Button size="sm" color="primary" on:click={startNewChat} title="Start New Chat">
-					<i class="fas fa-plus"></i>
-				</Button>
-				<Button
-					size="sm"
-					color="secondary"
-					on:click={toggleSidebar}
-					title={showLeftSidebar ? 'Hide Sidebar' : 'Show Sidebar'}
-				>
-					<i class="fas {showLeftSidebar ? 'fa-chevron-left' : 'fa-chevron-right'}"></i>
-				</Button>
-			</div>
-		</div>
+		{/if}
 		{#if showLeftSidebar}
 			<div class="sidebar-content">
 				<!-- Search and Filter Section -->
@@ -501,7 +525,12 @@
 				</div>
 				<!-- Conversations List -->
 				<div class="conversations-list">
-					{#if conversations.items.length > 0}
+					{#if isLoading && !sidebarDataLoaded}
+						<div class="loading-state">
+							<div class="spinner-border spinner-border-sm me-2" role="status"></div>
+							<span>{$_('Loading conversations...')}</span>
+						</div>
+					{:else if conversations.items.length > 0}
 						<div class="conversations-header">
 							<span class="conversations-count">
 								<i class="fas fa-list me-1"></i>
@@ -712,8 +741,38 @@
 		display: flex;
 		height: 100vh;
 		background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+		position: relative;
 	}
 
+	/* Floating Toggle Button */
+	.floating-toggle {
+		position: fixed;
+		top: 20px;
+		left: 20px;
+		z-index: 1001;
+	}
+
+	.floating-btn {
+		border-radius: 50%;
+		width: 50px;
+		height: 50px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+		border: none;
+		background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+	}
+
+	.floating-btn:hover {
+		transform: scale(1.05);
+		box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+	}
+
+	.floating-btn i {
+		font-size: 1.2rem;
+		color: white;
+	}
 	/* Left Sidebar Styles */
 	.sidebar-left {
 		width: 320px;
@@ -723,12 +782,16 @@
 		flex-direction: column;
 		transition: all 0.3s ease;
 		box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+		position: relative;
+		z-index: 1000;
 	}
 
 	.sidebar-left.sidebar-closed {
-		width: 50px;
+		width: 0;
+		overflow: hidden;
+		border-right: none;
+		box-shadow: none;
 	}
-
 	.sidebar-header {
 		padding: 1rem;
 		border-bottom: 1px solid #e9ecef;
@@ -737,6 +800,7 @@
 		justify-content: space-between;
 		background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 		color: white;
+		min-width: 320px; /* 确保header不会被压缩 */
 	}
 
 	.sidebar-title {
@@ -744,9 +808,14 @@
 		font-size: 1rem;
 		white-space: nowrap;
 		overflow: hidden;
+		flex: 1;
 	}
 
 	.sidebar-closed .sidebar-title {
+		display: none;
+	}
+
+	.sidebar-closed .sidebar-header {
 		display: none;
 	}
 
@@ -754,12 +823,16 @@
 		display: flex;
 		gap: 0.5rem;
 	}
-
 	.sidebar-content {
 		flex: 1;
 		overflow-y: auto;
 		display: flex;
 		flex-direction: column;
+		min-width: 320px; /* 确保内容不会被压缩 */
+	}
+
+	.sidebar-closed .sidebar-content {
+		display: none;
 	}
 	.filter-section {
 		padding: 1rem;
@@ -840,6 +913,15 @@
 		flex: 1;
 		overflow-y: auto;
 		padding: 0;
+	}
+
+	.loading-state {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 2rem 1rem;
+		color: #6c757d;
+		font-size: 0.9rem;
 	}
 
 	.conversations-header {
@@ -1235,32 +1317,54 @@
 	.activity-placeholder span {
 		font-size: 0.9rem;
 	}
-
 	/* Responsive Design */
 	@media (max-width: 1024px) {
 		.sidebar-left {
 			width: 280px;
 		}
+
+		.sidebar-header,
+		.sidebar-content {
+			min-width: 280px;
+		}
 	}
 
 	@media (max-width: 768px) {
-		.workspace-layout {
-			flex-direction: column;
+		.floating-toggle {
+			top: 15px;
+			left: 15px;
+		}
+
+		.floating-btn {
+			width: 45px;
+			height: 45px;
+		}
+
+		.floating-btn i {
+			font-size: 1.1rem;
 		}
 
 		.sidebar-left {
-			width: 100%;
-			height: auto;
-			max-height: 40vh;
+			position: fixed;
+			top: 0;
+			left: 0;
+			height: 100vh;
+			z-index: 1002;
+			width: 100vw;
+			max-width: 320px;
+		}
+
+		.sidebar-left.sidebar-open {
+			transform: translateX(0);
 		}
 
 		.sidebar-left.sidebar-closed {
-			height: 60px;
-			width: 100%;
+			transform: translateX(-100%);
+			width: 320px;
 		}
 
 		.main-content {
-			flex: 1;
+			width: 100%;
 		}
 
 		.workspace-title {
