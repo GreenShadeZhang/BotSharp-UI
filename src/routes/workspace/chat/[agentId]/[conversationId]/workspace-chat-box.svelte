@@ -525,13 +525,15 @@
 								<div class="rich-content">
 									<Markdown 
 										text={message.text || message.rich_content?.message?.text || ''} 
-										containerClasses={isUserMessage(message) ? 'text-white' : 'text-dark'}
+										containerClasses={isUserMessage(message) ? 'text-white markdown-lite' : 'text-dark markdown-dark'}
+										rawText
 									/>
 								</div>
 							{:else}
 								<Markdown 
 									text={message.text || ''} 
-									containerClasses={isUserMessage(message) ? 'text-white' : 'text-dark'}
+									containerClasses={isUserMessage(message) ? 'text-white markdown-lite' : 'text-dark markdown-dark'}
+									rawText
 								/>
 							{/if}{#if message.is_streaming}
 									<span class="streaming-indicator">
@@ -964,75 +966,127 @@
 	}	/* Rich Content Styles */
 	.rich-content {
 		width: 100%;
-		color: #343a40; /* 确保富文本内容有正确的颜色 */
 	}
 
-	/* AI消息的Markdown内容样式 */
-	.assistant-message .message-bubble :global(.markdown) {
-		color: #343a40 !important;
+	/* 确保AI消息Markdown内容继承正确的样式 */
+	.assistant-message .message-bubble :global(.markdown-container) {
+		color: #343a40;
 	}
 
-	.assistant-message .message-bubble :global(.markdown p) {
-		color: #343a40 !important;
-		margin: 0;
+	.assistant-message .message-bubble :global(.markdown-container p) {
+		color: #343a40;
+		margin: 0.25rem 0;
 	}
 
-	.assistant-message .message-bubble :global(.markdown h1),
-	.assistant-message .message-bubble :global(.markdown h2),
-	.assistant-message .message-bubble :global(.markdown h3),
-	.assistant-message .message-bubble :global(.markdown h4),
-	.assistant-message .message-bubble :global(.markdown h5),
-	.assistant-message .message-bubble :global(.markdown h6) {
-		color: #343a40 !important;
+	.assistant-message .message-bubble :global(.markdown-container h1),
+	.assistant-message .message-bubble :global(.markdown-container h2),
+	.assistant-message .message-bubble :global(.markdown-container h3),
+	.assistant-message .message-bubble :global(.markdown-container h4),
+	.assistant-message .message-bubble :global(.markdown-container h5),
+	.assistant-message .message-bubble :global(.markdown-container h6) {
+		color: #343a40;
+		margin: 0.5rem 0 0.25rem 0;
 	}
 
-	.assistant-message .message-bubble :global(.markdown code) {
+	.assistant-message .message-bubble :global(.markdown-container code) {
 		background: #f8f9fa;
 		color: #e83e8c;
 		padding: 0.125rem 0.25rem;
 		border-radius: 0.25rem;
 	}
 
-	.assistant-message .message-bubble :global(.markdown pre) {
+	.assistant-message .message-bubble :global(.markdown-container pre) {
 		background: #f8f9fa;
 		color: #343a40;
 		padding: 0.75rem;
 		border-radius: 0.375rem;
 		overflow-x: auto;
+		margin: 0.5rem 0;
 	}
 
-	/* 用户消息的Markdown内容样式 */
-	.user-message .message-bubble :global(.markdown) {
-		color: white !important;
+	.assistant-message .message-bubble :global(.markdown-container ul),
+	.assistant-message .message-bubble :global(.markdown-container ol) {
+		margin: 0.25rem 0;
+		padding-left: 1.5rem;
 	}
 
-	.user-message .message-bubble :global(.markdown p) {
-		color: white !important;
-		margin: 0;
+	.assistant-message .message-bubble :global(.markdown-container table) {
+		width: 100%;
+		margin: 0.5rem 0;
+		border-collapse: collapse;
 	}
 
-	.user-message .message-bubble :global(.markdown h1),
-	.user-message .message-bubble :global(.markdown h2),
-	.user-message .message-bubble :global(.markdown h3),
-	.user-message .message-bubble :global(.markdown h4),
-	.user-message .message-bubble :global(.markdown h5),
-	.user-message .message-bubble :global(.markdown h6) {
-		color: white !important;
+	.assistant-message .message-bubble :global(.markdown-container table th),
+	.assistant-message .message-bubble :global(.markdown-container table td) {
+		border: 1px solid #dee2e6;
+		padding: 0.5rem;
+		text-align: left;
 	}
 
-	.user-message .message-bubble :global(.markdown code) {
+	.assistant-message .message-bubble :global(.markdown-container table th) {
+		background: #f8f9fa;
+		font-weight: 600;
+	}
+
+	/* 用户消息Markdown内容样式 */
+	.user-message .message-bubble :global(.markdown-container) {
+		color: white;
+	}
+
+	.user-message .message-bubble :global(.markdown-container p) {
+		color: white;
+		margin: 0.25rem 0;
+	}
+
+	.user-message .message-bubble :global(.markdown-container h1),
+	.user-message .message-bubble :global(.markdown-container h2),
+	.user-message .message-bubble :global(.markdown-container h3),
+	.user-message .message-bubble :global(.markdown-container h4),
+	.user-message .message-bubble :global(.markdown-container h5),
+	.user-message .message-bubble :global(.markdown-container h6) {
+		color: white;
+		margin: 0.5rem 0 0.25rem 0;
+	}
+
+	.user-message .message-bubble :global(.markdown-container code) {
 		background: rgba(255, 255, 255, 0.2);
 		color: #fff;
 		padding: 0.125rem 0.25rem;
 		border-radius: 0.25rem;
 	}
 
-	.user-message .message-bubble :global(.markdown pre) {
+	.user-message .message-bubble :global(.markdown-container pre) {
 		background: rgba(255, 255, 255, 0.1);
 		color: white;
 		padding: 0.75rem;
 		border-radius: 0.375rem;
 		overflow-x: auto;
+		margin: 0.5rem 0;
+	}
+
+	.user-message .message-bubble :global(.markdown-container ul),
+	.user-message .message-bubble :global(.markdown-container ol) {
+		margin: 0.25rem 0;
+		padding-left: 1.5rem;
+	}
+
+	.user-message .message-bubble :global(.markdown-container table) {
+		width: 100%;
+		margin: 0.5rem 0;
+		border-collapse: collapse;
+	}
+
+	.user-message .message-bubble :global(.markdown-container table th),
+	.user-message .message-bubble :global(.markdown-container table td) {
+		border: 1px solid rgba(255, 255, 255, 0.3);
+		padding: 0.5rem;
+		text-align: left;
+		color: white;
+	}
+
+	.user-message .message-bubble :global(.markdown-container table th) {
+		background: rgba(255, 255, 255, 0.1);
+		font-weight: 600;
 	}
 
 	/* 确保错误消息的文字颜色正确 */
