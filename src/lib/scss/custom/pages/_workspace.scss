@@ -1,0 +1,135 @@
+// Workspace Styles
+// This file contains styles specific to the personal workspace functionality
+
+// Variables
+$workspace-primary: #667eea;
+$workspace-secondary: #764ba2;
+$workspace-light: #f5f7fa;
+$workspace-lighter: #c3cfe2;
+
+// Workspace specific styles
+.workspace-layout {
+  height: 100vh;
+  overflow: hidden;
+}
+
+.workspace-gradient-bg {
+  background: linear-gradient(135deg, $workspace-light 0%, $workspace-lighter 100%);
+}
+
+.workspace-primary-gradient {
+  background: linear-gradient(135deg, $workspace-primary 0%, $workspace-secondary 100%);
+}
+
+.workspace-btn {
+  background: linear-gradient(135deg, $workspace-primary 0%, $workspace-secondary 100%);
+  border: none;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba($workspace-primary, 0.3);
+  }
+}
+
+.workspace-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+  
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+  }
+}
+
+.workspace-text-gradient {
+  background: linear-gradient(135deg, $workspace-primary 0%, $workspace-secondary 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+// Animation utilities
+.workspace-fade-in {
+  animation: workspaceFadeIn 0.6s ease-out;
+}
+
+.workspace-slide-up {
+  animation: workspaceSlideUp 0.8s ease-out;
+}
+
+@keyframes workspaceFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes workspaceSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Responsive utilities for workspace
+@media (max-width: 768px) {
+  .workspace-mobile-hidden {
+    display: none;
+  }
+  
+  .workspace-mobile-full {
+    width: 100% !important;
+  }
+}
+
+// Chat specific styles
+.workspace-chat-container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #f8f9fa;
+}
+
+.workspace-message-area {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem;
+  background: #f8f9fa;
+}
+
+.workspace-input-area {
+  background: white;
+  border-top: 1px solid #e9ecef;
+  padding: 1rem;
+}
+
+// Output canvas styles
+.workspace-output-panel {
+  width: 300px;
+  background: white;
+  border-left: 1px solid #e9ecef;
+  display: flex;
+  flex-direction: column;
+}
+
+.workspace-output-item {
+  background: #f8f9fa;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  border: 1px solid #e9ecef;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+}

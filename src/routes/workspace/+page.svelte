@@ -1,0 +1,316 @@
+<script>
+	import { onMount } from 'svelte';
+	import { goto } from '$app/navigation';
+	import { fade, fly } from 'svelte/transition';
+
+	let mounted = false;
+
+	onMount(() => {
+		console.log('Workspace page mounted');
+		mounted = true;
+	});
+
+	function navigateToChat() {
+		goto('/workspace/chat');
+	}
+
+	function navigateToSessions() {
+		goto('/workspace/sessions');
+	}
+</script>
+
+<div class="workspace-home">
+	{#if mounted}
+		<div class="workspace-header" in:fade={{ duration: 600 }}>
+			<div class="header-content">
+				<h1 class="workspace-title">
+					<i class="fas fa-workspace me-3"></i>
+					Personal Workspace
+				</h1>
+				<p class="workspace-subtitle">
+					Manage your AI conversations and agents in a unified interface
+				</p>
+			</div>
+		</div>
+
+		<div class="workspace-content" in:fly={{ y: 30, duration: 800, delay: 200 }}>
+			<div class="quick-actions">
+				<h2 class="section-title">Quick Actions</h2>
+				<div class="action-grid">
+					<div class="action-card" on:click={navigateToChat} on:keydown={navigateToChat} role="button" tabindex="0">
+						<div class="action-icon">
+							<i class="fas fa-comments"></i>
+						</div>
+						<div class="action-content">
+							<h3>Start New Chat</h3>
+							<p>Begin a conversation with an AI agent</p>
+						</div>
+						<div class="action-arrow">
+							<i class="fas fa-arrow-right"></i>
+						</div>
+					</div>
+
+					<div class="action-card" on:click={navigateToSessions} on:keydown={navigateToSessions} role="button" tabindex="0">
+						<div class="action-icon">
+							<i class="fas fa-history"></i>
+						</div>
+						<div class="action-content">
+							<h3>Manage Sessions</h3>
+							<p>View and organize your conversation history</p>
+						</div>
+						<div class="action-arrow">
+							<i class="fas fa-arrow-right"></i>
+						</div>
+					</div>
+
+					<div class="action-card disabled">
+						<div class="action-icon">
+							<i class="fas fa-robot"></i>
+						</div>
+						<div class="action-content">
+							<h3>Agent Management</h3>
+							<p>Customize and configure your AI agents</p>
+							<span class="coming-soon">Coming Soon</span>
+						</div>
+						<div class="action-arrow">
+							<i class="fas fa-arrow-right"></i>
+						</div>
+					</div>
+
+					<div class="action-card disabled">
+						<div class="action-icon">
+							<i class="fas fa-cog"></i>
+						</div>
+						<div class="action-content">
+							<h3>Workspace Settings</h3>
+							<p>Configure your personal workspace preferences</p>
+							<span class="coming-soon">Coming Soon</span>
+						</div>
+						<div class="action-arrow">
+							<i class="fas fa-arrow-right"></i>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="recent-activity" in:fly={{ y: 30, duration: 800, delay: 400 }}>
+				<h2 class="section-title">Recent Activity</h2>
+				<div class="activity-placeholder">
+					<i class="fas fa-inbox"></i>
+					<p>No recent activity</p>
+					<span>Start your first conversation to see activity here</span>
+				</div>
+			</div>
+		</div>
+	{/if}
+</div>
+
+<style>
+	.workspace-home {
+		height: 100vh;
+		background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+		overflow-y: auto;
+	}
+
+	.workspace-header {
+		padding: 3rem 2rem 2rem;
+		text-align: center;
+		background: rgba(255, 255, 255, 0.9);
+		backdrop-filter: blur(10px);
+		border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+	}
+
+	.header-content {
+		max-width: 800px;
+		margin: 0 auto;
+	}
+
+	.workspace-title {
+		font-size: 2.5rem;
+		font-weight: 700;
+		color: #2c3e50;
+		margin-bottom: 1rem;
+		background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+		-webkit-background-clip: text;
+		-webkit-text-fill-color: transparent;
+		background-clip: text;
+	}
+
+	.workspace-subtitle {
+		font-size: 1.2rem;
+		color: #7f8c8d;
+		margin: 0;
+	}
+
+	.workspace-content {
+		padding: 2rem;
+		max-width: 1200px;
+		margin: 0 auto;
+	}
+
+	.section-title {
+		font-size: 1.5rem;
+		font-weight: 600;
+		color: #2c3e50;
+		margin-bottom: 1.5rem;
+	}
+
+	.action-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+		gap: 1.5rem;
+		margin-bottom: 3rem;
+	}
+
+	.action-card {
+		background: white;
+		border-radius: 12px;
+		padding: 1.5rem;
+		display: flex;
+		align-items: center;
+		cursor: pointer;
+		transition: all 0.3s ease;
+		box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+		border: 1px solid rgba(255, 255, 255, 0.2);
+	}
+
+	.action-card:hover:not(.disabled) {
+		transform: translateY(-2px);
+		box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+		background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+		color: white;
+	}
+
+	.action-card.disabled {
+		opacity: 0.6;
+		cursor: not-allowed;
+	}
+
+	.action-icon {
+		width: 60px;
+		height: 60px;
+		border-radius: 12px;
+		background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		margin-right: 1rem;
+		flex-shrink: 0;
+	}
+
+	.action-card:hover:not(.disabled) .action-icon {
+		background: rgba(255, 255, 255, 0.2);
+	}
+
+	.action-icon i {
+		font-size: 1.5rem;
+		color: white;
+	}
+
+	.action-content {
+		flex-grow: 1;
+		position: relative;
+	}
+
+	.action-content h3 {
+		font-size: 1.1rem;
+		font-weight: 600;
+		margin-bottom: 0.5rem;
+		color: inherit;
+	}
+
+	.action-content p {
+		font-size: 0.9rem;
+		color: #7f8c8d;
+		margin: 0;
+	}
+
+	.action-card:hover:not(.disabled) .action-content p {
+		color: rgba(255, 255, 255, 0.8);
+	}
+
+	.coming-soon {
+		position: absolute;
+		top: -0.5rem;
+		right: 0;
+		background: #f39c12;
+		color: white;
+		font-size: 0.7rem;
+		padding: 0.2rem 0.5rem;
+		border-radius: 4px;
+		font-weight: 600;
+	}
+
+	.action-arrow {
+		margin-left: 1rem;
+		flex-shrink: 0;
+	}
+
+	.action-arrow i {
+		font-size: 1rem;
+		color: #bdc3c7;
+		transition: all 0.3s ease;
+	}
+
+	.action-card:hover:not(.disabled) .action-arrow i {
+		color: white;
+		transform: translateX(3px);
+	}
+
+	.recent-activity {
+		background: white;
+		border-radius: 12px;
+		padding: 2rem;
+		box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+		border: 1px solid rgba(255, 255, 255, 0.2);
+	}
+
+	.activity-placeholder {
+		text-align: center;
+		padding: 3rem 1rem;
+		color: #bdc3c7;
+	}
+
+	.activity-placeholder i {
+		font-size: 3rem;
+		margin-bottom: 1rem;
+	}
+
+	.activity-placeholder p {
+		font-size: 1.2rem;
+		font-weight: 600;
+		margin-bottom: 0.5rem;
+		color: #7f8c8d;
+	}
+
+	.activity-placeholder span {
+		font-size: 0.9rem;
+	}
+
+	@media (max-width: 768px) {
+		.workspace-title {
+			font-size: 2rem;
+		}
+
+		.workspace-content {
+			padding: 1rem;
+		}
+
+		.action-grid {
+			grid-template-columns: 1fr;
+		}
+
+		.action-card {
+			padding: 1rem;
+		}
+
+		.action-icon {
+			width: 50px;
+			height: 50px;
+		}
+
+		.action-icon i {
+			font-size: 1.2rem;
+		}
+	}
+</style>

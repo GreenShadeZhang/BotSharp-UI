@@ -88,16 +88,26 @@
 			icon: 'fas fa-clock'
 		}
 	];
-
 	/**
 	 * Handle login button click
 	 */
 	function handleLogin() {
 		if (userAuthenticated) {
-			// User is already authenticated, redirect to chat
-			window.location.href = '/page/dashboard';
+			// User is already authenticated, redirect to workspace
+			window.location.href = '/workspace';
 		} else {
 			// Initiate OIDC login flow
+			initiateLogin();
+		}
+	}
+
+	/**
+	 * Handle workspace button click
+	 */
+	function goToWorkspace() {
+		if (userAuthenticated) {
+			window.location.href = '/workspace';
+		} else {
 			initiateLogin();
 		}
 	}
@@ -120,10 +130,20 @@
 					<img src={PUBLIC_LOGO_URL} alt="logo" class="brand-logo" />
 					<span class="brand-name">{PUBLIC_BRAND_NAME}</span>
 				</a>
-			</div>
-
-			<!-- Navigation Actions -->
+			</div>			<!-- Navigation Actions -->
 			<div class="nav-actions">
+				<!-- Workspace Button (only show if authenticated) -->
+				{#if userAuthenticated}
+					<Button
+						on:click={goToWorkspace}
+						color="secondary"
+						class="workspace-btn me-2"
+						title="Personal Workspace"
+					>
+						<i class="fas fa-workspace me-2"></i>
+						Workspace
+					</Button>
+				{/if}
 				<!-- Custom Language Selector -->
 				<div class="language-selector" title="Select Language / 选择语言">
 					<LanguageDropdown />
@@ -133,10 +153,10 @@
 					on:click={handleLogin}
 					color="primary"
 					class="login-btn"
-					title={userAuthenticated ? 'Go to Dashboard' : 'Login to Dashboard'}
+					title={userAuthenticated ? 'Dashboard' : 'Login'}
 				>
 					<i class="fas fa-user-circle me-2"></i>
-					{userAuthenticated ? $_('Dashboard') || 'Dashboard' : $_('Login') || 'Login'}
+					{userAuthenticated ? 'Dashboard' : 'Login'}
 				</Button>
 			</div>
 		</div>
@@ -169,21 +189,42 @@
 						</h1>
 						<p class="hero-description">
 							{$_('homepage.description')}
-						</p>
-						<div class="hero-actions">
-							<Button
-								on:click={handleLogin}
-								color="primary"
-								size="lg"
-								class="me-3 hero-btn-primary"
-							>
-								<i class="fas fa-rocket me-2"></i>
-								{$_('homepage.get_started')}
-							</Button>
-							<Button href="/docs" outline color="light" size="lg" class="hero-btn-secondary">
-								<i class="fas fa-book me-2"></i>
-								{$_('homepage.documentation')}
-							</Button>
+						</p>						<div class="hero-actions">
+							{#if userAuthenticated}
+								<Button
+									on:click={goToWorkspace}
+									color="primary"
+									size="lg"
+									class="me-3 hero-btn-primary"
+								>
+									<i class="fas fa-workspace me-2"></i>
+									Personal Workspace
+								</Button>
+								<Button
+									on:click={handleLogin}
+									outline
+									color="light"
+									size="lg"
+									class="hero-btn-secondary"
+								>
+									<i class="fas fa-cog me-2"></i>
+									Dashboard
+								</Button>
+							{:else}
+								<Button
+									on:click={handleLogin}
+									color="primary"
+									size="lg"
+									class="me-3 hero-btn-primary"
+								>
+									<i class="fas fa-rocket me-2"></i>
+									{$_('homepage.get_started')}
+								</Button>
+								<Button href="/docs" outline color="light" size="lg" class="hero-btn-secondary">
+									<i class="fas fa-book me-2"></i>
+									{$_('homepage.documentation')}
+								</Button>
+							{/if}
 						</div>
 					</div>
 				{/if}
@@ -283,12 +324,22 @@
 						<h2 class="cta-title">{$_('homepage.cta.title')}</h2>
 						<p class="cta-description">
 							{$_('homepage.cta.description')}
-						</p>
-						<div class="cta-actions">
-							<Button on:click={handleLogin} color="primary" size="lg" class="me-3">
-								{$_('homepage.cta.action')}
-								<i class="fas fa-arrow-right ms-2"></i>
-							</Button>
+						</p>						<div class="cta-actions">
+							{#if userAuthenticated}
+								<Button on:click={goToWorkspace} color="primary" size="lg" class="me-3">
+									<i class="fas fa-workspace me-2"></i>
+									Enter Personal Workspace
+								</Button>
+								<Button on:click={handleLogin} outline color="light" size="lg">
+									<i class="fas fa-cog me-2"></i>
+									Admin Dashboard
+								</Button>
+							{:else}
+								<Button on:click={handleLogin} color="primary" size="lg" class="me-3">
+									{$_('homepage.cta.action')}
+									<i class="fas fa-arrow-right ms-2"></i>
+								</Button>
+							{/if}
 						</div>
 					</div>
 				{/if}
