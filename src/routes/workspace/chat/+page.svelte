@@ -1,14 +1,21 @@
-<script>	import { onMount } from 'svelte';
+<script>
+	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import { fade, fly } from 'svelte/transition';
 	import { getAgents } from '$lib/services/agent-service.js';
-	import { newConversation, sendMessageToHub } from '$lib/services/conversation-service.js';
+	import {
+		newConversation,
+		sendMessageToHub,
+		getConversation,
+		getDialogs
+	} from '$lib/services/conversation-service.js';
 	import { myInfo } from '$lib/services/auth-service.js';
 	import { signalr } from '$lib/services/signalr-service.js';
 	import Markdown from '$lib/common/markdown/Markdown.svelte';
 	import RichContent from '../../chat/[agentId]/[conversationId]/rich-content/rich-content.svelte';
-	import RcMessage from '../../chat/[agentId]/[conversationId]/rich-content/rc-message.svelte';	let mounted = false;
+	import RcMessage from '../../chat/[agentId]/[conversationId]/rich-content/rc-message.svelte';
+	let mounted = false;
 	let selectedAgent = null;
 	let agents = [];
 	let messages = [];
@@ -24,21 +31,34 @@
 
 	// 流式消息处理相关变量
 	let streamingMessages = []; // 流式消息数组
-	let streamingMessageCache = new Map(); // 流式消息缓存，用于文本拼接
-
-	// Get session ID from URL if exists
+	let streamingMessageCache = new Map(); // 流式消息缓存，用于文本拼接	// Get session ID from URL if exists
 	const sessionId = $page.params.id;
+	// Get agent ID from URL query parameters
+	const agentId = $page.url.searchParams.get('agent');
+	// Get session ID from URL query parameters (for redirected sessions)
+	const sessionParam = $page.url.searchParams.get('session');
 	onMount(async () => {
 		mounted = true;
 		currentUser = await myInfo();
 		await loadAgents();
 
-		if (sessionId) {
+		// Check for session ID from params or query
+		const currentSessionId = sessionId || sessionParam;
+
+		if (currentSessionId) {
 			// Load existing session
-			loadSession(sessionId);
+			loadSession(currentSessionId);
+		} else if (agentId && agents.length > 0) {
+			// If agent ID is provided in URL, auto-select that agent
+			const preSelectedAgent = agents.find((a) => a.id === agentId);
+			if (preSelectedAgent) {
+				console.log('Auto-selecting agent from URL:', preSelectedAgent.name);
+				await selectAgent(preSelectedAgent);
+			} else {
+				console.warn('Agent with ID not found:', agentId);
+			}
 		}
 	});
-
 	async function loadAgents() {
 		try {
 			const filter = {
@@ -46,39 +66,86 @@
 			};
 			const response = await getAgents(filter, true);
 			agents = response?.items?.map((t) => ({ ...t })) || [];
+			console.log('Agents loaded:', agents.length);
 		} catch (error) {
 			console.error('Failed to load agents:', error);
 		}
 	}
+	async function loadSession(id) {
+		console.log('Loading session:', id);
+		try {
+			isLoading = true;
 
-	function loadSession(id) {
-		// Mock loading session data
-		showAgentSelect = false;
-		selectedAgent = agents[0];
-		messages = [
-			{
-				id: '1',
-				content: 'Hello! How can I help you today?',
-				isUser: false,
-				timestamp: new Date(),
-				agent: selectedAgent
+			// Get conversation details
+			conversation = await getConversation(id);
+			if (!conversation) {
+				console.error('Session not found:', id);
+				return;
 			}
-		];
+
+			// Find the agent for this conversation
+			selectedAgent = agents.find((a) => a.id === conversation.agent_id);
+			if (!selectedAgent && agents.length > 0) {
+				// Fallback to first agent if agent not found
+				selectedAgent = agents[0];
+				console.warn('Agent not found for conversation, using fallback agent');
+			}
+
+			// Load conversation messages
+			const dialogsResponse = await getDialogs(id);
+			if (dialogsResponse && dialogsResponse.length > 0) {
+				messages = dialogsResponse.map((dialog) => ({
+					id: dialog.message_id || dialog.id || Date.now().toString(),
+					content: dialog.text || dialog.rich_content?.message?.text || '',
+					isUser: dialog.sender?.role === 'user',
+					timestamp: new Date(dialog.created_at || Date.now()),
+					agent: selectedAgent,
+					rich_content: dialog.rich_content,
+					message_id: dialog.message_id,
+					sender: dialog.sender
+				}));
+			} else {
+				// No existing messages, add welcome message
+				messages = [
+					{
+						id: 'welcome',
+						content: `Hello! I'm ${selectedAgent?.name || 'your assistant'}. How can I help you today?`,
+						isUser: false,
+						timestamp: new Date(),
+						agent: selectedAgent
+					}
+				];
+			}
+
+			// Initialize SignalR connection
+			signalr.onMessageReceivedFromAssistant = onMessageReceivedFromAssistant;
+			signalr.onStreamMessageReceivedFromAssistant = onStreamMessageReceivedFromAssistant;
+			await signalr.start(conversation.id);
+
+			showAgentSelect = false;
+			console.log('Session loaded successfully');
+		} catch (error) {
+			console.error('Failed to load session:', error);
+			// Fallback to agent selection
+			showAgentSelect = true;
+		} finally {
+			isLoading = false;
+		}
 	}
 	async function selectAgent(agent) {
 		selectedAgent = agent;
 		showAgentSelect = false;
 		isLoading = true;
-		
+
 		try {
 			// Create new conversation with the selected agent
 			conversation = await newConversation(agent.id);
-			
+
 			// Initialize SignalR connection
 			signalr.onMessageReceivedFromAssistant = onMessageReceivedFromAssistant;
 			signalr.onStreamMessageReceivedFromAssistant = onStreamMessageReceivedFromAssistant;
 			await signalr.start(conversation.id);
-			
+
 			// Add welcome message
 			messages = [
 				{
@@ -133,15 +200,20 @@
 		} catch (error) {
 			console.error('Failed to send message:', error);
 			// Add error message
-			messages = [...messages, {
-				id: Date.now().toString(),
-				content: 'Sorry, I encountered an error while processing your message.',
-				isUser: false,
-				timestamp: new Date(),
-				agent: selectedAgent,
-				isError: true
-			}];
-		} finally {			isSendingMsg = false;		}
+			messages = [
+				...messages,
+				{
+					id: Date.now().toString(),
+					content: 'Sorry, I encountered an error while processing your message.',
+					isUser: false,
+					timestamp: new Date(),
+					agent: selectedAgent,
+					isError: true
+				}
+			];
+		} finally {
+			isSendingMsg = false;
+		}
 	}
 
 	function handleKeydown(event) {
@@ -152,7 +224,7 @@
 	}
 	function goBack() {
 		goto('/workspace/sessions');
-	}	/**
+	} /**
 	 * Handle message received from assistant
 	 */
 	function onMessageReceivedFromAssistant(message) {
@@ -182,10 +254,10 @@
 			};
 
 			// 从流式消息数组中移除
-			streamingMessages = streamingMessages.filter(m => m.message_id !== messageId);
+			streamingMessages = streamingMessages.filter((m) => m.message_id !== messageId);
 			// 从缓存中移除
 			streamingMessageCache.delete(messageId);
-			
+
 			// 添加到最终消息数组
 			messages = [...messages, finalMessage];
 			console.log(`[Workspace Chat] 流式消息转换为最终消息，ID: ${messageId}`);
@@ -318,7 +390,8 @@
 					</button>
 					<h1 class="selection-title">Choose Your AI Assistant</h1>
 					<p class="selection-subtitle">Select an agent to start your conversation</p>
-				</div>				<div class="agents-grid" in:fly={{ y: 30, duration: 800, delay: 200 }}>
+				</div>
+				<div class="agents-grid" in:fly={{ y: 30, duration: 800, delay: 200 }}>
 					{#each agents as agent, index}
 						<div
 							class="agent-card"
@@ -354,12 +427,21 @@
 					<div class="header-left">
 						<button class="back-btn" on:click={goBack}>
 							<i class="fas fa-arrow-left"></i>
-						</button>						<div class="agent-info">
+						</button>
+						<div class="agent-info">
 							<div class="agent-avatar-small">
 								{#if selectedAgent?.icon_url}
-									<img src={selectedAgent.icon_url} alt={selectedAgent.name} class="agent-header-image" />
+									<img
+										src={selectedAgent.icon_url}
+										alt={selectedAgent.name}
+										class="agent-header-image"
+									/>
 								{:else}
-									<img src="images/users/bot.png" alt={selectedAgent?.name || 'Agent'} class="agent-header-image" />
+									<img
+										src="images/users/bot.png"
+										alt={selectedAgent?.name || 'Agent'}
+										class="agent-header-image"
+									/>
 								{/if}
 							</div>
 							<div>
@@ -384,7 +466,8 @@
 				<!-- Chat Content -->
 				<div class="chat-content">
 					<!-- Messages Panel -->
-					<div class="messages-panel">						<div class="messages-container" bind:this={chatContainer}>
+					<div class="messages-panel">
+						<div class="messages-container" bind:this={chatContainer}>
 							<!-- 显示最终消息 -->
 							{#each messages as message (message.id)}
 								<div
@@ -394,9 +477,17 @@
 									{#if !message.isUser}
 										<div class="message-avatar">
 											{#if message.agent?.icon_url}
-												<img src={message.agent.icon_url} alt={message.agent.name} class="message-avatar-image" />
+												<img
+													src={message.agent.icon_url}
+													alt={message.agent.name}
+													class="message-avatar-image"
+												/>
 											{:else}
-												<img src="images/users/bot.png" alt={message.agent?.name || 'Agent'} class="message-avatar-image" />
+												<img
+													src="images/users/bot.png"
+													alt={message.agent?.name || 'Agent'}
+													class="message-avatar-image"
+												/>
 											{/if}
 										</div>
 									{/if}
@@ -404,12 +495,16 @@
 										<div class="message-bubble">
 											{#if message.rich_content}
 												<!-- 使用RcMessage组件渲染富文本内容 -->
-												<RcMessage message={message} containerClasses="workspace-message" />
+												<RcMessage {message} containerClasses="workspace-message" />
 												<!-- 渲染富文本交互组件 -->
-												<RichContent message={message} />
+												<RichContent {message} />
 											{:else}
 												<!-- 使用Markdown组件渲染普通文本 -->
-												<Markdown text={message.content || message.text || ''} containerClasses="text-dark workspace-markdown" rawText />
+												<Markdown
+													text={message.content || message.text || ''}
+													containerClasses="text-dark workspace-markdown"
+													rawText
+												/>
 											{/if}
 										</div>
 										<div class="message-meta">
@@ -429,15 +524,20 @@
 
 							<!-- 显示流式消息 -->
 							{#each streamingMessages as streamMessage (streamMessage.message_id)}
-								<div
-									class="message ai-message streaming-message"
-									in:fly={{ y: 20, duration: 400 }}
-								>
+								<div class="message ai-message streaming-message" in:fly={{ y: 20, duration: 400 }}>
 									<div class="message-avatar">
 										{#if streamMessage.agent?.icon_url}
-											<img src={streamMessage.agent.icon_url} alt={streamMessage.agent.name} class="message-avatar-image" />
+											<img
+												src={streamMessage.agent.icon_url}
+												alt={streamMessage.agent.name}
+												class="message-avatar-image"
+											/>
 										{:else}
-											<img src="images/users/bot.png" alt={streamMessage.agent?.name || 'Agent'} class="message-avatar-image" />
+											<img
+												src="images/users/bot.png"
+												alt={streamMessage.agent?.name || 'Agent'}
+												class="message-avatar-image"
+											/>
 										{/if}
 									</div>
 									<div class="message-content">
@@ -447,7 +547,11 @@
 												<RcMessage message={streamMessage} containerClasses="workspace-message" />
 											{:else}
 												<!-- 流式普通文本消息 -->
-												<Markdown text={streamMessage.content || streamMessage.text || ''} containerClasses="text-dark workspace-markdown" rawText />
+												<Markdown
+													text={streamMessage.content || streamMessage.text || ''}
+													containerClasses="text-dark workspace-markdown"
+													rawText
+												/>
 												<span class="streaming-cursor">|</span>
 											{/if}
 										</div>
@@ -464,9 +568,17 @@
 								<div class="message ai-message" in:fade={{ duration: 300 }}>
 									<div class="message-avatar">
 										{#if selectedAgent?.icon_url}
-											<img src={selectedAgent.icon_url} alt={selectedAgent.name} class="message-avatar-image" />
+											<img
+												src={selectedAgent.icon_url}
+												alt={selectedAgent.name}
+												class="message-avatar-image"
+											/>
 										{:else}
-											<img src="images/users/bot.png" alt={selectedAgent?.name || 'Agent'} class="message-avatar-image" />
+											<img
+												src="images/users/bot.png"
+												alt={selectedAgent?.name || 'Agent'}
+												class="message-avatar-image"
+											/>
 										{/if}
 									</div>
 									<div class="message-content">
@@ -484,7 +596,8 @@
 
 						<!-- Message Input -->
 						<div class="message-input-area">
-							<div class="input-container">								<textarea
+							<div class="input-container">
+								<textarea
 									bind:value={messageInput}
 									on:keydown={handleKeydown}
 									placeholder="Type your message..."
@@ -639,7 +752,8 @@
 		box-shadow: 0 16px 40px rgba(0, 0, 0, 0.16);
 		background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 		color: white;
-	}	.agent-avatar {
+	}
+	.agent-avatar {
 		width: 70px;
 		height: 70px;
 		border-radius: 16px;
@@ -723,7 +837,8 @@
 		display: flex;
 		align-items: center;
 		gap: 1rem;
-	}	.agent-avatar-small {
+	}
+	.agent-avatar-small {
 		width: 40px;
 		height: 40px;
 		border-radius: 8px;
@@ -1148,8 +1263,14 @@
 	}
 
 	@keyframes blink {
-		0%, 50% { opacity: 1; }
-		51%, 100% { opacity: 0; }
+		0%,
+		50% {
+			opacity: 1;
+		}
+		51%,
+		100% {
+			opacity: 0;
+		}
 	}
 
 	.streaming-indicator {
