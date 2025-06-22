@@ -245,16 +245,15 @@
             .bot-msg {
                 background-color: var(--#{$prefix}light) !important;
             }
-        }
-
-        .ctext-wrap {
+        }        .ctext-wrap {
             padding: 8px 12px;
             background-color: rgba($primary, 0.1);
             border-radius: 8px 8px 8px 0px;
             overflow: hidden;
             width: fit-content;
             max-width: 100%;
-            word-break: break-all;
+            word-break: break-word;  /* 改为 break-word 以避免强制断行 */
+            overflow-wrap: break-word;
 
             .conversation-name {
                 font-weight: $font-weight-semibold;
@@ -549,15 +548,14 @@
                         margin-top: 5px;
                         margin-bottom: 5px;
                     }
-                }
-
-                .log-collapse {
+                }                .log-collapse {
                     overflow-y: hidden;
                     height: fit-content;
                     max-height: 200px;
                     display: -webkit-box;
                     -webkit-box-orient: vertical;
                     -webkit-line-clamp: 10;
+                    line-clamp: 10;
                 }
                 
                 .divider {
