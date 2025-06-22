@@ -161,6 +161,8 @@
 	let dialogs = [];
 	/** @type {import('$conversationTypes').ChatResponseModel[]} */
 	let streamingMessages = []; // 流式消息数组
+	/** @type {Map<string, import('$conversationTypes').ChatResponseModel>} */
+	let streamingMessageCache = new Map(); // 流式消息缓存，用于文本拼接
 	/** @type {{ [s: string]: any; }} */
 	let groupedDialogs = [];
 
@@ -290,6 +292,7 @@
 					isCreatingNewConv = false;
 					if (conv && !!e.data.text) {
 						dialogs = [];
+						clearStreamingMessages(); // 清理流式消息缓存
 						await signalr.stop();
 						await signalr.start(conv.id);
 						isLoading = true;
@@ -513,8 +516,8 @@
 		});
 		refresh();
 		text = '';
-	}
-	 /** @param {import('$conversationTypes').ChatResponseModel} message */
+	} 
+	/** @param {import('$conversationTypes').ChatResponseModel} message */
 	function onMessageReceivedFromAssistant(message) {
 		// 只处理 AI 助手的消息
 		if (!message.sender || message.sender.role !== 'assistant') {
@@ -524,13 +527,21 @@
 
 		console.log(`[Chat] 收到最终消息，ID: ${message.message_id}, 替换流式消息`);
 
+		const messageId = message.message_id;
+
+		// 清理流式消息缓存
+		if (streamingMessageCache.has(messageId)) {
+			streamingMessageCache.delete(messageId);
+			console.log(`[Chat] 清理流式消息缓存，ID: ${messageId}`);
+		}
+
 		// 检查是否有对应的流式消息需要替换
-		const streamingIndex = streamingMessages.findIndex((m) => m.message_id === message.message_id);
+		const streamingIndex = streamingMessages.findIndex((m) => m.message_id === messageId);
 		if (streamingIndex !== -1) {
 			// 移除流式消息
 			streamingMessages.splice(streamingIndex, 1);
 			streamingMessages = [...streamingMessages];
-			console.log(`[Chat] 移除流式消息，ID: ${message.message_id}`);
+			console.log(`[Chat] 移除流式消息，ID: ${messageId}`);
 		}
 
 		// 检查 dialogs 中是否已存在该助手消息（同时检查 message_id 和 sender.role）
@@ -555,7 +566,6 @@
 
 		refresh();
 	}
-
 	/** @param {import('$conversationTypes').ChatResponseModel} message */
 	function onStreamMessageReceivedFromAssistant(message) {
 		// 只处理 AI 助手的消息
@@ -565,31 +575,61 @@
 		}
 
 		console.log(
-			`[Chat] 收到流式消息，ID: ${message.message_id}, 内容长度: ${message.text?.length || 0}`
+			`[Chat] 收到流式消息片段，ID: ${message.message_id}, 片段长度: ${message.text?.length || 0}`
 		);
 
-		// 检查是否已存在该流式消息
-		const existingIndex = streamingMessages.findIndex((m) => m.message_id === message.message_id);
-		if (existingIndex !== -1) {
-			// 更新现有流式消息（这里的 message.text 已经是累积的增量内容）
-			streamingMessages[existingIndex] = {
-				...message,
+		const messageId = message.message_id;
+
+		// 处理流式消息的增量更新
+		if (streamingMessageCache.has(messageId)) {
+			// 更新现有的流式消息 - 进行增量拼接
+			const existingMessage = streamingMessageCache.get(messageId);
+			const updatedMessage = {
+				...existingMessage,
+				// 进行增量拼接文本内容
+				text: (existingMessage.text || '') + (message.text || ''),
+				// 合并其他可能的字段
+				rich_content: message.rich_content || existingMessage.rich_content,
+				updated_at: message.updated_at || existingMessage.updated_at,
+				created_at: existingMessage.created_at || message.created_at,
+				sender: existingMessage.sender || message.sender,
+				conversation_id: existingMessage.conversation_id || message.conversation_id,
 				is_chat_message: true,
 				is_streaming: true // 标记为流式消息
 			};
+
+			// 更新缓存
+			streamingMessageCache.set(messageId, updatedMessage);
+
+			// 更新显示数组中的对应消息
+			const existingIndex = streamingMessages.findIndex((m) => m.message_id === messageId);
+			if (existingIndex !== -1) {
+				streamingMessages[existingIndex] = updatedMessage;
+			}
+
 			console.log(
-				`[Chat] 更新流式消息，ID: ${message.message_id}, 总长度: ${message.text?.length || 0}`
+				`[Chat] 更新流式消息，ID: ${messageId}, 累积长度: ${updatedMessage.text?.length || 0}`
 			);
-		} else {
-			// 添加新的流式消息
-			streamingMessages.push({
+		} 
+		else {
+			// 新的流式消息
+			const newStreamingMessage = {
 				...message,
+				text: message.text || '',
 				is_chat_message: true,
 				is_streaming: true // 标记为流式消息
-			});
-			console.log(`[Chat] 添加新流式消息，ID: ${message.message_id}`);
+			};
+
+			// 添加到缓存
+			streamingMessageCache.set(messageId, newStreamingMessage);
+
+			// 添加到显示数组
+			streamingMessages.push(newStreamingMessage);
+			console.log(`[Chat] 添加新流式消息，ID: ${messageId}`);
 		}
+
 		streamingMessages = [...streamingMessages];
+
 		refresh();
 	}
 

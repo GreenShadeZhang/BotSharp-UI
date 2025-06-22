@@ -20,13 +20,8 @@ export const signalr = {
   
   /** @type {import('$conversationTypes').OnMessageReceived} */
   onMessageReceivedFromAssistant: () => {},
-
-  /** @type {import('$conversationTypes').OnMessageReceived} */
+  /** @type {import('$conversationTypes').OnMessageRceived} */
   onStreamMessageReceivedFromAssistant: () => {},
-
-  // 流式消息缓存，用于存储正在进行中的流式消息
-  /** @type {Map<string, any>} */
-  streamingMessages: new Map(),
 
   /** @type {import('$conversationTypes').OnMessageReceived} */
   onNotificationGenerated: () => {},
@@ -97,26 +92,20 @@ export const signalr = {
     connection.on('OnMessageReceivedFromAssistant', (json) => {
       // do something when receiving a message, such as updating the UI or showing a notification
       const message = JSON.parse(json);
-      if (conversationId === message.conversation_id) {
-        // 只处理 AI 助手的消息
+      if (conversationId === message.conversation_id) {        // 只处理 AI 助手的消息
         if (message.sender && message.sender.role === 'assistant') {
           console.log(`[OnMessageReceivedFromAssistant] ${message.sender.role}: ${message.text}`);
           console.log(message);
           
           // 检查是否有对应的流式消息需要替换
           const messageId = message.message_id;
-          if (this.streamingMessages.has(messageId)) {
-            // 清理流式消息缓存
-            this.streamingMessages.delete(messageId);
-            console.log(`[OnMessageReceivedFromAssistant] 替换流式消息，消息ID: ${messageId}`);
-          }
+          console.log(`[OnMessageReceivedFromAssistant] 接收到最终消息，消息ID: ${messageId}`);
           
           this.onMessageReceivedFromAssistant(message);
         }
       }
     });
-    
-    connection.on('OnStreamMessageReceivedFromAssistant', (json) => {
+      connection.on('OnStreamMessageReceivedFromAssistant', (json) => {
       console.log(`[OnStreamMessageReceivedFromAssistant json]:`);
       // do something when receiving a message, such as updating the UI or showing a notification
       const message = JSON.parse(json);
@@ -127,33 +116,8 @@ export const signalr = {
           console.log(`[OnStreamMessageReceivedFromAssistant] ${message.sender.role}: ${message.text}`);
           console.log(message);
           
-          // 处理流式消息的增量更新
-          const messageId = message.message_id;
-          if (this.streamingMessages.has(messageId)) {
-            // 更新现有的流式消息 - 进行增量拼接
-            const existingMessage = this.streamingMessages.get(messageId);
-            const updatedMessage = {
-              ...existingMessage,
-              // 进行增量拼接文本内容
-              text: (existingMessage.text || '') + (message.text || ''),
-              // 合并其他可能的字段
-              rich_content: message.rich_content || existingMessage.rich_content,
-              updated_at: message.updated_at || existingMessage.updated_at,
-              created_at: existingMessage.created_at || message.created_at,
-              sender: existingMessage.sender || message.sender,
-              conversation_id: existingMessage.conversation_id || message.conversation_id
-            };
-            this.streamingMessages.set(messageId, updatedMessage);
-            this.onStreamMessageReceivedFromAssistant(updatedMessage);
-          } else {
-            // 新的流式消息
-            const newStreamingMessage = {
-              ...message,
-              text: message.text || '',
-            };
-            this.streamingMessages.set(messageId, newStreamingMessage);
-            this.onStreamMessageReceivedFromAssistant(newStreamingMessage);
-          }
+          // 直接传递原始流式消息，让订阅端处理拼接逻辑
+          this.onStreamMessageReceivedFromAssistant(message);
         }
       }
     });
@@ -207,16 +171,13 @@ export const signalr = {
   },
 
   // stop the connection
-  async stop() {
-    // get the connection object from the store
+  async stop() {    // get the connection object from the store
     // const connection = connection.get();
     // stop the connection if it exists
     if (connection) {
       try {
         await connection.stop();
         console.log('Disconnected from SignalR hub');
-        // 清理流式消息缓存
-        this.streamingMessages.clear();
       } catch (err) {
         console.error(err);
       }
