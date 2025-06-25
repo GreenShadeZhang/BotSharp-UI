@@ -369,6 +369,10 @@
 	function handleAvatarLoad(e) {
 		e.target.src = '/images/users/user-dummy.jpg';
 	}
+
+	function openAgentManagement() {
+		goto('/workspace/agents');
+	}
 </script>
 
 <LoadingToComplete {isLoading} {isComplete} successText={'Delete completed!'} />
@@ -760,14 +764,20 @@
 							</div>
 						</div>
 
-						<div class="action-card disabled">
+						<div
+							class="action-card"
+							on:click={openAgentManagement}
+							on:keydown={(e) => e.key === 'Enter' && openAgentManagement()}
+							role="button"
+							tabindex="0"
+						>
 							<div class="action-icon">
 								<i class="fas fa-robot"></i>
 							</div>
 							<div class="action-content">
 								<h3>{$_('workspace.actions.agent_management.title')}</h3>
 								<p>{$_('workspace.actions.agent_management.description')}</p>
-								<span class="coming-soon">{$_('workspace.coming_soon')}</span>
+								<span class="action-hint">{$_('workspace.actions.agent_management.hint')}</span>
 							</div>
 							<div class="action-arrow">
 								<i class="fas fa-arrow-right"></i>

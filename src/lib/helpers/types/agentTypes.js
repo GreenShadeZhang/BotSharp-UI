@@ -15,6 +15,7 @@
  * @property {boolean} is_inherit - Inherited from default Agent settings
  * @property {string?} provider 
  * @property {string?} model
+ * @property {number?} [temperature] - Temperature for response creativity
  * @property {number} max_recursion_depth
  * @property {number?} [max_output_tokens]
  */
