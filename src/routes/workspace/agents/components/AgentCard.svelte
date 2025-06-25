@@ -35,7 +35,7 @@
 			</div>
 			<div class="agent-info">
 				<h5 class="agent-name">{agent.name}</h5>
-				<Badge color="primary" class="type-badge">
+				<Badge color="light" class="type-badge">
 					{getAgentTypeDisplay()}
 				</Badge>
 			</div>
@@ -48,7 +48,7 @@
 		{#if agent.labels && agent.labels.length > 0}
 			<div class="agent-labels">
 				{#each agent.labels as label}
-					<Badge color="info" pill>{label}</Badge>
+					<Badge color="light" pill class="label-badge">{label}</Badge>
 				{/each}
 			</div>
 		{/if}
@@ -182,13 +182,40 @@
 	}
 
 	:global(.type-badge) {
-		font-size: 0.75rem;
-		font-weight: 500;
-		padding: 0.25rem 0.75rem;
-		border-radius: 1rem;
-		background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-		color: white;
-		border: none;
+		font-size: 0.7rem !important;
+		font-weight: 500 !important;
+		padding: 0.3rem 0.8rem !important;
+		border-radius: 1rem !important;
+		background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+		color: white !important;
+		border: none !important;
+		text-transform: uppercase !important;
+		letter-spacing: 0.5px !important;
+		box-shadow: 0 2px 4px rgba(102, 126, 234, 0.3) !important;
+		transition: all 0.2s ease !important;
+	}
+
+	:global(.type-badge:hover) {
+		transform: translateY(-1px) !important;
+		box-shadow: 0 4px 8px rgba(102, 126, 234, 0.4) !important;
+	}
+
+	:global(.label-badge) {
+		background: #f1f5f9 !important;
+		color: #475569 !important;
+		border: 1px solid #e2e8f0 !important;
+		font-size: 0.7rem !important;
+		font-weight: 500 !important;
+		padding: 0.25rem 0.6rem !important;
+		border-radius: 0.8rem !important;
+		transition: all 0.2s ease !important;
+	}
+
+	:global(.label-badge:hover) {
+		background: #e2e8f0 !important;
+		color: #334155 !important;
+		transform: translateY(-1px) !important;
+		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
 	}
 
 	.agent-description {
@@ -216,21 +243,6 @@
 		margin-bottom: 1.25rem;
 		max-height: 60px;
 		overflow: hidden;
-	}
-
-	:global(.agent-labels .badge) {
-		font-size: 0.7rem;
-		padding: 0.25rem 0.5rem;
-		border-radius: 0.5rem;
-		background: #f1f5f9;
-		color: #475569;
-		border: 1px solid #e2e8f0;
-		transition: all 0.2s ease;
-	}
-
-	:global(.agent-labels .badge:hover) {
-		background: #e2e8f0;
-		transform: translateY(-1px);
 	}
 
 	.agent-meta {

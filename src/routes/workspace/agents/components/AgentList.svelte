@@ -83,7 +83,7 @@
 	
 	<div 
 		class="agents-grid" 
-		class:scrollable={totalCount > pageSize}
+		class:scrollable={agents.length >= 6}
 		on:scroll={handleScroll}
 	>
 		{#each agents as agent, index (agent.id)}
@@ -108,7 +108,7 @@
 		{/if}
 		
 		<!-- 没有更多数据提示 -->
-		{#if !hasMoreData && agents.length > pageSize}
+		{#if !hasMoreData && agents.length >= pageSize}
 			<div class="no-more-data" in:fly={{ y: 20, duration: 300 }}>
 				<i class="fas fa-check-circle"></i>
 				<span>{$_('workspace.agents.list.all_loaded')}</span>

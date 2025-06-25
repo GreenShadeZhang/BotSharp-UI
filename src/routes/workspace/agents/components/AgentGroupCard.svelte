@@ -56,7 +56,7 @@
 			</div>
 			<div class="agent-info">
 				<h5 class="agent-name">{agent.name}</h5>
-				<Badge color="success" class="type-badge">
+				<Badge color="light" class="type-badge group-type-badge">
 					{getAgentTypeDisplay()}
 				</Badge>
 			</div>
@@ -76,7 +76,7 @@
 				<div class="profiles">
 					<small class="text-muted">{$_('workspace.agents.group.profiles')}:</small>
 					{#each agent.profiles as profile}
-						<Badge color="outline-info" pill class="profile-tag">{profile}</Badge>
+						<Badge color="light" pill class="profile-tag">{profile}</Badge>
 					{/each}
 				</div>
 			{/if}
@@ -89,7 +89,7 @@
 					<i class="fas fa-users me-2"></i>
 					{$_('workspace.agents.group.members')}
 				</span>
-				<Badge color="info" pill>{groupMembers.length}</Badge>
+				<Badge color="light" pill class="members-count-badge">{groupMembers.length}</Badge>
 			</div>
 			
 			{#if groupMembers.length > 0}
@@ -118,7 +118,7 @@
 		{#if agent.labels && agent.labels.length > 0}
 			<div class="agent-labels">
 				{#each agent.labels as label}
-					<Badge color="info" pill>{label}</Badge>
+					<Badge color="light" pill class="label-badge">{label}</Badge>
 				{/each}
 			</div>
 		{/if}
@@ -261,14 +261,76 @@
 		word-wrap: break-word;
 	}
 
-	:global(.type-badge) {
-		font-size: 0.75rem;
-		font-weight: 500;
-		padding: 0.25rem 0.75rem;
-		border-radius: 1rem;
-		background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
-		color: white;
-		border: none;
+	:global(.group-type-badge) {
+		font-size: 0.7rem !important;
+		font-weight: 500 !important;
+		padding: 0.3rem 0.8rem !important;
+		border-radius: 1rem !important;
+		background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%) !important;
+		color: white !important;
+		border: none !important;
+		text-transform: uppercase !important;
+		letter-spacing: 0.5px !important;
+		box-shadow: 0 2px 4px rgba(34, 197, 94, 0.3) !important;
+		transition: all 0.2s ease !important;
+	}
+
+	:global(.group-type-badge:hover) {
+		transform: translateY(-1px) !important;
+		box-shadow: 0 4px 8px rgba(34, 197, 94, 0.4) !important;
+	}
+
+	:global(.profile-tag) {
+		background: #eff6ff !important;
+		color: #1e40af !important;
+		border: 1px solid #dbeafe !important;
+		font-size: 0.7rem !important;
+		font-weight: 500 !important;
+		padding: 0.25rem 0.6rem !important;
+		border-radius: 0.8rem !important;
+		transition: all 0.2s ease !important;
+	}
+
+	:global(.profile-tag:hover) {
+		background: #dbeafe !important;
+		color: #1d4ed8 !important;
+		transform: translateY(-1px) !important;
+		box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2) !important;
+	}
+
+	:global(.members-count-badge) {
+		background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+		color: white !important;
+		border: none !important;
+		font-size: 0.7rem !important;
+		font-weight: 600 !important;
+		padding: 0.25rem 0.6rem !important;
+		border-radius: 0.8rem !important;
+		box-shadow: 0 2px 4px rgba(102, 126, 234, 0.3) !important;
+		transition: all 0.2s ease !important;
+	}
+
+	:global(.members-count-badge:hover) {
+		transform: translateY(-1px) !important;
+		box-shadow: 0 4px 8px rgba(102, 126, 234, 0.4) !important;
+	}
+
+	:global(.label-badge) {
+		background: #f1f5f9 !important;
+		color: #475569 !important;
+		border: 1px solid #e2e8f0 !important;
+		font-size: 0.7rem !important;
+		font-weight: 500 !important;
+		padding: 0.25rem 0.6rem !important;
+		border-radius: 0.8rem !important;
+		transition: all 0.2s ease !important;
+	}
+
+	:global(.label-badge:hover) {
+		background: #e2e8f0 !important;
+		color: #334155 !important;
+		transform: translateY(-1px) !important;
+		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
 	}
 
 	.agent-description {
