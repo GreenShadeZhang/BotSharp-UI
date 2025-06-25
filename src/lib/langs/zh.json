@@ -681,10 +681,23 @@
         "loading": "正在加载智能体...",
         "no_agents": "暂无智能体",
         "no_agents_description": "开始创建您的第一个智能体",
-        "search_placeholder": "搜索智能体...",
+        "no_results": "未找到匹配的智能体",
+        "no_results_description": "请尝试调整搜索或筛选条件",
+        "search_placeholder": "搜索智能体名称、描述或标签...",
+        "search_label": "搜索智能体",
+        "type_filter": "智能体类型",
+        "sort_by": "排序方式",
+        "results": "结果",
         "filter_by_type": "按类型筛选",
         "all_types": "所有类型",
-        "agents_count": "个智能体"
+        "agents_count": "个智能体",
+        "clear_filters": "清除筛选"
+      },
+      "sort": {
+        "newest_first": "最新优先",
+        "oldest_first": "最旧优先", 
+        "name_asc": "名称 A-Z",
+        "name_desc": "名称 Z-A"
       },
       "actions": {
         "edit": "编辑",

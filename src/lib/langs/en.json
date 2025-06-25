@@ -486,10 +486,23 @@
                 "loading": "Loading agents...",
                 "no_agents": "No agents found",
                 "no_agents_description": "Create your first agent to get started",
-                "search_placeholder": "Search agents...",
+                "no_results": "No matching agents found",
+                "no_results_description": "Try adjusting your search or filter criteria",
+                "search_placeholder": "Search agents by name, description, or tags...",
+                "search_label": "Search Agents",
+                "type_filter": "Agent Type",
+                "sort_by": "Sort By",
+                "results": "Results",
                 "filter_by_type": "Filter by type",
                 "all_types": "All Types",
-                "agents_count": "agents"
+                "agents_count": "agents",
+                "clear_filters": "Clear Filters"
+            },
+            "sort": {
+                "newest_first": "Newest First",
+                "oldest_first": "Oldest First", 
+                "name_asc": "Name A-Z",
+                "name_desc": "Name Z-A"
             },
             "actions": {
                 "edit": "Edit",

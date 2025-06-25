@@ -29,7 +29,7 @@
 		if (typeof window !== 'undefined') {
 			const nav = document.querySelector('.top-nav');
 			const handleScroll = () => {
-				if (window.scrollY > 100) {
+				if (window.scrollY > 100) { 
 					nav?.classList.add('scrolled');
 				} else {
 					nav?.classList.remove('scrolled');
