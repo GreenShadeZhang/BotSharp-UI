@@ -600,6 +600,123 @@
         "title": "删除会话",
         "message": "确定要删除此会话吗？此操作无法撤销。"
       }
+    },
+    "agents": {
+      "title": "智能体管理",
+      "subtitle": "管理您的智能体和智能体组",
+      "single_agent": "单智能体",
+      "agent_group": "智能体组",
+      "routing_agent": "路由智能体",
+      "task_agent": "任务智能体",
+      "create": {
+        "title": "创建智能体",
+        "single": "创建单智能体",
+        "group": "创建智能体组",
+        "single_description": "创建一个可直接聊天和调用工具的智能体",
+        "group_description": "创建由路由智能体协调的智能体组",
+        "choose_type": "选择智能体类型",
+        "basic_info": "基础信息",
+        "name": "名称",
+        "description": "描述",
+        "name_placeholder": "请输入智能体名称",
+        "name_placeholder_group": "请输入智能体组名称",
+        "description_placeholder": "请描述智能体的功能和用途",
+        "description_placeholder_group": "请描述智能体组的功能和协作方式",
+        "routing_strategy": "路由策略",
+        "public_group": "设为公开组",
+        "select_members": "选择组成员",
+        "select_members_desc": "选择要加入智能体组的智能体（至少2个）",
+        "add_agent": "添加智能体",
+        "select_agent": "选择智能体",
+        "no_agents_selected": "未选择任何智能体",
+        "create_group": "创建智能体组",
+        "errors": {
+          "name_required": "请输入名称",
+          "min_agents": "智能体组至少需要2个成员",
+          "create_failed": "创建失败，请稍后重试"
+        },
+        "instruction": "系统指令",
+        "instruction_placeholder": "请输入智能体的系统指令",
+        "instruction_description": "定义智能体的角色、行为和响应方式",
+        "public_agent": "公开智能体",
+        "public_agent_hint": "允许其他用户使用此智能体",
+        "name_hint": "为您的智能体起一个有意义的名称",
+        "description_hint": "简要说明智能体的作用和能力",
+        "creating": "创建中...",
+        "create_agent": "创建智能体",
+        "create_success_title": "创建成功！",
+        "create_success_message": "智能体已成功创建",
+        "create_error_title": "创建失败",
+        "create_error_message": "创建智能体时发生错误，请重试",
+        "name_required_error": "请输入智能体名称",
+        "temperature": "创造性",
+        "max_tokens": "最大回复长度",
+        "max_recursion_depth": "最大递归深度",
+        "single_features": {
+          "direct_chat": "直接聊天交互",
+          "tool_calling": "工具调用能力",
+          "simple_config": "简单配置"
+        },
+        "group_features": {
+          "multi_agent": "多智能体协作",
+          "intelligent_routing": "智能路由",
+          "complex_tasks": "复杂任务处理"
+        },
+        "create_single_button": "创建单智能体",
+        "create_group_button": "创建智能体组",
+        "help": {
+          "title": "需要帮助选择？",
+          "description": "如果您是新用户，建议先从单智能体开始，熟悉基本功能后再尝试智能体组的协作功能。"
+        }
+      },
+      "group": {
+        "members": "组成员",
+        "add_member": "添加成员",
+        "remove_member": "移除成员",
+        "router_info": "路由智能体信息",
+        "profiles": "组编码",
+        "no_members": "暂无组成员"
+      },
+      "list": {
+        "loading": "正在加载智能体...",
+        "no_agents": "暂无智能体",
+        "no_agents_description": "开始创建您的第一个智能体",
+        "search_placeholder": "搜索智能体...",
+        "filter_by_type": "按类型筛选",
+        "all_types": "所有类型",
+        "agents_count": "个智能体"
+      },
+      "actions": {
+        "edit": "编辑",
+        "delete": "删除",
+        "chat": "聊天",
+        "view_group": "查看组",
+        "manage_group": "管理组"
+      },
+      "delete": {
+        "confirm_title": "确认删除",
+        "confirm_message": "您确定要删除此智能体吗？此操作无法撤销。",
+        "success": "智能体删除成功！",
+        "failed_title": "删除失败",
+        "failed_message": "无法删除智能体，请稍后重试。"
+      },
+      "edit": {
+        "title": "编辑智能体",
+        "subtitle": "修改智能体的配置和行为",
+        "unsaved_changes": "您有未保存的更改",
+        "unsaved_changes_warning": "您有未保存的更改，确定要离开吗？",
+        "leave": "离开",
+        "status": "状态",
+        "enabled": "启用",
+        "disabled": "禁用",
+        "created_time": "创建时间",
+        "updated_time": "更新时间",
+        "saving": "保存中...",
+        "load_failed": "无法加载智能体信息",
+        "update_failed": "更新智能体时发生错误，请重试",
+        "update_success": "智能体更新成功！",
+        "group_update_success": "智能体组更新成功！"
+      }
     }
   },
   "navigation": {
@@ -676,134 +793,5 @@
     "search": "搜索",
     "error": "错误",
     "no_description": "无描述"
-  },
-  "agents": {
-    "title": "智能体管理",
-    "subtitle": "管理您的智能体和智能体组",
-    "single_agent": "单智能体",
-    "agent_group": "智能体组",
-    "routing_agent": "路由智能体",
-    "task_agent": "任务智能体",
-    "create": {
-      "title": "创建智能体",
-      "single": "创建单智能体",
-      "group": "创建智能体组",
-      "single_description": "创建一个可直接聊天和调用工具的智能体",
-      "group_description": "创建由路由智能体协调的智能体组",
-      "choose_type": "选择智能体类型",
-      "basic_info": "基础信息",
-      "name": "名称",
-      "description": "描述",
-      "name_placeholder": "请输入智能体名称",
-      "name_placeholder_group": "请输入智能体组名称",
-      "description_placeholder": "请描述智能体的功能和用途",
-      "description_placeholder_group": "请描述智能体组的功能和协作方式",
-      "routing_strategy": "路由策略",
-      "public_group": "设为公开组",
-      "select_members": "选择组成员",
-      "select_members_desc": "选择要加入智能体组的智能体（至少2个）",
-      "add_agent": "添加智能体",
-      "select_agent": "选择智能体",
-      "no_agents_selected": "未选择任何智能体",
-      "create_group": "创建智能体组",
-      "create_agent": "创建智能体",
-      "errors": {
-        "name_required": "请输入名称",
-        "min_agents": "智能体组至少需要2个成员",
-        "create_failed": "创建失败，请稍后重试"
-      },
-      "instruction": "系统指令",
-      "instruction_placeholder": "请输入智能体的系统指令",
-      "instruction_description": "定义智能体的角色、行为和响应方式",
-      "knowledges": "知识库",
-      "functions": "功能模块",
-      "samples": "示例对话",
-      "advanced": "高级设置",
-      "llm_config": "语言模型配置",
-      "temperature": "创造性",
-      "max_tokens": "最大回复长度",
-      "max_recursion_depth": "最大递归深度",
-      "is_public": "设为公开",
-      "enabled": "启用智能体",
-      "name_hint": "为您的智能体起一个有意义的名称",
-      "description_hint": "简要说明智能体的作用和能力",
-      "public_agent": "公开智能体",
-      "public_agent_hint": "允许其他用户使用此智能体",
-      "creating": "创建中...",
-      "create_success_title": "创建成功！",
-      "create_success_message": "智能体已成功创建",
-      "create_error_title": "创建失败",
-      "create_error_message": "创建智能体时发生错误，请重试",
-      "name_required_error": "请输入智能体名称",
-      "single_features": {
-        "direct_chat": "直接聊天交互",
-        "tool_calling": "工具调用能力", 
-        "simple_config": "简单配置"
-      },
-      "group_features": {
-        "multi_agent": "多智能体协作",
-        "intelligent_routing": "智能路由",
-        "complex_tasks": "复杂任务处理"
-      },
-      "create_single_button": "创建单智能体",
-      "create_group_button": "创建智能体组",
-      "help": {
-        "title": "需要帮助选择？",
-        "description": "如果您是新用户，建议先从单智能体开始，熟悉基本功能后再尝试智能体组的协作功能。"
-      }
-    },
-    "group": {
-      "members": "组成员",
-      "add_member": "添加成员",
-      "remove_member": "移除成员",
-      "router_info": "路由智能体信息",
-      "profiles": "组编码",
-      "no_members": "暂无组成员"
-    },
-    "list": {
-      "loading": "正在加载智能体...",
-      "no_agents": "暂无智能体",
-      "no_agents_description": "开始创建您的第一个智能体",
-      "search_placeholder": "搜索智能体...",
-      "filter_by_type": "按类型筛选",
-      "all_types": "所有类型",
-      "agents_count": "个智能体"
-    },
-    "actions": {
-      "edit": "编辑",
-      "delete": "删除",
-      "chat": "聊天",
-      "view_group": "查看组",
-      "manage_group": "管理组"
-    },
-    "delete": {
-      "confirm_title": "确认删除",
-      "confirm_message": "您确定要删除此智能体吗？此操作无法撤销。",
-      "success": "智能体删除成功！",
-      "failed_title": "删除失败",
-      "failed_message": "无法删除智能体，请稍后重试。"
-    },
-    "edit": {
-      "title": "编辑智能体",
-      "subtitle": "修改智能体的配置和行为",
-      "unsaved_changes": "您有未保存的更改",
-      "unsaved_changes_warning": "您有未保存的更改，确定要离开吗？",
-      "leave": "离开",
-      "status": "状态",
-      "enabled": "启用",
-      "disabled": "禁用",
-      "created_time": "创建时间",
-      "updated_time": "更新时间",
-      "saving": "保存中...",
-      "load_failed": "无法加载智能体信息",
-      "update_failed": "更新智能体时发生错误，请重试",
-      "update_success": "智能体更新成功！",
-      "group_update_success": "智能体组更新成功！",
-      "edit_router_agent": "编辑路由智能体",
-      "group_members": "智能体组成员",
-      "add_agent_to_group": "添加智能体到此组以开始协作",
-      "no_available_agents": "暂无可添加的智能体",
-      "manage_group_subtitle": "管理智能体组的成员和配置"
-    }
   }
 }

@@ -63,7 +63,7 @@
 		</div>
 
 		<div class="agent-description">
-			<p>{agent.description || $_('workspace.agents.list.no_description')}</p>
+			<p>{agent.description || $_('common.no_description')}</p>
 		</div>
 
 		<!-- 路由智能体信息 -->
@@ -131,7 +131,7 @@
 			{#if agent.is_public}
 				<div class="meta-item">
 					<i class="fas fa-globe"></i>
-					<span>公开</span>
+					<span>{$_('workspace.agents.create.public_agent')}</span>
 				</div>
 			{/if}
 		</div>
