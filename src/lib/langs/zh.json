@@ -638,6 +638,7 @@
         "instruction": "系统指令",
         "instruction_placeholder": "请输入智能体的系统指令",
         "instruction_description": "定义智能体的角色、行为和响应方式",
+        "advanced": "高级设置",
         "public_agent": "公开智能体",
         "public_agent_hint": "允许其他用户使用此智能体",
         "name_hint": "为您的智能体起一个有意义的名称",
@@ -651,6 +652,8 @@
         "name_required_error": "请输入智能体名称",
         "temperature": "创造性",
         "max_tokens": "最大回复长度",
+        "max_tokens_hint": "回复中的最大令牌数量",
+        "optional": "可选",
         "max_recursion_depth": "最大递归深度",
         "single_features": {
           "direct_chat": "直接聊天交互",

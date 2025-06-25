@@ -51,8 +51,8 @@
 	/** @type {number} */
 	let temperature = 0.7;
 
-	/** @type {number} */
-	let maxTokens = 2048;
+	/** @type {number | null} */
+	let maxTokens = 1024;
 
 	/** @type {number} */
 	let maxRecursionDepth = 10;
@@ -88,11 +88,13 @@
 				// 安全地访问 llm_config 属性
 				if (agent.llm_config) {
 					temperature = agent.llm_config.temperature || 0.7;
-					maxTokens = agent.llm_config.max_output_tokens || 2048;
+					// 如果后端返回 null 或 undefined，则设置为 null（可以清空状态）
+					// 否则使用实际值，如果没有值则使用默认值 1024
+					maxTokens = agent.llm_config.max_output_tokens ?? 1024;
 					maxRecursionDepth = agent.llm_config.max_recursion_depth || 10;
 				} else {
 					temperature = 0.7;
-					maxTokens = 2048;
+					maxTokens = 1024;
 					maxRecursionDepth = 10;
 				}
 			} else {
@@ -142,23 +144,25 @@
 
 		isLoading = true;
 		try {
-			/** @type {import('$agentTypes').AgentModel} */
 			const updatedAgent = {
 				...agent,
+				id: agent?.id || agentId,
 				name: agentName.trim(),
 				description: agentDescription.trim(),
 				instruction: agentInstruction.trim(),
 				is_public: isPublic,
 				disabled: !isEnabled, // enabled 映射到 disabled 字段
 				llm_config: {
-					...agent?.llm_config,
+					is_inherit: agent?.llm_config?.is_inherit || false,
+					provider: agent?.llm_config?.provider || null,
+					model: agent?.llm_config?.model || null,
 					temperature: temperature,
-					max_output_tokens: maxTokens,
+					max_output_tokens: maxTokens === null ? null : maxTokens,
 					max_recursion_depth: maxRecursionDepth
 				}
 			};
 
-			await saveAgent(updatedAgent);
+			await saveAgent(/** @type {import('$agentTypes').AgentModel} */ (updatedAgent));
 			
 			hasChanges = false;
 			isComplete = true;
@@ -177,6 +181,32 @@
 	}
 
 	function handleInputChange() {
+		hasChanges = true;
+	}
+
+	/**
+	 * @param {Event} event
+	 */
+	function handleMaxTokensChange(event) {
+		const target = /** @type {HTMLInputElement} */ (event.target);
+		if (!target) return;
+		
+		const value = target.value;
+		if (value === '' || value === null || value === undefined) {
+			maxTokens = null;
+		} else {
+			const numValue = parseInt(value);
+			if (!isNaN(numValue) && numValue > 0 && numValue <= 4096) {
+				maxTokens = numValue;
+			} else if (!isNaN(numValue) && numValue > 4096) {
+				maxTokens = 4096;
+				target.value = '4096';
+			} else {
+				// 如果输入无效值，重置为 null
+				maxTokens = null;
+				target.value = '';
+			}
+		}
 		hasChanges = true;
 	}
 
@@ -424,11 +454,15 @@
 												type="number"
 												id="maxTokens"
 												bind:value={maxTokens}
-												min="100"
-												max="8192"
-												step="128"
-												on:input={handleInputChange}
+												placeholder="1024"
+												min="1"
+												max="4096"
+												on:input={handleMaxTokensChange}
+												on:blur={handleMaxTokensChange}
 											/>
+											<div class="field-hint">
+												{$_('workspace.agents.create.max_tokens_hint')} (1-4096, {$_('workspace.agents.create.optional')})
+											</div>
 										</FormGroup>
 									</Col>
 									<Col md="4">
@@ -619,6 +653,12 @@
 		text-align: center;
 		font-size: 0.875rem;
 		color: #4a5568;
+		margin-top: 0.25rem;
+	}
+
+	.field-hint {
+		font-size: 0.75rem;
+		color: #6b7280;
 		margin-top: 0.25rem;
 	}
 

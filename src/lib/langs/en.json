@@ -659,6 +659,8 @@
             "llm_config": "Language Model Configuration",
             "temperature": "Creativity",
             "max_tokens": "Maximum Response Length",
+            "max_tokens_hint": "Maximum number of tokens in response",
+            "optional": "optional",
             "max_recursion_depth": "Maximum Recursion Depth",
             "is_public": "Make public",
             "enabled": "Enable agent",
