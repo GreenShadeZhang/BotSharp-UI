@@ -373,8 +373,7 @@
             "loading": "Loading agents...",
             "no_agents": "No agents available",
             "no_description": "No description available"
-        },
-        "chat": {
+        },        "chat": {
             "title": "New Chat",
             "select_agent": "Select an AI Agent",
             "select_agent_description": "Choose an AI agent to start your conversation",
@@ -382,7 +381,12 @@
             "send": "Send",
             "loading": "Sending...",
             "no_agents": "No agents available",
-            "start_conversation": "Start Conversation"
+            "start_conversation": "Start Conversation",
+            "input_placeholder": "Type your message...",
+            "loading_conversation": "Loading conversation...",
+            "start_conversation_with": "Start a conversation with {agentName}",
+            "assistant": "the assistant",
+            "error_sending_message": "Sorry, there was an error sending your message. Please try again."
         },
         "sessions": {
             "title": "Chat Sessions",
@@ -594,8 +598,7 @@
         "minutes_ago": "minutes ago",
         "hours_ago": "hours ago",
         "days_ago": "days ago"
-    },
-    "common": {
+    },    "common": {
         "cancel": "Cancel",
         "delete": "Delete",
         "confirm": "Confirm",
@@ -612,7 +615,11 @@
         "search": "Search",
         "error": "Error",
         "no_description": "No description",
-        "back_to_top": "Back to Top"
+        "back_to_top": "Back to Top",
+        "date": {
+            "today": "Today",
+            "yesterday": "Yesterday"
+        }
     },
     "agents": {
         "title": "Agent Management",

@@ -6,6 +6,7 @@
 	import { Button, Input } from '@sveltestrap/sveltestrap';
 	import { v4 as uuidv4 } from 'uuid';
 	import moment from 'moment';
+	import { _ } from 'svelte-i18n';
 	import {
 		newConversation,
 		sendMessageToHub,
@@ -328,7 +329,6 @@
 		const lastMsg = dialogs.slice(-1)[0];
 		return BOT_SENDERS.includes(lastMsg?.sender?.role || '') ? lastMsg : null;
 	}
-
 	/** @param {import('$conversationTypes').ChatResponseModel[]} dialogs */
 	function groupDialogs(dialogs) {
 		if (!dialogs || dialogs.length === 0) {
@@ -344,9 +344,9 @@
 			const createDate = moment.utc(dialog.created_at).local().format(format);
 			let dateKey;
 			if (createDate == moment.utc().local().format(format)) {
-				dateKey = 'Today';
+				dateKey = $_('common.date.today');
 			} else if (createDate == moment.utc().local().subtract(1, 'days').format(format)) {
-				dateKey = 'Yesterday';
+				dateKey = $_('common.date.yesterday');
 			} else {
 				dateKey = createDate;
 			}
@@ -370,17 +370,17 @@
 		isSendingMsg = true;
 		const currentInput = messageInput.trim();
 		messageInput = '';
-
 		try {
 			await sendMessageToHub(agentId, conversation.id, currentInput);
 			// 注意：isSendingMsg = false 将在 onMessageReceivedFromAssistant 中设置
 		} catch (error) {
 			console.error('Failed to send message:', error);
 			// Create a minimal error message that matches ChatResponseModel structure
+			const errorText = $_('workspace.chat.error_sending_message');
 			const errorMessage = {
 				message_id: uuidv4(),
 				uuid: uuidv4(),
-				text: 'Sorry, there was an error sending your message. Please try again.',
+				text: errorText,
 				sender: {
 					id: 'system',
 					role: 'assistant',
@@ -428,7 +428,6 @@
 	function formatTimestamp(timestamp) {
 		return moment.utc(timestamp).local().format('HH:mm');
 	}
-
 	/** @param {string | Date} date */
 	function formatDateHeader(date) {
 		const messageDate = moment.utc(date).local();
@@ -436,9 +435,9 @@
 		const yesterday = moment().subtract(1, 'day');
 
 		if (messageDate.isSame(today, 'day')) {
-			return 'Today';
+			return $_('common.date.today');
 		} else if (messageDate.isSame(yesterday, 'day')) {
-			return 'Yesterday';
+			return $_('common.date.yesterday');
 		} else {
 			return messageDate.format('MMMM DD, YYYY');
 		}
@@ -479,24 +478,16 @@
 		</div>
 	</div>
 	<!-- Chat Messages -->
-	<div class="chat-messages" bind:this={chatContainer}>
-		{#if isLoading}
+	<div class="chat-messages" bind:this={chatContainer}>		{#if isLoading}
 			<div class="loading-container">
 				<div class="spinner-border text-primary" role="status">
-					<span class="visually-hidden">Loading...</span>
+					<span class="visually-hidden">{$_('common.loading')}</span>
 				</div>
-				<p class="mt-2 text-muted">Loading conversation...</p>
-			</div>
-		{:else if Object.keys(groupedDialogs).length === 0}
+				<p class="mt-2 text-muted">{$_('workspace.chat.loading_conversation')}</p>
+			</div>		{:else if Object.keys(groupedDialogs).length === 0}
 			<div class="empty-chat">
 				<i class="fas fa-comments fa-3x text-muted mb-3"></i>
-				<p class="text-muted">Start a conversation with {agent?.name || 'the assistant'}</p>
-				<!-- Debug info -->
-				<small class="text-muted">
-					Debug: dialogs={dialogs.length}, streaming={streamingMessages.length}, grouped={JSON.stringify(
-						Object.keys(groupedDialogs)
-					)}
-				</small>
+				<p class="text-muted">{$_('workspace.chat.start_conversation_with').replace('{agentName}', agent?.name || $_('workspace.chat.assistant'))}</p>
 			</div>
 		{:else}
 			{#each Object.entries(groupedDialogs) as [date, messages]}
@@ -588,11 +579,10 @@
 
 	<!-- Input Area -->
 	<div class="chat-input-area">
-		<div class="input-container">
-			<textarea
+		<div class="input-container">			<textarea
 				bind:value={messageInput}
 				on:keydown={handleKeyPress}
-				placeholder="Type your message..."
+				placeholder={$_('workspace.chat.input_placeholder')}
 				rows="1"
 				class="message-input"
 				disabled={isLoading || isSendingMsg}
@@ -613,42 +603,51 @@
 		display: flex;
 		flex-direction: column;
 		height: 100vh;
-		background: #f8f9fa;
+		background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
 		position: relative;
+		max-width: 1400px;
+		margin: 0 auto;
+		box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
 	}
-
 	/* Header Styles */
 	.chat-header {
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
-		padding: 1rem 1.5rem;
-		background: white;
-		border-bottom: 1px solid #e9ecef;
-		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+		padding: 1.5rem 2rem;
+		background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+		color: white;
+		box-shadow: 0 4px 20px rgba(102, 126, 234, 0.2);
 		z-index: 10;
+		border-radius: 0;
 	}
 
 	.header-left {
 		display: flex;
 		align-items: center;
 		gap: 1rem;
-	}
-
-	.back-btn {
-		background: none;
-		border: none;
-		color: #6c757d;
+	}	.back-btn {
+		background: rgba(255, 255, 255, 0.15);
+		border: 1px solid rgba(255, 255, 255, 0.2);
+		color: white;
 		font-size: 1.2rem;
 		cursor: pointer;
-		padding: 0.5rem;
+		width: 44px;
+		height: 44px;
 		border-radius: 50%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
 		transition: all 0.3s ease;
+		backdrop-filter: blur(10px);
+		flex-shrink: 0;
 	}
 
 	.back-btn:hover {
-		background: #f8f9fa;
-		color: #495057;
+		background: rgba(255, 255, 255, 0.25);
+		transform: translateX(-2px) scale(1.05);
+		border-color: rgba(255, 255, 255, 0.3);
+		box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
 	}
 
 	.agent-info {
@@ -656,41 +655,47 @@
 		align-items: center;
 		gap: 0.75rem;
 	}
-
 	.agent-avatar {
-		width: 40px;
-		height: 40px;
-		background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+		width: 48px;
+		height: 48px;
+		background: rgba(255, 255, 255, 0.15);
+		border: 2px solid rgba(255, 255, 255, 0.3);
 		border-radius: 50%;
 		display: flex;
 		align-items: center;
 		justify-content: center;
 		color: white;
+		font-size: 1.2rem;
+		backdrop-filter: blur(10px);
 	}
 
 	.agent-details h3 {
 		margin: 0;
-		font-size: 1.1rem;
-		font-weight: 600;
-		color: #343a40;
+		font-size: 1.2rem;
+		font-weight: 700;
+		color: white;
+		text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 	}
 
 	.agent-details p {
 		margin: 0;
-		font-size: 0.85rem;
-		color: #6c757d;
+		font-size: 0.9rem;
+		color: rgba(255, 255, 255, 0.9);
+		text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 	}
-
 	/* Messages Styles */
 	.chat-messages {
 		flex: 1;
 		overflow-y: auto;
-		padding: 1rem;
+		padding: 2rem;
 		display: flex;
 		flex-direction: column;
 		gap: 1rem;
+		background: white;
+		border-radius: 1rem 1rem 0 0;
+		margin: 0 1rem;
+		box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
 	}
-
 	.loading-container,
 	.empty-chat {
 		display: flex;
@@ -699,14 +704,17 @@
 		justify-content: center;
 		height: 100%;
 		text-align: center;
+		background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+		border-radius: 1rem;
+		padding: 3rem 2rem;
+		margin: 2rem 0;
 	}
-
 	/* Date Separator */
 	.date-separator {
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		margin: 1rem 0;
+		margin: 1.5rem 0;
 		position: relative;
 	}
 
@@ -717,19 +725,22 @@
 		left: 0;
 		right: 0;
 		height: 1px;
-		background: #dee2e6;
+		background: linear-gradient(90deg, transparent, #e2e8f0, transparent);
 		z-index: 1;
 	}
 
 	.date-label {
-		background: #f8f9fa;
-		color: #6c757d;
-		padding: 0.25rem 1rem;
-		border-radius: 1rem;
+		background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+		color: white;
+		padding: 0.5rem 1.5rem;
+		border-radius: 2rem;
 		font-size: 0.8rem;
-		font-weight: 500;
+		font-weight: 600;
 		z-index: 2;
 		position: relative;
+		box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+		text-transform: uppercase;
+		letter-spacing: 0.5px;
 	}
 
 	.message-container {
@@ -774,17 +785,20 @@
 		flex-direction: column;
 		gap: 0.25rem;
 	}	.message-bubble {
-		padding: 0.75rem 1rem;
-		border-radius: 1rem;
+		padding: 1rem 1.25rem;
+		border-radius: 1.5rem;
 		background: white;
-		box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 		word-wrap: break-word;
 		position: relative;
-		color: #343a40; /* 确保AI消息文字颜色为深色 */
+		color: #374151;
+		border: 1px solid rgba(0, 0, 0, 0.05);
 	}
 	.user-message .message-bubble {
 		background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 		color: white;
+		box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+		border: 1px solid rgba(255, 255, 255, 0.1);
 	}
 	/* 确保AI消息中的Markdown内容也是深色 */
 	.assistant-message .message-bubble :global(.markdown),
@@ -905,13 +919,15 @@
 	.notification-content i {
 		flex-shrink: 0;
 	}
-
 	/* Input Area */
 	.chat-input-area {
-		padding: 1rem 1.5rem;
+		padding: 1.5rem 2rem;
 		background: white;
-		border-top: 1px solid #e9ecef;
+		border-top: 1px solid rgba(0, 0, 0, 0.05);
 		z-index: 10;
+		margin: 0 1rem 1rem;
+		border-radius: 0 0 1rem 1rem;
+		box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.05);
 	}
 
 	.input-container {
@@ -920,28 +936,28 @@
 		gap: 0.75rem;
 		max-width: 100%;
 	}
-
 	.message-input {
 		flex: 1;
-		border: 1px solid #ced4da;
+		border: 2px solid #e5e7eb;
 		border-radius: 1.5rem;
-		padding: 0.75rem 1rem;
-		font-size: 0.9rem;
+		padding: 0.875rem 1.25rem;
+		font-size: 0.95rem;
 		resize: none;
 		outline: none;
-		transition: border-color 0.3s ease;
-		min-height: 44px;
+		transition: all 0.3s ease;
+		min-height: 48px;
 		max-height: 120px;
+		background: #f9fafb;
 	}
 
 	.message-input:focus {
 		border-color: #667eea;
-		box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+		box-shadow: 0 0 0 0.25rem rgba(102, 126, 234, 0.15);
+		background: white;
 	}
-
 	.send-btn {
-		width: 44px;
-		height: 44px;
+		width: 48px;
+		height: 48px;
 		border: none;
 		border-radius: 50%;
 		background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -952,18 +968,20 @@
 		cursor: pointer;
 		transition: all 0.3s ease;
 		flex-shrink: 0;
+		box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
 	}
 
 	.send-btn:hover:not(:disabled) {
-		transform: scale(1.05);
-		box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+		transform: scale(1.05) translateY(-1px);
+		box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
 	}
 
 	.send-btn:disabled {
 		opacity: 0.6;
 		cursor: not-allowed;
 		transform: none;
-	}	/* Rich Content Styles */
+		box-shadow: 0 2px 4px rgba(102, 126, 234, 0.2);
+	}/* Rich Content Styles */
 	.rich-content {
 		width: 100%;
 	}
@@ -1088,15 +1106,135 @@
 		background: rgba(255, 255, 255, 0.1);
 		font-weight: 600;
 	}
-
 	/* 确保错误消息的文字颜色正确 */
 	.message-bubble.error-message {
-		background: #f8d7da;
-		color: #721c24;
-		border: 1px solid #f5c6cb;
+		background: #fee2e2;
+		color: #dc2626;
+		border: 1px solid #fecaca;
 	}
 
 	.message-bubble.error-message :global(.markdown),
+	.message-bubble.error-message :global(.markdown p),
+	.message-bubble.error-message :global(.markdown h1),
+	.message-bubble.error-message :global(.markdown h2),
+	.message-bubble.error-message :global(.markdown h3),
+	.message-bubble.error-message :global(.markdown h4),
+	.message-bubble.error-message :global(.markdown h5),
+	.message-bubble.error-message :global(.markdown h6) {
+		color: #dc2626 !important;
+	}
+
+	/* 响应式设计 */
+	@media (max-width: 1440px) {
+		.workspace-chat-container {
+			max-width: 1200px;
+		}
+	}
+
+	@media (max-width: 1200px) {
+		.workspace-chat-container {
+			max-width: 1000px;
+		}
+		
+		.chat-messages {
+			margin: 0 0.5rem;
+		}
+		
+		.chat-input-area {
+			margin: 0 0.5rem 0.5rem;
+		}
+	}
+
+	@media (max-width: 768px) {
+		.workspace-chat-container {
+			max-width: 100%;
+			margin: 0;
+			box-shadow: none;
+		}
+		
+		.chat-header {
+			padding: 1rem 1.5rem;
+			border-radius: 0;
+		}
+		
+		.chat-messages {
+			margin: 0;
+			border-radius: 0;
+			padding: 1.5rem 1rem;
+		}
+		
+		.chat-input-area {
+			margin: 0;
+			border-radius: 0;
+			padding: 1rem 1.5rem;
+		}
+		
+		.agent-details h3 {
+			font-size: 1.1rem;
+		}
+		
+		.agent-details p {
+			font-size: 0.8rem;
+		}
+		
+		.message-container {
+			max-width: 90%;
+		}
+		
+		.message-bubble {
+			padding: 0.875rem 1rem;
+		}
+	}
+	@media (max-width: 480px) {
+		.chat-header {
+			padding: 0.875rem 1rem;
+		}
+		
+		.header-left {
+			gap: 0.75rem;
+		}
+		
+		.back-btn {
+			width: 40px;
+			height: 40px;
+			font-size: 1.1rem;
+		}
+		
+		.agent-avatar {
+			width: 40px;
+			height: 40px;
+		}
+		
+		.agent-details h3 {
+			font-size: 1rem;
+		}
+		
+		.agent-details p {
+			display: none; /* 在小屏幕上隐藏智能体描述 */
+		}
+		
+		.chat-messages {
+			padding: 1rem 0.75rem;
+		}
+		
+		.message-container {
+			max-width: 95%;
+		}
+		
+		.input-container {
+			gap: 0.5rem;
+		}
+		
+		.message-input {
+			padding: 0.75rem 1rem;
+			font-size: 0.9rem;
+		}
+		
+		.send-btn {
+			width: 44px;
+			height: 44px;
+		}
+	}
 	.message-bubble.error-message :global(.markdown p) {
 		color: #721c24 !important;
 	}

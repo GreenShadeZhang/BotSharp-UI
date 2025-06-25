@@ -22,6 +22,16 @@
 	});
 </script>
 
-{#if currentUser}
-	<WorkspaceChatBox currentUser={currentUser} agent={agent} />
-{/if}
+<div class="workspace-chat-page">
+	{#if currentUser}
+		<WorkspaceChatBox currentUser={currentUser} agent={agent} />
+	{/if}
+</div>
+
+<style>
+	.workspace-chat-page {
+		height: 100vh;
+		background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+		overflow: hidden;
+	}
+</style>

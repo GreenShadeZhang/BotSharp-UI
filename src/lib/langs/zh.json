@@ -568,8 +568,7 @@
       "loading": "正在加载智能体...",
       "no_agents": "暂无可用智能体",
       "no_description": "暂无描述"
-    },
-    "chat": {
+    },    "chat": {
       "title": "新对话",
       "select_agent": "选择AI智能体",
       "select_agent_description": "选择一个AI智能体开始对话",
@@ -577,7 +576,12 @@
       "send": "发送",
       "loading": "发送中...",
       "no_agents": "暂无可用智能体",
-      "start_conversation": "开始对话"
+      "start_conversation": "开始对话",
+      "input_placeholder": "输入您的消息...",
+      "loading_conversation": "正在加载对话...",
+      "start_conversation_with": "开始与{agentName}的对话",
+      "assistant": "助手",
+      "error_sending_message": "抱歉，发送消息时出现错误。请重试。"
     },
     "sessions": {
       "title": "聊天会话",
@@ -807,11 +811,14 @@
     "selected": "已选择",
     "back": "返回",
     "next": "下一步",
-    "previous": "上一步",
-    "loading": "加载中...",
+    "previous": "上一步",    "loading": "加载中...",
     "search": "搜索",
     "error": "错误",
     "no_description": "无描述",
-    "back_to_top": "返回顶部"
+    "back_to_top": "返回顶部",
+    "date": {
+      "today": "今天",
+      "yesterday": "昨天"
+    }
   }
 }
