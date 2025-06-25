@@ -6,15 +6,11 @@
 	import Swal from 'sweetalert2';
 	// import * as lodash from 'lodash';
 	import { Button, Card, CardBody, Col, Input, Row, Table } from '@sveltestrap/sveltestrap';
-	import TablePagination from '$lib/common/TablePagination.svelte';
 	import LoadingToComplete from '$lib/common/LoadingToComplete.svelte';
 	import AgentSelectionModal from '$lib/common/AgentSelectionModal.svelte';
 	import UserProfileModal from '$lib/common/UserProfileModal.svelte';
 	import { getAgentOptions } from '$lib/services/agent-service';
-	import {
-		getConversations,
-		deleteConversation
-	} from '$lib/services/conversation-service.js';
+	import { getConversations, deleteConversation } from '$lib/services/conversation-service.js';
 	import { myInfo } from '$lib/services/auth-service';
 	import { resetLocalStorage, userStore } from '$lib/helpers/store';
 	import { logout as oidcLogout } from '$lib/services/oidc-auth-service.js';
@@ -25,7 +21,6 @@
 	import { browser } from '$app/environment';
 	import { ChatAction } from '$lib/helpers/enums';
 	import { CHAT_FRAME_ID } from '$lib/helpers/constants';
-
 	const duration = 3000;
 	const firstPage = 1;
 	const pageSize = 15;
@@ -35,6 +30,8 @@
 	let sidebarDataLoaded = false; // 跟踪侧边栏数据是否已加载
 	let isLoading = false;
 	let isComplete = false;
+	let isLoadingMore = false; // 滚动加载更多状态
+	let hasMoreData = true; // 是否还有更多数据
 	let showStateSearch = false;
 	let showUserProfileModal = false;
 	let showUserDropdown = false;
@@ -108,7 +105,6 @@
 			document.removeEventListener('click', handleClickOutside);
 		}
 	});
-
 	function loadConversations() {
 		return new Promise((resolve, reject) => {
 			getPagedConversations()
@@ -122,8 +118,49 @@
 	}
 
 	async function getPagedConversations() {
-		conversations = await getConversations(filter);
+		const response = await getConversations(filter);
+		conversations = response;
+		hasMoreData = response.items.length === pageSize && response.count > response.items.length;
 		refresh();
+	}
+
+	async function loadMoreConversations() {
+		if (isLoadingMore || !hasMoreData) return;
+
+		isLoadingMore = true;
+		try {
+			const nextPage = filter.pager.page + 1;
+			const nextFilter = {
+				...filter,
+				pager: { ...filter.pager, page: nextPage }
+			};
+
+			const response = await getConversations(nextFilter);
+
+			if (response.items && response.items.length > 0) {
+				// 合并新数据到现有数据
+				conversations = {
+					items: [...conversations.items, ...response.items],
+					count: response.count
+				};
+
+				// 更新过滤器页码
+				filter.pager.page = nextPage;
+
+				// 检查是否还有更多数据
+				hasMoreData =
+					response.items.length === pageSize && conversations.items.length < response.count;
+			} else {
+				hasMoreData = false;
+			}
+
+			refresh();
+		} catch (error) {
+			console.error('Error loading more conversations:', error);
+			hasMoreData = false;
+		} finally {
+			isLoadingMore = false;
+		}
 	}
 
 	function loadAgentOptions() {
@@ -188,7 +225,6 @@
 			count: totalItemsCount
 		};
 	}
-
 	/** @param {number} pageNum */
 	function pageTo(pageNum) {
 		pager = {
@@ -205,7 +241,15 @@
 	}
 
 	async function reloadConversations() {
-		conversations = await getConversations({ ...filter });
+		// 重置分页到第一页
+		filter = {
+			...filter,
+			pager: { ...filter.pager, page: firstPage }
+		};
+		hasMoreData = true;
+		conversations = await getConversations(filter);
+		hasMoreData =
+			conversations.items.length === pageSize && conversations.count > conversations.items.length;
 		refreshPager(conversations.count);
 	}
 
@@ -226,25 +270,27 @@
 				isComplete = false;
 			});
 	}
-
 	/** @param {string} conversationId */
 	function openDeleteModal(conversationId) {
 		// @ts-ignore
 		Swal.fire({
-			title: 'Are you sure?',
-			text: "You won't be able to revert this!",
+			title: $_('workspace.sessions.delete_confirm.title'),
+			text: $_('workspace.sessions.delete_confirm.message'),
 			icon: 'warning',
 			customClass: 'custom-modal',
 			showCancelButton: true,
-			confirmButtonText: 'Yes, delete it!'
+			confirmButtonText: $_('common.confirm'),
+			cancelButtonText: $_('common.cancel')
 		}).then((result) => {
 			if (result.value) {
 				handleConversationDeletion(conversationId);
 			}
 		});
 	}
-	/** @param {any} e */
+
+	/** @param {Event} e */
 	function searchConversations(e) {
+		// 重置到第一页并重新加载
 		filter = {
 			...filter,
 			agentId: searchOption.agentId,
@@ -255,6 +301,7 @@
 			tags: searchOption.tags,
 			pager: { ...filter.pager, page: firstPage }
 		};
+		hasMoreData = true;
 		getPagedConversations();
 	}
 
@@ -369,9 +416,26 @@
 	function handleAvatarLoad(e) {
 		e.target.src = '/images/users/user-dummy.jpg';
 	}
-
 	function openAgentManagement() {
 		goto('/workspace/agents');
+	}
+
+	/**
+	 * 处理会话列表滚动事件
+	 * @param {Event} event
+	 */
+	function handleConversationScroll(event) {
+		const container = /** @type {HTMLElement} */ (event.target);
+		if (!container) return;
+
+		const scrollTop = container.scrollTop;
+		const scrollHeight = container.scrollHeight;
+		const clientHeight = container.clientHeight;
+
+		// 接近底部时加载更多
+		if (scrollHeight - scrollTop - clientHeight < 50 && hasMoreData && !isLoadingMore) {
+			loadMoreConversations();
+		}
 	}
 </script>
 
@@ -385,7 +449,7 @@
 				color="primary"
 				class="floating-btn"
 				on:click={openSessionsManager}
-				title="Show Conversations"
+				title={$_('workspace.sessions.title')}
 			>
 				<i class="fas fa-comments"></i>
 			</Button>
@@ -397,17 +461,22 @@
 			<div class="sidebar-header" in:fly={{ x: -100, duration: 300, delay: 100 }}>
 				<div class="sidebar-title">
 					<i class="fas fa-comments me-2"></i>
-					{$_('Conversations')}
+					{$_('workspace.sessions.title')}
 				</div>
 				<div class="sidebar-actions">
-					<Button size="sm" color="primary" on:click={startNewChat} title="Start New Chat">
+					<Button
+						size="sm"
+						color="primary"
+						on:click={startNewChat}
+						title={$_('workspace.actions.start_chat.title')}
+					>
 						<i class="fas fa-plus"></i>
 					</Button>
 					<Button
 						size="sm"
 						color="secondary"
 						on:click={toggleSidebar}
-						title={showLeftSidebar ? 'Hide Sidebar' : 'Show Sidebar'}
+						title={showLeftSidebar ? $_('common.close') : $_('common.open')}
 					>
 						<i class="fas fa-times"></i>
 					</Button>
@@ -421,7 +490,7 @@
 					<div class="filter-header">
 						<span class="filter-title">
 							<i class="fas fa-filter me-2"></i>
-							{$_('Filters')}
+							{$_('workspace.sessions.filters')}
 						</span>
 						<Button
 							size="sm"
@@ -443,14 +512,14 @@
 							<div class="filter-group">
 								<div class="filter-label">
 									<i class="fas fa-robot me-1"></i>
-									{$_('Agent')}
+									{$_('workspace.sessions.agent')}
 								</div>
 								<select
 									class="form-select form-select-sm modern-select"
 									value={searchOption.agentId}
 									on:change={(e) => changeOption(e, 'agent')}
 								>
-									<option value={null}>{$_('All Agents')}</option>
+									<option value={null}>{$_('workspace.sessions.all_agents')}</option>
 									{#each agentOptions as op}
 										<option value={`${op.id}`} selected={op.id === searchOption.agentId}
 											>{$_(`${op.name}`)}</option
@@ -463,14 +532,14 @@
 							<div class="filter-group">
 								<div class="filter-label">
 									<i class="fas fa-signal me-1"></i>
-									{$_('Status')}
+									{$_('workspace.sessions.status')}
 								</div>
 								<select
 									class="form-select form-select-sm modern-select"
 									value={searchOption.status}
 									on:change={(e) => changeOption(e, 'status')}
 								>
-									<option value={null}>{$_('All Status')}</option>
+									<option value={null}>{$_('workspace.sessions.all_status')}</option>
 									{#each statusOptions as op}
 										<option value={`${op.id}`} selected={op.id === searchOption.status}
 											>{$_(`${op.name}`)}</option
@@ -483,14 +552,14 @@
 							<div class="filter-group">
 								<div class="filter-label">
 									<i class="fas fa-broadcast-tower me-1"></i>
-									{$_('Channel')}
+									{$_('workspace.sessions.channel')}
 								</div>
 								<select
 									class="form-select form-select-sm modern-select"
 									value={searchOption.channel}
 									on:change={(e) => changeOption(e, 'channel')}
 								>
-									<option value={null}>{$_('All Channels')}</option>
+									<option value={null}>{$_('workspace.sessions.all_channels')}</option>
 									{#each channelOptions as op}
 										<option value={`${op.id}`} selected={op.id === searchOption.channel}
 											>{$_(`${op.name}`)}</option
@@ -503,11 +572,11 @@
 							<div class="filter-group">
 								<div class="filter-label">
 									<i class="fas fa-tag me-1"></i>
-									{$_('Tag')}
+									{$_('workspace.sessions.tag')}
 								</div>
 								<Input
 									type="text"
-									placeholder={$_('Enter tag...')}
+									placeholder={$_('workspace.sessions.tag_placeholder')}
 									bsSize="sm"
 									class="modern-input"
 									maxlength={100}
@@ -524,7 +593,7 @@
 									on:click={(e) => searchConversations(e)}
 								>
 									<i class="fas fa-search me-1" />
-									{$_('Apply Filters')}
+									{$_('workspace.sessions.apply_filters')}
 								</Button>
 							</div>
 						</div>
@@ -535,98 +604,101 @@
 					{#if isLoading && !sidebarDataLoaded}
 						<div class="loading-state">
 							<div class="spinner-border spinner-border-sm me-2" role="status"></div>
-							<span>{$_('Loading conversations...')}</span>
+							<span>{$_('workspace.sessions.loading')}</span>
 						</div>
 					{:else if conversations.items.length > 0}
 						<div class="conversations-header">
 							<span class="conversations-count">
 								<i class="fas fa-list me-1"></i>
 								{conversations.count}
-								{$_('conversations')}
+								{$_('workspace.sessions.message_count')}
 							</span>
 						</div>
-						{#each conversations.items as conv}
-							<div
-								class="conversation-item"
-								on:click={() => handleConversationSelected(conv.id, conv.agent_id)}
-								on:keydown={(e) =>
-									e.key === 'Enter' && handleConversationSelected(conv.id, conv.agent_id)}
-								role="button"
-								tabindex="0"
-							>
-								<div class="conversation-header">
-									<div class="conversation-title">{conv.title}</div>
-									<div class="conversation-actions">
-										<button
-											class="action-btn chat-btn"
-											on:click|stopPropagation={() =>
-												window.open(`/workspace/chat/${conv.agent_id}/${conv.id}`)}
-											title="Open Chat"
-										>
-											<i class="fas fa-comments"></i>
-										</button>
-										<button
-											class="action-btn delete-btn"
-											on:click|stopPropagation={() => openDeleteModal(conv.id)}
-											title="Delete"
-										>
-											<i class="fas fa-trash-alt"></i>
-										</button>
+						<div class="conversations-scrollable" on:scroll={handleConversationScroll}>
+							{#each conversations.items as conv}
+								<div
+									class="conversation-item"
+									on:click={() => handleConversationSelected(conv.id, conv.agent_id)}
+									on:keydown={(e) =>
+										e.key === 'Enter' && handleConversationSelected(conv.id, conv.agent_id)}
+									role="button"
+									tabindex="0"
+								>
+									<div class="conversation-header">
+										<div class="conversation-title">{conv.title}</div>
+										<div class="conversation-actions">
+											<button
+												class="action-btn chat-btn"
+												on:click|stopPropagation={() =>
+													window.open(`/workspace/chat/${conv.agent_id}/${conv.id}`)}
+												title={$_('workspace.sessions.open_session')}
+											>
+												<i class="fas fa-comments"></i>
+											</button>
+											<button
+												class="action-btn delete-btn"
+												on:click|stopPropagation={() => openDeleteModal(conv.id)}
+												title={$_('workspace.sessions.delete')}
+											>
+												<i class="fas fa-trash-alt"></i>
+											</button>
+										</div>
+									</div>
+									<div class="conversation-meta">
+										<div class="agent-info">
+											<i class="fas fa-robot me-1"></i>
+											<span>{conv.agent_name}</span>
+										</div>
+										<div class="status-badge">
+											<span
+												class="badge badge-modern bg-{conv.status === 'open'
+													? 'success'
+													: 'secondary'}"
+												>{$_(conv.status === 'open' ? 'Active' : 'Completed')}</span
+											>
+										</div>
+									</div>
+									<div class="conversation-footer">
+										<div class="user-info">
+											<i class="fas fa-user me-1"></i>
+											<span>{conv.user.full_name}</span>
+										</div>
+										<div class="timestamp">
+											<i class="fas fa-clock me-1"></i>
+											{utcToLocal(conv.updated_time)}
+										</div>
 									</div>
 								</div>
-								<div class="conversation-meta">
-									<div class="agent-info">
-										<i class="fas fa-robot me-1"></i>
-										<span>{conv.agent_name}</span>
-									</div>
-									<div class="status-badge">
-										<span
-											class="badge badge-modern bg-{conv.status === 'open'
-												? 'success'
-												: 'secondary'}">{conv.status}</span
-										>
-									</div>
+							{/each}
+
+							<!-- 加载更多指示器 -->
+							{#if isLoadingMore}
+								<div class="loading-more-indicator" in:fly={{ y: 20, duration: 300 }}>
+									<div class="loading-spinner"></div>
+									<span>{$_('workspace.sessions.loading_more')}</span>
 								</div>
-								<div class="conversation-footer">
-									<div class="user-info">
-										<i class="fas fa-user me-1"></i>
-										<span>{conv.user.full_name}</span>
-									</div>
-									<div class="timestamp">
-										<i class="fas fa-clock me-1"></i>
-										{utcToLocal(conv.updated_time)}
-									</div>
+							{/if}
+
+							<!-- 没有更多数据提示 -->
+							{#if !hasMoreData && conversations.items.length >= pageSize}
+								<div class="no-more-data" in:fly={{ y: 20, duration: 300 }}>
+									<i class="fas fa-check-circle"></i>
+									<span>{$_('workspace.sessions.all_loaded')}</span>
 								</div>
-							</div>
-						{/each}
-						<!-- Pagination -->
-						{#if pager.count > pageSize}
-							<div class="sidebar-pagination">
-								<div class="pagination-wrapper">
-									<div class="pagination-info">
-										<span class="pagination-text">
-											{$_('Page')}
-											{pager.page}
-											{$_('of')}
-											{Math.ceil(pager.count / pager.size)}
-										</span>
-									</div>
-									<TablePagination pagination={pager} pageTo={(pn) => pageTo(pn)} />
-								</div>
-							</div>
-						{/if}
+							{/if}
+						</div>
 					{:else}
 						<div class="empty-state">
 							<div class="empty-icon">
 								<i class="fas fa-comments"></i>
 							</div>
-							<h4 class="empty-title">{$_('No conversations found')}</h4>
+							<h4 class="empty-title">{$_('workspace.sessions.no_sessions')}</h4>
 							<p class="empty-description">
-								{$_('Start a new conversation or adjust your filters')}
+								{$_('workspace.sessions.no_sessions_description')}
 							</p>
 							<Button color="primary" on:click={startNewChat} class="empty-action-btn">
 								<i class="fas fa-plus me-2"></i>
-								{$_('Start New Chat')}
+								{$_('workspace.actions.start_chat.title')}
 							</Button>
 						</div>
 					{/if}
@@ -843,27 +915,7 @@
 		z-index: 1001;
 	}
 
-	.floating-btn {
-		border-radius: 50%;
-		width: 50px;
-		height: 50px;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-		border: none;
-		background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-	}
-
-	.floating-btn:hover {
-		transform: scale(1.05);
-		box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
-	}
-
-	.floating-btn i {
-		font-size: 1.2rem;
-		color: white;
-	} /* Left Sidebar Styles */
+	/* Left Sidebar Styles */
 	.sidebar-left {
 		width: 320px;
 		background: white;
@@ -933,8 +985,7 @@
 		display: flex;
 		align-items: center;
 	}
-
-	.filter-toggle-btn {
+	.filter-section :global(.filter-toggle-btn) {
 		border-radius: 50%;
 		width: 32px;
 		height: 32px;
@@ -960,16 +1011,15 @@
 		text-transform: uppercase;
 		letter-spacing: 0.5px;
 	}
-
-	.modern-select,
-	.modern-input {
+	.filter-section :global(.modern-select),
+	.filter-section :global(.modern-input) {
 		border-radius: 8px;
 		border: 1px solid #dee2e6;
 		transition: all 0.2s ease;
 	}
 
-	.modern-select:focus,
-	.modern-input:focus {
+	.filter-section :global(.modern-select:focus),
+	.filter-section :global(.modern-input:focus) {
 		border-color: #667eea;
 		box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
 	}
@@ -979,8 +1029,7 @@
 		padding-top: 1rem;
 		border-top: 1px solid #dee2e6;
 	}
-
-	.apply-filter-btn {
+	.filter-actions :global(.apply-filter-btn) {
 		border-radius: 8px;
 		font-weight: 600;
 		text-transform: uppercase;
@@ -990,8 +1039,63 @@
 	}
 	.conversations-list {
 		flex: 1;
-		overflow-y: auto;
+		overflow: hidden;
 		padding: 0;
+		display: flex;
+		flex-direction: column;
+	}
+
+	.conversations-scrollable {
+		flex: 1;
+		overflow-y: auto;
+		scroll-behavior: smooth;
+	}
+
+	.loading-more-indicator {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.75rem;
+		padding: 1rem;
+		margin: 0.5rem;
+		background: rgba(255, 255, 255, 0.9);
+		border: 1px dashed #cbd5e1;
+		border-radius: 0.75rem;
+		color: #6c757d;
+		font-size: 0.85rem;
+	}
+
+	.loading-spinner {
+		width: 16px;
+		height: 16px;
+		border: 2px solid #e2e8f0;
+		border-top: 2px solid #667eea;
+		border-radius: 50%;
+		animation: spin 1s linear infinite;
+	}
+
+	.no-more-data {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.5rem;
+		padding: 1rem;
+		margin: 0.5rem;
+		background: rgba(34, 197, 94, 0.1);
+		border: 1px solid rgba(34, 197, 94, 0.2);
+		border-radius: 0.75rem;
+		color: #16a34a;
+		font-size: 0.85rem;
+		font-weight: 500;
+	}
+
+	@keyframes spin {
+		0% {
+			transform: rotate(0deg);
+		}
+		100% {
+			transform: rotate(360deg);
+		}
 	}
 
 	.loading-state {
@@ -1170,34 +1274,10 @@
 		margin-bottom: 1.5rem;
 		color: #6c757d;
 	}
-
-	.empty-action-btn {
+	.empty-state :global(.empty-action-btn) {
 		border-radius: 8px;
 		font-weight: 600;
 		padding: 0.75rem 1.5rem;
-	}
-	.sidebar-pagination {
-		padding: 1rem;
-		border-top: 1px solid #e9ecef;
-		background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-		position: sticky;
-		bottom: 0;
-	}
-
-	.pagination-wrapper {
-		display: flex;
-		flex-direction: column;
-		gap: 0.5rem;
-	}
-
-	.pagination-info {
-		text-align: center;
-	}
-
-	.pagination-text {
-		font-size: 0.75rem;
-		color: #6c757d;
-		font-weight: 500;
 	}
 
 	/* User Profile Section */
@@ -1517,8 +1597,7 @@
 
 	.activity-placeholder span {
 		font-size: 0.9rem;
-	}
-	/* Responsive Design */
+	} /* Responsive Design */
 	@media (max-width: 1024px) {
 		.sidebar-left {
 			width: 280px;
@@ -1535,13 +1614,12 @@
 			top: 15px;
 			left: 15px;
 		}
-
-		.floating-btn {
+		.floating-toggle :global(.floating-btn) {
 			width: 45px;
 			height: 45px;
 		}
 
-		.floating-btn i {
+		.floating-toggle :global(.floating-btn i) {
 			font-size: 1.1rem;
 		}
 
@@ -1551,8 +1629,8 @@
 			left: 0;
 			height: 100vh;
 			z-index: 1002;
-			width: 100vw;
-			max-width: 320px;
+			width: 100vw; /* 移动端全屏 */
+			max-width: none; /* 移除最大宽度限制 */
 		}
 
 		.sidebar-left.sidebar-open {
@@ -1561,7 +1639,12 @@
 
 		.sidebar-left.sidebar-closed {
 			transform: translateX(-100%);
-			width: 320px;
+			width: 100vw;
+		}
+
+		.sidebar-header,
+		.sidebar-content {
+			min-width: 100vw; /* 确保内容铺满屏幕 */
 		}
 
 		.main-content {
@@ -1605,24 +1688,28 @@
 		.user-name {
 			font-size: 0.85rem;
 		}
-	}
 
+		.conversations-scrollable {
+			/* 在移动端优化滚动性能 */
+			-webkit-overflow-scrolling: touch;
+		}
+	}
 	/* Custom scrollbar for conversations list */
-	.conversations-list::-webkit-scrollbar {
+	.conversations-scrollable::-webkit-scrollbar {
 		width: 6px;
 	}
 
-	.conversations-list::-webkit-scrollbar-track {
+	.conversations-scrollable::-webkit-scrollbar-track {
 		background: #f1f1f1;
 		border-radius: 3px;
 	}
 
-	.conversations-list::-webkit-scrollbar-thumb {
+	.conversations-scrollable::-webkit-scrollbar-thumb {
 		background: #c1c1c1;
 		border-radius: 3px;
 	}
 
-	.conversations-list::-webkit-scrollbar-thumb:hover {
+	.conversations-scrollable::-webkit-scrollbar-thumb:hover {
 		background: #a8a8a8;
 	}
 </style>

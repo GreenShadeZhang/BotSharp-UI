@@ -208,11 +208,12 @@
     "logout_confirm_yes": "Yes",
     "logout_confirm_no": "No",
     "Click to upload new avatar": "Click to upload new avatar",
-    "Member since": "Member since",  "Your account details and information": "Your account details and information",
-  "Your complete account details and information": "Your complete account details and information",
-  "Detailed Information": "Detailed Information",
-  "Email Address": "Email Address",
-  "Last Updated": "Last Updated",
+    "Member since": "Member since",
+    "Your account details and information": "Your account details and information",
+    "Your complete account details and information": "Your complete account details and information",
+    "Detailed Information": "Detailed Information",
+    "Email Address": "Email Address",
+    "Last Updated": "Last Updated",
     "Account Created": "Account Created",
     "Profile": "Profile",
     "Notifications": "Notifications",
@@ -345,14 +346,15 @@
         "quick_actions": "Quick Actions",
         "recent_activity": "Recent Activity",
         "no_recent_activity": "No recent activity",
-        "start_conversation_hint": "Start your first conversation to see activity here",        "actions": {
+        "start_conversation_hint": "Start your first conversation to see activity here",
+        "actions": {
             "start_chat": {
                 "title": "Start New Chat",
                 "description": "Begin a conversation with an AI agent",
                 "hint": "Click to select an agent and start chatting"
             },
             "manage_sessions": {
-                "title": "Manage Sessions", 
+                "title": "Manage Sessions",
                 "description": "View and organize your conversation history",
                 "hint": "Quick access to all your conversations"
             },
@@ -373,7 +375,8 @@
             "loading": "Loading agents...",
             "no_agents": "No agents available",
             "no_description": "No description available"
-        },        "chat": {
+        },
+        "chat": {
             "title": "New Chat",
             "select_agent": "Select an AI Agent",
             "select_agent_description": "Choose an AI agent to start your conversation",
@@ -391,24 +394,36 @@
         "sessions": {
             "title": "Chat Sessions",
             "subtitle": "Manage and view your conversation history",
-            "loading": "Loading sessions...",
-            "no_sessions": "No chat sessions found",
-            "no_sessions_description": "Start a new conversation to see your sessions here",
+            "loading": "Loading conversations...",
+            "loading_more": "Loading more conversations...",
+            "all_loaded": "All conversations loaded",
+            "no_sessions": "No conversations found",
+            "no_sessions_description": "Start a new conversation or adjust your filters",
             "search_placeholder": "Search sessions...",
             "sort_by": "Sort by",
             "sort_newest": "Newest First",
             "sort_oldest": "Oldest First",
             "sort_most_active": "Most Active",
             "messages": "messages",
-            "message_count": "messages",
+            "message_count": "conversations",
             "last_activity": "Last activity",
-            "open_session": "Open Session",
-            "delete": "Delete Session",
+            "open_session": "Open Chat",
+            "delete": "Delete",
             "delete_session": "Delete Session",
             "delete_confirm": {
-                "title": "Delete Session",
-                "message": "Are you sure you want to delete this session? This action cannot be undone."
-            }
+                "title": "Delete Conversation",
+                "message": "Are you sure you want to delete this conversation? This action cannot be undone."
+            },
+            "filters": "Filters",
+            "agent": "Agent",
+            "all_agents": "All Agents",
+            "status": "Status",
+            "all_status": "All Status",
+            "channel": "Channel",
+            "all_channels": "All Channels",
+            "tag": "Tag",
+            "tag_placeholder": "Enter tag...",
+            "apply_filters": "Apply Filters"
         },
         "agents": {
             "title": "Agent Management",
@@ -505,7 +520,7 @@
             },
             "sort": {
                 "newest_first": "Newest First",
-                "oldest_first": "Oldest First", 
+                "oldest_first": "Oldest First",
                 "name_asc": "Name A-Z",
                 "name_desc": "Name Z-A"
             },
@@ -588,7 +603,8 @@
             "title": "Experience the Convenience of Intelligence",
             "description": "Discover how AI agent technology makes work and life more efficient and convenient",
             "action": "Start AI Experience"
-        },        "floating_cards": {
+        },
+        "floating_cards": {
             "iot_device": "Smart Device",
             "ai_agent": "AI Agent",
             "cloud": "Cloud Service"
@@ -598,12 +614,19 @@
         "minutes_ago": "minutes ago",
         "hours_ago": "hours ago",
         "days_ago": "days ago"
-    },    "common": {
+    },
+    "common": {
         "cancel": "Cancel",
         "delete": "Delete",
         "confirm": "Confirm",
         "close": "Close",
         "save": "Save",
+        "open": "Open",
+        "loading": "Loading...",
+        "search": "Search",
+        "filter": "Filter",
+        "apply": "Apply",
+        "reset": "Reset",
         "edit": "Edit",
         "create": "Create",
         "select": "Select",
@@ -611,8 +634,6 @@
         "back": "Back",
         "next": "Next",
         "previous": "Previous",
-        "loading": "Loading...",
-        "search": "Search",
         "error": "Error",
         "no_description": "No description",
         "back_to_top": "Back to Top",

@@ -403,7 +403,8 @@
   "logout_confirm_yes": "确定",
   "logout_confirm_no": "取消",
   "Click to upload new avatar": "点击上传新头像",
-  "Member since": "注册时间",  "Your account details and information": "您的账户详情和信息",
+  "Member since": "注册时间",
+  "Your account details and information": "您的账户详情和信息",
   "Your complete account details and information": "您的完整账户详情和信息",
   "Detailed Information": "详细信息",
   "Email Address": "邮箱地址",
@@ -540,7 +541,8 @@
     "quick_actions": "快速操作",
     "recent_activity": "最近活动",
     "no_recent_activity": "暂无最近活动",
-    "start_conversation_hint": "开始您的第一次对话以在此处查看活动",    "actions": {
+    "start_conversation_hint": "开始您的第一次对话以在此处查看活动",
+    "actions": {
       "start_chat": {
         "title": "开始新对话",
         "description": "与AI智能体开始对话",
@@ -568,7 +570,8 @@
       "loading": "正在加载智能体...",
       "no_agents": "暂无可用智能体",
       "no_description": "暂无描述"
-    },    "chat": {
+    },
+    "chat": {
       "title": "新对话",
       "select_agent": "选择AI智能体",
       "select_agent_description": "选择一个AI智能体开始对话",
@@ -586,24 +589,36 @@
     "sessions": {
       "title": "聊天会话",
       "subtitle": "管理和查看您的对话历史",
-      "loading": "正在加载会话...",
-      "no_sessions": "未找到聊天会话",
-      "no_sessions_description": "开始新对话以在此处查看会话",
+      "loading": "正在加载对话...",
+      "loading_more": "正在加载更多对话...",
+      "all_loaded": "所有对话已加载完成",
+      "no_sessions": "未找到对话",
+      "no_sessions_description": "开始新对话或调整您的筛选条件",
       "search_placeholder": "搜索会话...",
       "sort_by": "排序方式",
       "sort_newest": "最新在前",
       "sort_oldest": "最旧在前",
       "sort_most_active": "最活跃",
       "messages": "条消息",
-      "message_count": "条消息",
+      "message_count": "个对话",
       "last_activity": "最后活动",
-      "open_session": "打开会话",
-      "delete": "删除会话",
+      "open_session": "打开聊天",
+      "delete": "删除",
       "delete_session": "删除会话",
       "delete_confirm": {
-        "title": "删除会话",
-        "message": "确定要删除此会话吗？此操作无法撤销。"
-      }
+        "title": "删除对话",
+        "message": "确定要删除此对话吗？此操作无法撤销。"
+      },
+      "filters": "筛选器",
+      "agent": "智能体",
+      "all_agents": "所有智能体",
+      "status": "状态",
+      "all_status": "所有状态",
+      "channel": "通道",
+      "all_channels": "所有通道",
+      "tag": "标签",
+      "tag_placeholder": "输入标签...",
+      "apply_filters": "应用筛选"
     },
     "agents": {
       "title": "智能体管理",
@@ -705,7 +720,7 @@
       },
       "sort": {
         "newest_first": "最新优先",
-        "oldest_first": "最旧优先", 
+        "oldest_first": "最旧优先",
         "name_asc": "名称 A-Z",
         "name_desc": "名称 Z-A"
       },
@@ -788,7 +803,8 @@
       "title": "感受智能化带来的便利",
       "description": "体验智能体技术如何让工作和生活更加高效便捷",
       "action": "开始智能体验"
-    },    "floating_cards": {
+    },
+    "floating_cards": {
       "iot_device": "智能设备",
       "ai_agent": "智能体",
       "cloud": "云端服务"
@@ -811,8 +827,13 @@
     "selected": "已选择",
     "back": "返回",
     "next": "下一步",
-    "previous": "上一步",    "loading": "加载中...",
+    "previous": "上一步",
+    "open": "打开",
+    "loading": "加载中...",
     "search": "搜索",
+    "filter": "筛选",
+    "apply": "应用",
+    "reset": "重置",
     "error": "错误",
     "no_description": "无描述",
     "back_to_top": "返回顶部",

@@ -58,6 +58,33 @@
   },
   "loading": {
     "workspace": "Loading workspace..."
+  },
+  "common": {
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "confirm": "Confirm",
+    "close": "Close",
+    "save": "Save",
+    "open": "Open",
+    "loading": "Loading...",
+    "search": "Search",
+    "filter": "Filter",
+    "apply": "Apply",
+    "reset": "Reset",
+    "edit": "Edit",
+    "create": "Create",
+    "select": "Select",
+    "selected": "Selected",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "error": "Error",
+    "no_description": "No description",
+    "back_to_top": "Back to Top",
+    "date": {
+      "today": "Today",
+      "yesterday": "Yesterday"
+    }
   }
 }
 ```
@@ -100,6 +127,33 @@
   },
   "loading": {
     "workspace": "正在加载工作区..."
+  },
+  "common": {
+    "cancel": "取消",
+    "delete": "删除",
+    "confirm": "确认",
+    "close": "关闭",
+    "save": "保存",
+    "open": "打开",
+    "loading": "加载中...",
+    "search": "搜索",
+    "filter": "过滤",
+    "apply": "应用",
+    "reset": "重置",
+    "edit": "编辑",
+    "create": "创建",
+    "select": "选择",
+    "selected": "已选择",
+    "back": "返回",
+    "next": "下一个",
+    "previous": "上一个",
+    "error": "错误",
+    "no_description": "没有描述",
+    "back_to_top": "返回顶部",
+    "date": {
+      "today": "今天",
+      "yesterday": "昨天"
+    }
   }
 }
 ```
@@ -130,3 +184,83 @@
 - 可以考虑为聊天页面和会话页面添加更完整的多语言支持
 - 添加更多语言支持（如日语、韩语等）
 - 考虑添加RTL语言支持
+
+## 2025-06-26 更新: Common 键值重复问题修复
+
+### 问题发现 ❌
+在检查 `en.json` 文件时发现了严重的 JSON 结构问题：
+
+#### 原始问题
+1. **重复的 `common` 对象结构**：第一个 `common` 对象在第614-627行是正确的
+2. **松散的键值对**：在第628行之后有许多键值对没有被包含在任何对象中
+3. **重复的键**：如 `"loading"`, `"search"`, `"date"` 等键值被重复定义
+4. **无效的 JSON 结构**：松散的键值对导致 JSON 格式错误
+
+#### 具体问题键值
+```json
+// 这些键值对在 common 对象外部重复出现：
+"edit": "Edit",
+"create": "Create", 
+"select": "Select",
+"selected": "Selected",
+"back": "Back",
+"next": "Next",
+"previous": "Previous",
+"loading": "Loading...",  // 重复
+"search": "Search",      // 重复
+"error": "Error",
+"no_description": "No description",
+"back_to_top": "Back to Top",
+"date": {               // 重复
+    "today": "Today",
+    "yesterday": "Yesterday"
+}
+```
+
+### 修复方案 ✅
+
+#### 1. 合并重复键值
+- 将所有松散的键值对合并到 `common` 对象中
+- 移除重复的 `"loading"`, `"search"`, `"date"` 键值
+- 保持现有的键值对含义不变
+
+#### 2. 修复后的 common 对象结构
+```json
+"common": {
+    "cancel": "Cancel",
+    "delete": "Delete", 
+    "confirm": "Confirm",
+    "close": "Close",
+    "save": "Save",
+    "open": "Open",
+    "loading": "Loading...",
+    "search": "Search",
+    "filter": "Filter",
+    "apply": "Apply",
+    "reset": "Reset",
+    "edit": "Edit",           // 新合并
+    "create": "Create",       // 新合并
+    "select": "Select",       // 新合并
+    "selected": "Selected",   // 新合并
+    "back": "Back",           // 新合并
+    "next": "Next",           // 新合并
+    "previous": "Previous",   // 新合并
+    "error": "Error",         // 新合并
+    "no_description": "No description", // 新合并
+    "back_to_top": "Back to Top",       // 新合并
+    "date": {
+        "today": "Today",
+        "yesterday": "Yesterday"
+    }
+}
+```
+
+### 验证结果 ✅
+- ✅ `en.json` - 修复完成，无语法错误
+- ✅ `zh.json` - 结构正确，无需修复
+- ✅ 两个语言文件都通过了语法验证
+- ✅ 没有重复键值，结构完整且一致
+
+### 影响评估
+- **正面影响**: 修复了JSON语法错误，消除了重复键值，提高了维护性
+- **无负面影响**: 所有现有的 `$_('common.*')` 调用仍然有效
