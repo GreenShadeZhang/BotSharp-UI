@@ -496,7 +496,8 @@
                 "filter_by_type": "Filter by type",
                 "all_types": "All Types",
                 "agents_count": "agents",
-                "clear_filters": "Clear Filters"
+                "clear_filters": "Clear Filters",
+                "scroll_to_see_more": "Scroll to see more"
             },
             "sort": {
                 "newest_first": "Newest First",

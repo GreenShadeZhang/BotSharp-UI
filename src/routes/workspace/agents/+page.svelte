@@ -6,7 +6,6 @@
 	import { Button, Card, CardBody, Col, Row, Input, InputGroup } from '@sveltestrap/sveltestrap';
 	import HeadTitle from '$lib/common/HeadTitle.svelte';
 	import LoadingToComplete from '$lib/common/LoadingToComplete.svelte';
-	import TablePagination from '$lib/common/TablePagination.svelte';
 	import { getAgents, deleteAgent } from '$lib/services/agent-service.js';
 	import { AgentType } from '$lib/helpers/enums';
 	import { myInfo } from '$lib/services/auth-service';
@@ -20,17 +19,20 @@
 	/** @type {boolean} */
 	let isComplete = false;
 
+	/** @type {boolean} */
+	let isLoadingMore = false;
+
+	/** @type {boolean} */
+	let hasMoreData = true;
+
+	/** @type {boolean} */
+	let showBackToTop = false;
+
 	/** @type {import('$userTypes').UserModel} */
 	let currentUser;
 
-	/** @type {import('$agentTypes').AgentModel[]} */
-	let allAgents = [];
-
-	/** @type {import('$agentTypes').AgentModel[]} */
-	let filteredAgents = [];
-
-	/** @type {import('$agentTypes').AgentModel[]} */
-	let pagedAgents = [];
+	/** @type {import('$commonTypes').PagedItems<import('$agentTypes').AgentModel>} */
+	let agents = { items: [], count: 0 };
 
 	/** @type {string} */
 	let searchQuery = '';
@@ -42,15 +44,19 @@
 	let sortBy = 'created_desc';
 
 	const pageSize = 12; // 每页显示12个智能体
-	let currentPage = 1;
-	let totalCount = 0;
+	const firstPage = 1;
+
+	/** @type {import('$agentTypes').AgentFilter} */
+	const initFilter = {
+		pager: { page: firstPage, size: pageSize, count: 0 },
+		types: [AgentType.Task, AgentType.Routing] // 只筛选任务型和路由型智能体
+	};
+
+	/** @type {import('$agentTypes').AgentFilter} */
+	let filter = { ...initFilter };
 
 	/** @type {import('$commonTypes').Pagination} */
-	let pagination = {
-		page: 1,
-		size: pageSize,
-		count: 0
-	};
+	let pagination = filter.pager;
 
 	const filterOptions = [
 		{ value: 'all', label: $_('workspace.agents.list.all_types') },
@@ -73,93 +79,139 @@
 	async function loadAgents() {
 		isLoading = true;
 		try {
-			const filter = {
-				pager: { page: 1, size: 1000, count: 0 }, // 加载所有数据用于前端筛选和分页
-				types: [AgentType.Task, AgentType.Routing] // 只筛选任务型和路由型智能体
-			};
 			const response = await getAgents(filter, true);
-			allAgents = response.items || [];
-			applyFiltersAndPagination();
+			agents = response;
+			hasMoreData = response.items.length === pageSize && response.count > response.items.length;
+			refreshPagination();
 		} catch (error) {
 			console.error('Error loading agents:', error);
-			allAgents = [];
-			filteredAgents = [];
-			pagedAgents = [];
+			agents = { items: [], count: 0 };
+			hasMoreData = false;
 		} finally {
 			isLoading = false;
 		}
 	}
 
-	function applyFiltersAndPagination() {
-		// 应用筛选
-		let filtered = [...allAgents];
+	async function loadMoreAgents() {
+		if (isLoadingMore || !hasMoreData) return;
 		
-		// 按类型筛选
-		if (selectedType === 'single') {
-			filtered = filtered.filter(agent => !agent.is_router);
-		} else if (selectedType === 'group') {
-			filtered = filtered.filter(agent => agent.is_router);
-		}
-
-		// 按搜索关键词筛选
-		if (searchQuery.trim()) {
-			const query = searchQuery.toLowerCase();
-			filtered = filtered.filter(agent => 
-				agent.name.toLowerCase().includes(query) ||
-				(agent.description && agent.description.toLowerCase().includes(query)) ||
-				(agent.labels && agent.labels.some(label => label.toLowerCase().includes(query)))
-			);
-		}
-
-		// 排序
-		filtered.sort((a, b) => {
-			switch (sortBy) {
-				case 'created_desc':
-					return new Date(b.created_datetime) - new Date(a.created_datetime);
-				case 'created_asc':
-					return new Date(a.created_datetime) - new Date(b.created_datetime);
-				case 'name_asc':
-					return a.name.localeCompare(b.name);
-				case 'name_desc':
-					return b.name.localeCompare(a.name);
-				default:
-					return 0;
+		isLoadingMore = true;
+		try {
+			const nextPage = filter.pager.page + 1;
+			const nextFilter = {
+				...filter,
+				pager: { ...filter.pager, page: nextPage }
+			};
+			
+			const response = await getAgents(nextFilter, true);
+			
+			if (response.items && response.items.length > 0) {
+				// 合并新数据到现有数据
+				agents = {
+					items: [...agents.items, ...response.items],
+					count: response.count
+				};
+				
+				// 更新过滤器页码
+				filter.pager.page = nextPage;
+				
+				// 检查是否还有更多数据
+				hasMoreData = response.items.length === pageSize && 
+							  agents.items.length < response.count;
+			} else {
+				hasMoreData = false;
 			}
-		});
+			
+			refreshPagination();
+		} catch (error) {
+			console.error('Error loading more agents:', error);
+			hasMoreData = false;
+		} finally {
+			isLoadingMore = false;
+		}
+	}
 
-		filteredAgents = filtered;
-		totalCount = filtered.length;
-		
-		// 更新分页信息
+	function refreshPagination() {
 		pagination = {
-			page: currentPage,
-			size: pageSize,
-			count: totalCount
+			page: filter.pager.page,
+			size: filter.pager.size,
+			count: agents.count
 		};
-
-		// 计算当前页数据
-		const startIndex = (currentPage - 1) * pageSize;
-		const endIndex = startIndex + pageSize;
-		pagedAgents = filtered.slice(startIndex, endIndex);
 	}
 
-	function handlePageTo(pageNum) {
-		currentPage = pageNum;
-		applyFiltersAndPagination();
+	function buildFilter() {
+		let filterTypes = [AgentType.Task, AgentType.Routing];
 		
-		// 滚动到顶部
-		document.querySelector('.agents-content')?.scrollIntoView({ 
-			behavior: 'smooth', 
-			block: 'start' 
-		});
+		// 根据选择的类型进一步筛选
+		if (selectedType === 'single') {
+			filterTypes = [AgentType.Task];
+		} else if (selectedType === 'group') {
+			filterTypes = [AgentType.Routing];
+		}
+
+		// 构建排序参数 - 注意：这取决于后端API是否支持排序
+		// 如果后端不支持排序，可以移除这部分
+		let sortParam = {};
+		switch (sortBy) {
+			case 'created_desc':
+				sortParam = { field: 'created_datetime', order: 'desc' };
+				break;
+			case 'created_asc':
+				sortParam = { field: 'created_datetime', order: 'asc' };
+				break;
+			case 'name_asc':
+				sortParam = { field: 'name', order: 'asc' };
+				break;
+			case 'name_desc':
+				sortParam = { field: 'name', order: 'desc' };
+				break;
+		}
+
+		return {
+			pager: filter.pager,
+			types: filterTypes,
+			similarName: searchQuery.trim() || undefined,
+			// sort: sortParam // 如果后端支持排序，取消注释这行
+		};
 	}
 
-	function goToCreateAgent() {
-		goto('/workspace/agents/create');
+	function applyFilters() {
+		filter = {
+			...buildFilter(),
+			pager: { page: firstPage, size: pageSize, count: 0 }
+		};
+		hasMoreData = true; // 重置状态
+		loadAgents();
 	}
 
-	function goBack() {
-		goto('/workspace');
+	/**
+	 * @param {Event} event
+	 */
+	function handleScroll(event) {
+		const container = /** @type {HTMLElement} */ (event.target);
+		if (!container) return;
+		
+		const scrollTop = container.scrollTop;
+		const scrollHeight = container.scrollHeight;
+		const clientHeight = container.clientHeight;
+		
+		// 显示/隐藏返回顶部按钮
+		showBackToTop = scrollTop > 300;
+		
+		// 检查是否接近底部 (距离底部50px时开始加载)
+		if (scrollHeight - scrollTop - clientHeight < 50 && hasMoreData && !isLoadingMore) {
+			loadMoreAgents();
+		}
+	}
+
+	function scrollToTop() {
+		const scrollableContainer = document.querySelector('.agents-grid.scrollable');
+		if (scrollableContainer) {
+			scrollableContainer.scrollTo({
+				top: 0,
+				behavior: 'smooth'
+			});
+		}
 	}
 
 	/**
@@ -185,9 +237,10 @@
 				await deleteAgent(agent.id);
 				isComplete = true;
 				
-				// 从本地数组中移除已删除的智能体
-				allAgents = allAgents.filter(a => a.id !== agent.id);
-				applyFiltersAndPagination();
+				// 重新加载数据，重置到第一页
+				filter.pager.page = firstPage;
+				hasMoreData = true;
+				await loadAgents();
 				
 				setTimeout(() => {
 					isComplete = false;
@@ -206,10 +259,22 @@
 		}
 	}
 
-	// 监听筛选条件变化
+	function goToCreateAgent() {
+		goto('/workspace/agents/create');
+	}
+
+	function goBack() {
+		goto('/workspace');
+	}
+
+	// 监听筛选条件变化，使用防抖处理
+	/** @type {number} */
+	let searchTimeout;
 	$: if (searchQuery !== undefined || selectedType !== undefined || sortBy !== undefined) {
-		currentPage = 1; // 重置到第一页
-		applyFiltersAndPagination();
+		clearTimeout(searchTimeout);
+		searchTimeout = setTimeout(() => {
+			applyFilters();
+		}, 300); // 300ms 防抖延迟
 	}
 </script>
 
@@ -255,12 +320,13 @@
 				<Row class="g-3">
 					<Col lg="4" md="6">
 						<div class="filter-section">
-							<label class="filter-label">
+							<label class="filter-label" for="search-input">
 								<i class="fas fa-search me-2"></i>
 								{$_('workspace.agents.list.search_label')}
 							</label>
 							<InputGroup>
 								<Input
+									id="search-input"
 									type="text"
 									placeholder={$_('workspace.agents.list.search_placeholder')}
 									bind:value={searchQuery}
@@ -274,11 +340,12 @@
 					</Col>
 					<Col lg="3" md="6">
 						<div class="filter-section">
-							<label class="filter-label">
+							<label class="filter-label" for="type-filter">
 								<i class="fas fa-filter me-2"></i>
 								{$_('workspace.agents.list.type_filter')}
 							</label>
 							<Input
+								id="type-filter"
 								type="select"
 								bind:value={selectedType}
 								class="filter-select"
@@ -291,11 +358,12 @@
 					</Col>
 					<Col lg="3" md="6">
 						<div class="filter-section">
-							<label class="filter-label">
+							<label class="filter-label" for="sort-select">
 								<i class="fas fa-sort me-2"></i>
 								{$_('workspace.agents.list.sort_by')}
 							</label>
 							<Input
+								id="sort-select"
 								type="select"
 								bind:value={sortBy}
 								class="filter-select"
@@ -306,14 +374,14 @@
 							</Input>
 						</div>
 					</Col>
-					<Col lg="2" md="6">
+					<Col lg="2" md="6" sm="12">
 						<div class="filter-section">
-							<label class="filter-label">
+							<div class="filter-label">
 								<i class="fas fa-chart-bar me-2"></i>
 								{$_('workspace.agents.list.results')}
-							</label>
+							</div>
 							<div class="stats-display">
-								<span class="stats-number">{totalCount}</span>
+								<span class="stats-number">{agents.count || 0}</span>
 								<span class="stats-text">{$_('workspace.agents.list.agents_count')}</span>
 							</div>
 						</div>
@@ -329,30 +397,53 @@
 	<!-- Content -->
 	<div class="agents-content" in:fly={{ y: 30, duration: 500, delay: 200 }}>
 		{#if !isLoading}
-			{#if pagedAgents.length > 0}
-				<div class="agents-grid">
-					{#each pagedAgents as agent, index}
+			{#if agents.items && agents.items.length > 0}
+				<div 
+					class="agents-grid" 
+					class:scrollable={agents.count > pageSize}
+					on:scroll={handleScroll}
+				>
+					{#each agents.items as agent, index}
 						<div 
 							class="agent-item"
 							in:fly={{ y: 20, duration: 300, delay: index * 50 }}
 						>
 							{#if agent.is_router}
-								<AgentGroupCard {agent} {allAgents} on:delete={handleDeleteAgent} />
+								<AgentGroupCard {agent} allAgents={agents.items} on:delete={handleDeleteAgent} />
 							{:else}
 								<AgentCard {agent} on:delete={handleDeleteAgent} />
 							{/if}
 						</div>
 					{/each}
+					
+					<!-- 加载更多指示器 -->
+					{#if isLoadingMore}
+						<div class="loading-more-indicator">
+							<div class="loading-spinner"></div>
+							<span>加载更多...</span>
+						</div>
+					{/if}
+					
+					<!-- 没有更多数据提示 -->
+					{#if !hasMoreData && agents.items.length > pageSize}
+						<div class="no-more-data">
+							<i class="fas fa-check-circle"></i>
+							<span>已显示所有结果</span>
+						</div>
+					{/if}
 				</div>
 
-				<!-- Pagination -->
-				{#if totalCount > pageSize}
-					<div class="pagination-wrapper" in:fade={{ duration: 300, delay: 400 }}>
-						<TablePagination 
-							{pagination} 
-							pageTo={handlePageTo}
-						/>
-					</div>
+				<!-- 返回顶部按钮 -->
+				{#if showBackToTop}
+					<button 
+						class="back-to-top" 
+						on:click={scrollToTop}
+						in:fly={{ y: 20, duration: 300 }}
+						out:fly={{ y: 20, duration: 300 }}
+					>
+						<i class="fas fa-arrow-up"></i>
+						<span>返回顶部</span>
+					</button>
 				{/if}
 			{:else}
 				<div class="empty-state">
@@ -409,6 +500,8 @@
 		margin: 0 auto;
 		min-height: 100vh;
 		background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+		display: flex;
+		flex-direction: column;
 	}
 
 	.agents-header {
@@ -495,27 +588,31 @@
 		align-items: center;
 		background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 		color: white;
-		padding: 0.75rem;
+		padding: 0.5rem;
 		border-radius: 0.5rem;
 		text-align: center;
-		height: 100%;
+		height: auto;
+		min-height: 60px;
 		justify-content: center;
 	}
 
 	.stats-number {
-		font-size: 1.5rem;
+		font-size: 1.25rem;
 		font-weight: 700;
 		line-height: 1;
 	}
 
 	.stats-text {
-		font-size: 0.75rem;
+		font-size: 0.7rem;
 		opacity: 0.9;
-		margin-top: 0.25rem;
+		margin-top: 0.2rem;
 	}
 
 	.agents-content {
 		min-height: 400px;
+		display: flex;
+		flex-direction: column;
+		flex: 1;
 	}
 
 	.agents-grid {
@@ -525,19 +622,134 @@
 		margin-bottom: 2rem;
 	}
 
+	.agents-grid.scrollable {
+		flex: 1;
+		max-height: calc(100vh - 400px); /* 动态计算高度，确保底部对齐 */
+		overflow-y: auto;
+		scroll-behavior: smooth;
+		border: 1px solid #e2e8f0;
+		border-radius: 0.75rem;
+		padding: 1.5rem;
+		background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+		position: relative;
+		margin-bottom: 0; /* 移除底部边距，让滚动区域紧贴底部 */
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+		gap: 1.5rem;
+		align-content: start; /* 确保内容从顶部开始排列 */
+	}
+
+	.agents-grid.scrollable::before {
+		content: '';
+		position: sticky;
+		top: -1.5rem;
+		left: -1.5rem;
+		right: -1.5rem;
+		height: 1.5rem;
+		background: linear-gradient(to bottom, rgba(248, 250, 252, 1) 0%, rgba(248, 250, 252, 0.8) 70%, rgba(248, 250, 252, 0) 100%);
+		z-index: 10;
+		pointer-events: none;
+		grid-column: 1 / -1;
+		margin-bottom: -1.5rem;
+	}
+
+	.agents-grid.scrollable::after {
+		content: '';
+		position: sticky;
+		bottom: -1.5rem;
+		left: -1.5rem;
+		right: -1.5rem;
+		height: 1.5rem;
+		background: linear-gradient(to top, rgba(248, 250, 252, 1) 0%, rgba(248, 250, 252, 0.8) 70%, rgba(248, 250, 252, 0) 100%);
+		z-index: 10;
+		pointer-events: none;
+		grid-column: 1 / -1;
+		margin-top: -1.5rem;
+	}
+
 	.agent-item {
 		height: 100%;
 	}
 
-	.pagination-wrapper {
+	.loading-more-indicator {
+		grid-column: 1 / -1;
 		display: flex;
+		align-items: center;
 		justify-content: center;
-		margin-top: 3rem;
-		padding: 2rem;
-		background: white;
-		border-radius: 1rem;
+		gap: 0.75rem;
+		margin-top: 2rem;
+		padding: 1.5rem;
+		background: rgba(255, 255, 255, 0.9);
+		border: 1px dashed #cbd5e1;
+		border-radius: 0.75rem;
+		color: #64748b;
+		font-size: 0.875rem;
+		font-weight: 500;
+	}
+
+	.loading-spinner {
+		width: 20px;
+		height: 20px;
+		border: 2px solid #e2e8f0;
+		border-top: 2px solid #667eea;
+		border-radius: 50%;
+		animation: spin 1s linear infinite;
+	}
+
+	.no-more-data {
+		grid-column: 1 / -1;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.5rem;
+		margin-top: 2rem;
+		padding: 1rem;
+		background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+		color: white;
+		border-radius: 0.5rem;
+		font-size: 0.875rem;
+		font-weight: 500;
 		box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 	}
+
+	.back-to-top {
+		position: fixed;
+		bottom: 2rem;
+		right: 2rem;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.25rem;
+		padding: 0.75rem;
+		background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+		color: white;
+		border: none;
+		border-radius: 50px;
+		box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+		cursor: pointer;
+		font-size: 0.75rem;
+		font-weight: 500;
+		transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+		z-index: 1000;
+		min-width: 60px;
+	}
+
+	.back-to-top:hover {
+		transform: translateY(-2px) scale(1.05);
+		box-shadow: 0 12px 35px rgba(102, 126, 234, 0.4);
+	}
+
+	.back-to-top i {
+		font-size: 1rem;
+		margin-bottom: 0.1rem;
+	}
+
+	@keyframes spin {
+		0% { transform: rotate(0deg); }
+		100% { transform: rotate(360deg); }
+	}
+
+
 
 	.empty-state {
 		display: flex;
@@ -579,18 +791,6 @@
 		line-height: 1.6;
 	}
 
-	.empty-action-btn {
-		padding: 0.75rem 2rem;
-		font-weight: 600;
-		border-radius: 0.75rem;
-		transition: all 0.2s ease;
-	}
-
-	.empty-action-btn:hover {
-		transform: translateY(-2px);
-		box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-	}
-
 	/* 滚动条样式 */
 	:global(.agents-grid::-webkit-scrollbar) {
 		width: 8px;
@@ -604,15 +804,28 @@
 	:global(.agents-grid::-webkit-scrollbar-thumb) {
 		background: #cbd5e1;
 		border-radius: 4px;
+		transition: background 0.2s ease;
 	}
 
 	:global(.agents-grid::-webkit-scrollbar-thumb:hover) {
 		background: #94a3b8;
 	}
 
+	/* Firefox 滚动条样式 */
+	.agents-grid.scrollable {
+		scrollbar-width: thin;
+		scrollbar-color: #cbd5e1 #f1f5f9;
+	}
+
 	/* 响应式设计 */
 	@media (max-width: 1200px) {
 		.agents-grid {
+			grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+			gap: 1.25rem;
+		}
+
+		.agents-grid.scrollable {
+			max-height: calc(100vh - 380px);
 			grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
 			gap: 1.25rem;
 		}
@@ -647,17 +860,30 @@
 			gap: 1rem;
 		}
 
+		.agents-grid.scrollable {
+			max-height: calc(100vh - 320px);
+			padding: 1rem;
+			grid-template-columns: 1fr;
+			gap: 1rem;
+		}
+
+		.back-to-top {
+			bottom: 1rem;
+			right: 1rem;
+			padding: 0.6rem;
+			min-width: 50px;
+		}
+
+		.back-to-top span {
+			font-size: 0.7rem;
+		}
+
 		.empty-content {
 			padding: 2rem 1rem;
 		}
 
 		.empty-icon {
 			font-size: 4rem;
-		}
-
-		.pagination-wrapper {
-			padding: 1rem;
-			margin-top: 2rem;
 		}
 	}
 
@@ -683,20 +909,5 @@
 	:global(.agent-card:hover) {
 		transform: translateY(-4px) scale(1.02);
 		box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-	}
-
-	/* 加载状态样式 */
-	.loading-overlay {
-		position: fixed;
-		top: 0;
-		left: 0;
-		right: 0;
-		bottom: 0;
-		background: rgba(255, 255, 255, 0.8);
-		backdrop-filter: blur(4px);
-		z-index: 1000;
-		display: flex;
-		align-items: center;
-		justify-content: center;
 	}
 </style>

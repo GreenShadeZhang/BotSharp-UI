@@ -691,7 +691,8 @@
         "filter_by_type": "按类型筛选",
         "all_types": "所有类型",
         "agents_count": "个智能体",
-        "clear_filters": "清除筛选"
+        "clear_filters": "清除筛选",
+        "scroll_to_see_more": "滚动查看更多"
       },
       "sort": {
         "newest_first": "最新优先",
