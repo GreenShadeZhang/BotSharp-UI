@@ -1,5 +1,6 @@
 <script>
 	import { createEventDispatcher } from 'svelte';
+	import { _ } from 'svelte-i18n';
 	import { fly } from 'svelte/transition';
 	import AgentCard from './AgentCard.svelte';
 	import AgentGroupCard from './AgentGroupCard.svelte';
@@ -11,6 +12,9 @@
 
 	/** @type {number} */
 	export let totalCount = 0;
+
+	/** @type {boolean} */
+	export let isLoading = false;
 
 	/** @type {boolean} */
 	export let isLoadingMore = false;
@@ -61,7 +65,22 @@
 	}
 </script>
 
-{#if agents && agents.length > 0}
+{#if isLoading && agents.length === 0}
+	<!-- 初始加载指示器 -->
+	<div class="agents-loading">
+		<div class="loading-spinner-large"></div>
+		<p class="loading-text">{$_('workspace.agents.list.loading')}</p>
+	</div>
+{:else if agents && agents.length > 0}
+	<!-- 智能体数量显示 -->
+	<div class="agents-header-info">
+		<div class="agents-count">
+			<i class="fas fa-robot me-2"></i>
+			<span class="count-number">{totalCount}</span>
+			<span class="count-text">{$_('workspace.agents.list.agents_count')}</span>
+		</div>
+	</div>
+	
 	<div 
 		class="agents-grid" 
 		class:scrollable={totalCount > pageSize}
@@ -84,7 +103,7 @@
 		{#if isLoadingMore}
 			<div class="loading-more-indicator" in:fly={{ y: 20, duration: 300 }}>
 				<div class="loading-spinner"></div>
-				<span>加载更多...</span>
+				<span>{$_('workspace.agents.list.loading_more')}</span>
 			</div>
 		{/if}
 		
@@ -92,7 +111,7 @@
 		{#if !hasMoreData && agents.length > pageSize}
 			<div class="no-more-data" in:fly={{ y: 20, duration: 300 }}>
 				<i class="fas fa-check-circle"></i>
-				<span>已显示所有结果</span>
+				<span>{$_('workspace.agents.list.all_loaded')}</span>
 			</div>
 		{/if}
 	</div>
@@ -106,7 +125,7 @@
 			out:fly={{ y: 20, duration: 300 }}
 		>
 			<i class="fas fa-arrow-up"></i>
-			<span>返回顶部</span>
+			<span>{$_('common.back_to_top')}</span>
 		</button>
 	{/if}
 {:else}
@@ -116,10 +135,10 @@
 				<i class="fas fa-robot"></i>
 			</div>
 			<h3 class="empty-title">
-				<slot name="empty-title">暂无智能体</slot>
+				<slot name="empty-title">{$_('workspace.agents.list.no_agents')}</slot>
 			</h3>
 			<p class="empty-description">
-				<slot name="empty-description">尚未创建任何智能体</slot>
+				<slot name="empty-description">{$_('workspace.agents.list.no_agents_description')}</slot>
 			</p>
 			<slot name="empty-action"></slot>
 		</div>
@@ -127,6 +146,65 @@
 {/if}
 
 <style>
+	/* 智能体数量显示样式 */
+	.agents-header-info {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		margin-bottom: 1.5rem;
+		padding: 1rem;
+		background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+		color: white;
+		border-radius: 0.75rem;
+		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+	}
+
+	.agents-count {
+		display: flex;
+		align-items: center;
+		font-weight: 600;
+	}
+
+	.count-number {
+		font-size: 1.25rem;
+		font-weight: 700;
+		margin-right: 0.25rem;
+	}
+
+	.count-text {
+		font-size: 0.9rem;
+		opacity: 0.9;
+	}
+
+	/* 加载指示器样式 */
+	.agents-loading {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		padding: 4rem 2rem;
+		text-align: center;
+		background: white;
+		border-radius: 0.75rem;
+		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+	}
+
+	.loading-spinner-large {
+		width: 48px;
+		height: 48px;
+		border: 4px solid #e5e7eb;
+		border-left-color: #3b82f6;
+		border-radius: 50%;
+		animation: spin 1s linear infinite;
+		margin-bottom: 1rem;
+	}
+
+	.loading-text {
+		color: #6b7280;
+		font-size: 0.875rem;
+		margin: 0;
+	}
+
 	.agents-grid {
 		display: grid;
 		grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
@@ -299,6 +377,49 @@
 		color: #6b7280;
 		margin-bottom: 2rem;
 		line-height: 1.6;
+	}
+
+	/* 智能体数量显示样式 */
+	.agents-header-info {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		margin-bottom: 1.5rem;
+		padding: 1rem;
+		background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+		color: white;
+		border-radius: 0.75rem;
+		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+	}
+
+	.agents-count {
+		display: flex;
+		align-items: center;
+		font-weight: 600;
+	}
+
+	.count-number {
+		font-size: 1.25rem;
+		font-weight: 700;
+		margin-right: 0.25rem;
+	}
+
+	.count-text {
+		font-size: 0.9rem;
+		opacity: 0.9;
+	}
+
+	/* 加载指示器样式 */
+	.agents-loading {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		padding: 4rem 2rem;
+		text-align: center;
+		background: white;
+		border-radius: 0.75rem;
+		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 	}
 
 	/* 滚动条样式 */

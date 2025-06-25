@@ -75,8 +75,8 @@
 
 	onMount(async () => {
 		currentUser = await myInfo();
-		await loadAgents();
 		initialized = true;
+		await loadAgents();
 	});
 
 	async function loadAgents() {
@@ -270,7 +270,8 @@
 	
 	$: {
 		// 只有在初始化完成后才触发搜索，避免重复调用
-		if (initialized && (searchQuery !== undefined && selectedType !== undefined && sortBy !== undefined)) {
+		// 并且确保不是初始化时的默认值触发
+		if (initialized && (searchQuery !== '' || selectedType !== 'all' || sortBy !== 'created_desc')) {
 			clearTimeout(searchTimeout);
 			searchTimeout = setTimeout(() => {
 				applyFilters();
@@ -339,7 +340,7 @@
 							</InputGroup>
 						</div>
 					</Col>
-					<Col lg="3" md="6">
+					<Col lg="4" md="6">
 						<div class="filter-section">
 							<label class="filter-label" for="type-filter">
 								<i class="fas fa-filter me-2"></i>
@@ -357,7 +358,7 @@
 							</Input>
 						</div>
 					</Col>
-					<Col lg="3" md="6">
+					<Col lg="4" md="6">
 						<div class="filter-section">
 							<label class="filter-label" for="sort-select">
 								<i class="fas fa-sort me-2"></i>
@@ -375,18 +376,6 @@
 							</Input>
 						</div>
 					</Col>
-					<Col lg="2" md="6" sm="12">
-						<div class="filter-section">
-							<div class="filter-label">
-								<i class="fas fa-chart-bar me-2"></i>
-								{$_('workspace.agents.list.results')}
-							</div>
-							<div class="stats-display">
-								<span class="stats-number">{agents.count || 0}</span>
-								<span class="stats-text">{$_('workspace.agents.list.agents_count')}</span>
-							</div>
-						</div>
-					</Col>
 				</Row>
 			</CardBody>
 		</Card>
@@ -397,6 +386,7 @@
 		<AgentList 
 			agents={agents.items}
 			totalCount={agents.count}
+			{isLoading}
 			{isLoadingMore}
 			{hasMoreData}
 			{showBackToTop}
@@ -446,14 +436,6 @@
 				{/if}
 			</svelte:fragment>
 		</AgentList>
-		
-		<!-- 局部加载指示器 -->
-		{#if isLoading && agents.items.length === 0}
-			<div class="agents-loading">
-				<div class="loading-spinner-large"></div>
-				<p class="loading-text">{$_('workspace.agents.list.loading')}</p>
-			</div>
-		{/if}
 	</div>
 </div>
 
@@ -546,68 +528,11 @@
 		font-size: 0.875rem;
 	}
 
-	.stats-display {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-		color: white;
-		padding: 0.5rem;
-		border-radius: 0.5rem;
-		text-align: center;
-		height: auto;
-		min-height: 60px;
-		justify-content: center;
-	}
-
-	.stats-number {
-		font-size: 1.25rem;
-		font-weight: 700;
-		line-height: 1;
-	}
-
-	.stats-text {
-		font-size: 0.7rem;
-		opacity: 0.9;
-		margin-top: 0.2rem;
-	}
-
 	.agents-content {
 		min-height: 400px;
 		display: flex;
 		flex-direction: column;
 		flex: 1;
-	}
-
-	/* 局部加载指示器样式 */
-	.agents-loading {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-		padding: 4rem 2rem;
-		text-align: center;
-	}
-
-	.loading-spinner-large {
-		width: 48px;
-		height: 48px;
-		border: 4px solid #e5e7eb;
-		border-left-color: #3b82f6;
-		border-radius: 50%;
-		animation: spin 1s linear infinite;
-		margin-bottom: 1rem;
-	}
-
-	.loading-text {
-		color: #6b7280;
-		font-size: 0.875rem;
-		margin: 0;
-	}
-
-	@keyframes spin {
-		0% { transform: rotate(0deg); }
-		100% { transform: rotate(360deg); }
 	}
 
 	/* 响应式设计 */
@@ -637,14 +562,6 @@
 	}
 
 	@media (max-width: 576px) {
-		.stats-display {
-			padding: 0.5rem;
-		}
-
-		.stats-number {
-			font-size: 1.25rem;
-		}
-
 		.filter-label {
 			font-size: 0.8rem;
 		}

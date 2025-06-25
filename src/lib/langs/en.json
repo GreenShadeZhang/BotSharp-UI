@@ -611,7 +611,8 @@
         "loading": "Loading...",
         "search": "Search",
         "error": "Error",
-        "no_description": "No description"
+        "no_description": "No description",
+        "back_to_top": "Back to Top"
     },
     "agents": {
         "title": "Agent Management",
@@ -703,7 +704,9 @@
             "search_placeholder": "Search agents...",
             "filter_by_type": "Filter by type",
             "all_types": "All Types",
-            "agents_count": "agents"
+            "agents_count": "agents",
+            "loading_more": "Loading more...",
+            "all_loaded": "All results displayed"
         },
         "actions": {
             "edit": "Edit",

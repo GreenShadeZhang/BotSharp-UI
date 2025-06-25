@@ -692,7 +692,9 @@
         "all_types": "所有类型",
         "agents_count": "个智能体",
         "clear_filters": "清除筛选",
-        "scroll_to_see_more": "滚动查看更多"
+        "scroll_to_see_more": "滚动查看更多",
+        "loading_more": "加载更多...",
+        "all_loaded": "已显示所有结果"
       },
       "sort": {
         "newest_first": "最新优先",
@@ -806,6 +808,7 @@
     "loading": "加载中...",
     "search": "搜索",
     "error": "错误",
-    "no_description": "无描述"
+    "no_description": "无描述",
+    "back_to_top": "返回顶部"
   }
 }
