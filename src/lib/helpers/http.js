@@ -9,7 +9,7 @@ axios.interceptors.request.use(
         if (!skipLoader(config)) {
             loaderStore.set(true);
         }
-        
+
         // Get current token (supports both legacy and OIDC)
         const token = getCurrentToken();
         if (token) {
@@ -32,7 +32,7 @@ axios.interceptors.response.use(
     },
     async (error) => {
         loaderStore.set(false);
-        
+
         if (error.response && error.response.status === 401) {
             // Try to refresh token first
             const refreshed = await refreshAuthToken();
@@ -96,8 +96,8 @@ function skipLoader(config) {
         new RegExp('http(s*)://(.*?)/knowledge/vector/(.*?)/delete-collection', 'g'),
         new RegExp('http(s*)://(.*?)/knowledge/vector/(.*?)/data/(.*?)', 'g'),
         new RegExp('http(s*)://(.*?)/knowledge/vector/(.*?)/data', 'g'),
-    ];
-
+    ];    
+    
     /** @type {RegExp[]} */
     const getRegexes = [
         new RegExp('http(s*)://(.*?)/setting/(.*?)', 'g'),
@@ -116,7 +116,9 @@ function skipLoader(config) {
         new RegExp('http(s*)://(.*?)/logger/instruction/log/keys', 'g'),
         new RegExp('http(s*)://(.*?)/logger/conversation/(.*?)/content-log', 'g'),
         new RegExp('http(s*)://(.*?)/logger/conversation/(.*?)/state-log', 'g'),
-        new RegExp('http(s*)://(.*?)/mcp/server-configs', 'g')
+        new RegExp('http(s*)://(.*?)/mcp/server-configs', 'g'),
+        new RegExp('http(s*)://(.*?)/conversations', 'g'), // 添加会话列表API
+        new RegExp('http(s*)://(.*?)/agents', 'g') // 添加代理列表API
     ];
 
     if (config.method === 'post' && postRegexes.some(regex => regex.test(config.url || ''))) {
@@ -156,14 +158,14 @@ function skipGlobalError(config) {
         new RegExp('http(s*)://(.*?)/role', 'g'),
         new RegExp('http(s*)://(.*?)/user', 'g'),
         new RegExp('http(s*)://(.*?)/conversation/(.*?)/update-message', 'g'),
-        new RegExp('http(s*)://(.*?)/conversation/(.*?)/update-tags', 'g')
-    ];
-    
+        new RegExp('http(s*)://(.*?)/conversation/(.*?)/update-tags', 'g')];
+
     /** @type {RegExp[]} */
     const deleteRegexes = [
         new RegExp('http(s*)://(.*?)/knowledge/vector/(.*?)/delete-collection', 'g'),
         new RegExp('http(s*)://(.*?)/knowledge/vector/(.*?)/data/(.*?)', 'g'),
         new RegExp('http(s*)://(.*?)/knowledge/vector/(.*?)/data', 'g'),
+        new RegExp('http(s*)://(.*?)/conversation/(.*?)', 'g') // 添加删除会话API
     ];
 
     /** @type {RegExp[]} */

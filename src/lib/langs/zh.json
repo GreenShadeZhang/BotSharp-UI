@@ -841,5 +841,17 @@
       "today": "今天",
       "yesterday": "昨天"
     }
+  },
+  "auth": {
+    "callback": {
+      "title": "身份验证",
+      "processing": "正在处理身份验证...",
+      "exchanging_tokens": "正在交换授权码以获取令牌...",
+      "success": "身份验证成功！正在跳转...",
+      "failed": "身份验证失败",
+      "return_home": "返回首页",
+      "missing_params": "缺少授权码或状态参数",
+      "failed_complete": "无法完成身份验证"
+    }
   }
 }

@@ -6,7 +6,6 @@
 	import Swal from 'sweetalert2';
 	// import * as lodash from 'lodash';
 	import { Button, Card, CardBody, Col, Input, Row, Table } from '@sveltestrap/sveltestrap';
-	import LoadingToComplete from '$lib/common/LoadingToComplete.svelte';
 	import AgentSelectionModal from '$lib/common/AgentSelectionModal.svelte';
 	import UserProfileModal from '$lib/common/UserProfileModal.svelte';
 	import { getAgentOptions } from '$lib/services/agent-service';
@@ -21,16 +20,16 @@
 	import { browser } from '$app/environment';
 	import { ChatAction } from '$lib/helpers/enums';
 	import { CHAT_FRAME_ID } from '$lib/helpers/constants';
-	const duration = 3000;
+
 	const firstPage = 1;
 	const pageSize = 15;
+
 	let mounted = false;
 	let showAgentModal = false;
 	let showLeftSidebar = false; // 默认隐藏侧边栏
 	let sidebarDataLoaded = false; // 跟踪侧边栏数据是否已加载
-	let isLoading = false;
-	let isComplete = false;
 	let isLoadingMore = false; // 滚动加载更多状态
+	let isConversationListLoading = false; // 会话列表专用加载状态
 	let hasMoreData = true; // 是否还有更多数据
 	let showStateSearch = false;
 	let showUserProfileModal = false;
@@ -77,14 +76,11 @@
 		states: [],
 		tags: []
 	};
-
 	onMount(async () => {
 		mounted = true;
 		// 只加载基础数据，不加载会话列表
-		isLoading = true;
-		Promise.all([loadAgentOptions(), loadSearchOption(), loadCurrentUser()]).finally(() => {
-			isLoading = false;
-		});
+		// 移除全局加载状态，避免页面闪烁
+		Promise.all([loadAgentOptions(), loadSearchOption(), loadCurrentUser()]);
 
 		// Add click outside listener to close user dropdown
 		if (browser) {
@@ -107,12 +103,16 @@
 	});
 	function loadConversations() {
 		return new Promise((resolve, reject) => {
+			isConversationListLoading = true;
 			getPagedConversations()
 				.then((res) => {
 					resolve(res);
 				})
 				.catch((error) => {
 					reject(error);
+				})
+				.finally(() => {
+					isConversationListLoading = false;
 				});
 		});
 	}
@@ -239,7 +239,6 @@
 
 		getPagedConversations();
 	}
-
 	async function reloadConversations() {
 		// 重置分页到第一页
 		filter = {
@@ -247,27 +246,26 @@
 			pager: { ...filter.pager, page: firstPage }
 		};
 		hasMoreData = true;
-		conversations = await getConversations(filter);
-		hasMoreData =
-			conversations.items.length === pageSize && conversations.count > conversations.items.length;
-		refreshPager(conversations.count);
+		isConversationListLoading = true;
+		try {
+			conversations = await getConversations(filter);
+			hasMoreData =
+				conversations.items.length === pageSize && conversations.count > conversations.items.length;
+			refreshPager(conversations.count);
+		} finally {
+			isConversationListLoading = false;
+		}
 	}
-
 	/** @param {string} conversationId */
 	function handleConversationDeletion(conversationId) {
-		isLoading = true;
+		// 使用局部状态管理，不影响整个页面
 		deleteConversation(conversationId)
 			.then(async () => {
-				isLoading = false;
-				isComplete = true;
-				setTimeout(() => {
-					isComplete = false;
-				}, duration);
+				// 删除成功后重新加载会话列表
 				await reloadConversations();
 			})
 			.catch((err) => {
-				isLoading = false;
-				isComplete = false;
+				console.error('Failed to delete conversation:', err);
 			});
 	}
 	/** @param {string} conversationId */
@@ -287,7 +285,6 @@
 			}
 		});
 	}
-
 	/** @param {Event} e */
 	function searchConversations(e) {
 		// 重置到第一页并重新加载
@@ -302,7 +299,10 @@
 			pager: { ...filter.pager, page: firstPage }
 		};
 		hasMoreData = true;
-		getPagedConversations();
+		isConversationListLoading = true;
+		getPagedConversations().finally(() => {
+			isConversationListLoading = false;
+		});
 	}
 
 	/**
@@ -344,9 +344,8 @@
 		showLeftSidebar = true;
 		// 首次打开侧边栏时加载会话数据
 		if (!sidebarDataLoaded) {
-			isLoading = true;
+			// 使用局部加载状态，不影响整个页面
 			loadConversations().finally(() => {
-				isLoading = false;
 				sidebarDataLoaded = true;
 			});
 		}
@@ -438,8 +437,6 @@
 		}
 	}
 </script>
-
-<LoadingToComplete {isLoading} {isComplete} successText={'Delete completed!'} />
 
 <div class="workspace-layout">
 	<!-- Floating Toggle Button (shown when sidebar is closed) -->
@@ -601,7 +598,7 @@
 				</div>
 				<!-- Conversations List -->
 				<div class="conversations-list" in:fade={{ duration: 300, delay: 250 }}>
-					{#if isLoading && !sidebarDataLoaded}
+					{#if isConversationListLoading && !sidebarDataLoaded}
 						<div class="loading-state">
 							<div class="spinner-border spinner-border-sm me-2" role="status"></div>
 							<span>{$_('workspace.sessions.loading')}</span>
@@ -613,6 +610,11 @@
 								{conversations.count}
 								{$_('workspace.sessions.message_count')}
 							</span>
+							{#if isConversationListLoading}
+								<div class="loading-indicator">
+									<div class="spinner-border spinner-border-sm" role="status"></div>
+								</div>
+							{/if}
 						</div>
 						<div class="conversations-scrollable" on:scroll={handleConversationScroll}>
 							{#each conversations.items as conv}
@@ -1106,7 +1108,6 @@
 		color: #6c757d;
 		font-size: 0.9rem;
 	}
-
 	.conversations-header {
 		padding: 0.75rem 1rem;
 		background: #f8f9fa;
@@ -1114,6 +1115,9 @@
 		position: sticky;
 		top: 0;
 		z-index: 10;
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
 	}
 
 	.conversations-count {
@@ -1122,6 +1126,17 @@
 		color: #6c757d;
 		text-transform: uppercase;
 		letter-spacing: 0.5px;
+	}
+
+	.loading-indicator {
+		display: flex;
+		align-items: center;
+	}
+
+	.loading-indicator .spinner-border {
+		width: 1rem;
+		height: 1rem;
+		color: #667eea;
 	}
 
 	.conversation-item {

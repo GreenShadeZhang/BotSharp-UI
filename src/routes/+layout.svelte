@@ -1,4 +1,5 @@
-<script>	import { addMessages, init, getLocaleFromNavigator } from 'svelte-i18n';
+<script>
+	import { addMessages, init, getLocaleFromNavigator } from 'svelte-i18n';
 	import en from '$lib/langs/en.json';
 	import zh from '$lib/langs/zh.json';
 	import '$lib/helpers/http';
@@ -7,10 +8,9 @@
 	import Loader from '$lib/common/Loader.svelte';
 	import LoadingToComplete from '$lib/common/LoadingToComplete.svelte';
 	import { initializeAuth } from '$lib/services/oidc-auth-service.js';
-	
+
 	addMessages('zh', zh);
 	addMessages('en', en);
-	
 
 	init({
 		fallbackLocale: 'zh',
@@ -28,26 +28,27 @@
 
 	onMount(() => {
 		window?.speechSynthesis?.cancel();
-		
+
 		// Initialize authentication state
 		initializeAuth();
-		
-		loaderUnsubscriber = loaderStore.subscribe(value => {
+
+		loaderUnsubscriber = loaderStore.subscribe((value) => {
 			isLoading = value;
 		});
 
-		errorUnsubscriber = globalErrorStore.subscribe(value => {
+		errorUnsubscriber = globalErrorStore.subscribe((value) => {
 			hasError = value;
 		});
-	})
+	});
 
 	onDestroy(() => {
 		loaderUnsubscriber?.();
 		errorUnsubscriber?.();
 	});
 </script>
+
 {#if isLoading}
-	<Loader size={50}/>
+	<Loader size={50} />
 {/if}
 
 <LoadingToComplete isError={hasError} />

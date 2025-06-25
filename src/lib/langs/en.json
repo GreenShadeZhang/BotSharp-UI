@@ -774,5 +774,17 @@
             "no_available_agents": "No available agents to add",
             "manage_group_subtitle": "Manage agent group members and configuration"
         }
+    },
+    "auth": {
+        "callback": {
+            "title": "Authentication",
+            "processing": "Processing authentication...",
+            "exchanging_tokens": "Exchanging authorization code for tokens...",
+            "success": "Authentication successful! Redirecting...",
+            "failed": "Authentication Failed",
+            "return_home": "Return to Home",
+            "missing_params": "Missing authorization code or state parameter",
+            "failed_complete": "Failed to complete authentication"
+        }
     }
 }
