@@ -1,23 +1,30 @@
 <script>
-	import { onMount } from 'svelte';
+	import { onMount, onDestroy } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { fade, fly, slide } from 'svelte/transition';
 	import { _ } from 'svelte-i18n';
 	import Swal from 'sweetalert2';
 	// import * as lodash from 'lodash';
 	import { Button, Card, CardBody, Col, Input, Row, Table } from '@sveltestrap/sveltestrap';
-	import StateSearch from '$lib/common/StateSearch.svelte';
 	import TablePagination from '$lib/common/TablePagination.svelte';
 	import LoadingToComplete from '$lib/common/LoadingToComplete.svelte';
 	import AgentSelectionModal from '$lib/common/AgentSelectionModal.svelte';
+	import UserProfileModal from '$lib/common/UserProfileModal.svelte';
 	import { getAgentOptions } from '$lib/services/agent-service';
 	import {
 		getConversations,
-		deleteConversation,
-		getConversationStateSearchKeys
+		deleteConversation
 	} from '$lib/services/conversation-service.js';
+	import { myInfo } from '$lib/services/auth-service';
+	import { resetLocalStorage, userStore } from '$lib/helpers/store';
+	import { logout as oidcLogout } from '$lib/services/oidc-auth-service.js';
 	import { utcToLocal } from '$lib/helpers/datetime';
 	import { ConversationChannel } from '$lib/helpers/enums';
+	import { PUBLIC_SERVICE_URL } from '$env/static/public';
+	import { buildUrl } from '$lib/helpers/utils/common';
+	import { browser } from '$app/environment';
+	import { ChatAction } from '$lib/helpers/enums';
+	import { CHAT_FRAME_ID } from '$lib/helpers/constants';
 
 	const duration = 3000;
 	const firstPage = 1;
@@ -29,6 +36,11 @@
 	let isLoading = false;
 	let isComplete = false;
 	let showStateSearch = false;
+	let showUserProfileModal = false;
+	let showUserDropdown = false;
+
+	/** @type {import('$userTypes').UserModel | null} */
+	let currentUser = null;
 
 	/** @type {import('$commonTypes').PagedItems<import('$conversationTypes').ConversationModel>} */
 	let conversations = { count: 0, items: [] };
@@ -43,9 +55,6 @@
 
 	/** @type {import('$commonTypes').Pagination} */
 	let pager = filter.pager;
-
-	/** @type {string[]} */
-	let searchStateStrs = [];
 
 	/** @type {import('$commonTypes').IdName[]} */
 	let agentOptions = [];
@@ -72,15 +81,32 @@
 		tags: []
 	};
 
-	/** @type {{key: string, value: string | null}[]} */
-	let states = [{ key: '', value: '' }];
 	onMount(async () => {
 		mounted = true;
 		// 只加载基础数据，不加载会话列表
 		isLoading = true;
-		Promise.all([loadAgentOptions(), loadSearchOption()]).finally(() => {
+		Promise.all([loadAgentOptions(), loadSearchOption(), loadCurrentUser()]).finally(() => {
 			isLoading = false;
 		});
+
+		// Add click outside listener to close user dropdown
+		if (browser) {
+			document.addEventListener('click', handleClickOutside);
+		}
+	});
+
+	/** @param {any} event */
+	function handleClickOutside(event) {
+		const userSection = event.target.closest('.user-profile-section');
+		if (!userSection && showUserDropdown) {
+			showUserDropdown = false;
+		}
+	}
+
+	onDestroy(() => {
+		if (browser) {
+			document.removeEventListener('click', handleClickOutside);
+		}
 	});
 
 	function loadConversations() {
@@ -122,6 +148,21 @@
 
 	function loadSearchOption() {
 		return Promise.resolve();
+	}
+
+	function loadCurrentUser() {
+		return new Promise((resolve, reject) => {
+			myInfo()
+				.then((user) => {
+					currentUser = user;
+					resolve(user);
+				})
+				.catch((error) => {
+					console.error('Failed to load user info:', error);
+					currentUser = null;
+					reject(error);
+				});
+		});
 	}
 
 	function refresh() {
@@ -204,74 +245,17 @@
 	}
 	/** @param {any} e */
 	function searchConversations(e) {
-		const searchStates = getSearchStates();
-		handleSearchStates();
 		filter = {
 			...filter,
 			agentId: searchOption.agentId,
 			channel: searchOption.channel,
 			status: searchOption.status,
 			taskId: searchOption.taskId,
-			states: searchStates,
+			states: [],
 			tags: searchOption.tags,
 			pager: { ...filter.pager, page: firstPage }
 		};
 		getPagedConversations();
-	}
-	function getSearchStates() {
-		searchOption.states =
-			states
-				?.filter((x) => !!x.key?.trim())
-				?.map((x) => ({
-					key: { data: x.key.trim(), isValid: true },
-					value: { data: x.value?.trim() || '', isValid: true },
-					active_rounds: { data: -1, isValid: true }
-				})) || [];
-		return searchOption.states.map((x) => ({ key: x.key.data, value: x.value.data }));
-	}
-
-	function handleSearchStates() {
-		sortSearchStates();
-		buldSearchStateString();
-	}
-
-	function sortSearchStates() {
-		searchOption.states =
-			searchOption.states
-				?.map((x) => {
-					if (!!x.key) x.key.data = x.key.data.trim();
-					if (!!x.value) x.value.data = x.value.data.trim();
-					return x;
-				})
-				?.sort((a, b) => {
-					const stra = `${!!a.key?.data ? a.key.data : ''} ${!!a.value?.data ? b.value.data : ''}`;
-					const strb = `${!!b.key?.data ? b.key.data : ''} ${!!b.value?.data ? b.value.data : ''}`;
-					if (stra.length != strb.length) {
-						return stra.length - strb.length;
-					}
-					const keya = a.key?.data?.toLowerCase() || '';
-					const keyb = b.key?.data?.toLowerCase() || '';
-					return keya < keyb ? -1 : keya == keyb ? 0 : 1;
-				}) || [];
-	}
-
-	function buldSearchStateString() {
-		searchStateStrs = searchOption.states.map((x) => {
-			let s = '';
-			if (x.key?.data?.length > 0) {
-				s += x.key.data;
-			}
-			if (x.value?.data?.length > 0) {
-				s += '=' + x.value.data;
-			}
-			return s;
-		});
-	}
-
-	/** @param {string | number} index */
-	function handleCloseLabel(index) {
-		searchOption.states = searchOption.states.filter((x, idx) => idx != index);
-		buldSearchStateString();
 	}
 
 	/**
@@ -305,21 +289,6 @@
 				tags: e.target.value?.length > 0 ? [e.target.value] : []
 			};
 		}
-	}
-
-	/** @param {string} query */
-	function handleStateSearch(query) {
-		return new Promise((resolve) => {
-			getConversationStateSearchKeys({
-				query: query,
-				keyLimit: 20,
-				agentIds: searchOption.agentId ? [searchOption.agentId] : null
-			})
-				.then((res) => {
-					resolve(res || []);
-				})
-				.catch(() => resolve([]));
-		});
 	}
 	function startNewChat() {
 		showAgentModal = true;
@@ -355,6 +324,50 @@
 	function handleConversationSelected(conversationId, agentId) {
 		// Navigate to existing chat session with proper route structure
 		goto(`/workspace/chat/${agentId}/${conversationId}`);
+	}
+
+	function logout() {
+		if (browser) {
+			resetLocalStorage(true);
+		}
+
+		const chatFrame = document.getElementById(CHAT_FRAME_ID);
+		if (chatFrame) {
+			// @ts-ignore
+			chatFrame.contentWindow.postMessage({ action: ChatAction.Logout }, '*');
+		}
+
+		// After local cleanup, call OIDC logout for complete session cleanup
+		oidcLogout();
+	}
+
+	function confirmLogout() {
+		Swal.fire({
+			title: $_('logout_confirm_title'),
+			text: $_('logout_confirm_message'),
+			icon: 'warning',
+			showCancelButton: true,
+			confirmButtonText: $_('logout_confirm_yes'),
+			cancelButtonText: $_('logout_confirm_no')
+		}).then((result) => {
+			if (result.value) {
+				logout();
+			}
+		});
+	}
+
+	function toggleUserDropdown() {
+		showUserDropdown = !showUserDropdown;
+	}
+
+	function showUserProfile() {
+		showUserProfileModal = true;
+		showUserDropdown = false;
+	}
+
+	/** @param {any} e */
+	function handleAvatarLoad(e) {
+		e.target.src = '/images/users/user-dummy.jpg';
 	}
 </script>
 
@@ -422,15 +435,6 @@
 
 					{#if showStateSearch}
 						<div class="filter-content" transition:slide={{ duration: 300 }}>
-							<!-- State Search -->
-							<div class="filter-group">
-								<div class="filter-label">
-									<i class="fas fa-code me-1"></i>
-									{$_('State Search')}
-								</div>
-								<StateSearch bind:states onSearch={(q) => handleStateSearch(q)} />
-							</div>
-
 							<!-- Agent Filter -->
 							<div class="filter-group">
 								<div class="filter-label">
@@ -552,7 +556,7 @@
 										<button
 											class="action-btn chat-btn"
 											on:click|stopPropagation={() =>
-												window.open(`chat/${conv.agent_id}/${conv.id}`)}
+												window.open(`/workspace/chat/${conv.agent_id}/${conv.id}`)}
 											title="Open Chat"
 										>
 											<i class="fas fa-comments"></i>
@@ -623,6 +627,77 @@
 						</div>
 					{/if}
 				</div>
+
+				<!-- User Profile Section at Bottom -->
+				{#if currentUser}
+					<div class="user-profile-section" in:fade={{ duration: 300, delay: 300 }}>
+						<div class="user-profile-container">
+							<div
+								class="user-avatar-wrapper"
+								on:click={toggleUserDropdown}
+								on:keydown={(e) => e.key === 'Enter' && toggleUserDropdown()}
+								role="button"
+								tabindex="0"
+							>
+								<img
+									src={`${
+										currentUser?.avatar && $userStore?.token
+											? `${buildUrl(PUBLIC_SERVICE_URL, currentUser?.avatar).href}?access_token=${$userStore?.token}`
+											: ''
+									}`}
+									alt="User Avatar"
+									class="user-avatar"
+									on:error={(e) => handleAvatarLoad(e)}
+								/>
+							</div>
+							<div
+								class="user-info"
+								on:click={toggleUserDropdown}
+								on:keydown={(e) => e.key === 'Enter' && toggleUserDropdown()}
+								role="button"
+								tabindex="0"
+							>
+								<div class="user-name">{currentUser?.full_name || 'User'}</div>
+							</div>
+							<div class="user-actions">
+								<button
+									class="action-btn dropdown-btn"
+									on:click={toggleUserDropdown}
+									title="User Menu"
+								>
+									<i class="fas fa-chevron-{showUserDropdown ? 'up' : 'down'}"></i>
+								</button>
+							</div>
+						</div>
+
+						<!-- User Dropdown Menu -->
+						{#if showUserDropdown}
+							<div class="user-dropdown-menu" transition:slide={{ duration: 300 }}>
+								<div
+									class="dropdown-item"
+									on:click={showUserProfile}
+									on:keydown={(e) => e.key === 'Enter' && showUserProfile()}
+									role="button"
+									tabindex="0"
+								>
+									<i class="fas fa-user me-2"></i>
+									{$_('Profile')}
+								</div>
+								<div class="dropdown-divider"></div>
+								<div
+									class="dropdown-item logout-item"
+									on:click={confirmLogout}
+									on:keydown={(e) => e.key === 'Enter' && confirmLogout()}
+									role="button"
+									tabindex="0"
+								>
+									<i class="fas fa-sign-out-alt me-2"></i>
+									{$_('Logout')}
+								</div>
+							</div>
+						{/if}
+					</div>
+				{/if}
 			</div>
 		{/if}
 	</div>
@@ -733,6 +808,13 @@
 	bind:isOpen={showAgentModal}
 	onAgentSelected={handleAgentSelected}
 	onClose={() => (showAgentModal = false)}
+/>
+
+<!-- User Profile Modal -->
+<UserProfileModal
+	bind:isOpen={showUserProfileModal}
+	user={currentUser}
+	on:close={() => (showUserProfileModal = false)}
 />
 
 <style>
@@ -1107,6 +1189,129 @@
 		color: #6c757d;
 		font-weight: 500;
 	}
+
+	/* User Profile Section */
+	.user-profile-section {
+		border-top: 1px solid #e9ecef;
+		background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+		position: relative;
+	}
+
+	.user-profile-container {
+		display: flex;
+		align-items: center;
+		padding: 1rem;
+		gap: 0.75rem;
+		cursor: pointer;
+		transition: all 0.2s ease;
+	}
+
+	.user-profile-container:hover {
+		background: rgba(102, 126, 234, 0.1);
+	}
+
+	.user-avatar-wrapper {
+		flex-shrink: 0;
+		cursor: pointer;
+	}
+
+	.user-avatar {
+		width: 40px;
+		height: 40px;
+		border-radius: 50%;
+		object-fit: cover;
+		border: 2px solid #dee2e6;
+		transition: all 0.2s ease;
+	}
+
+	.user-avatar:hover {
+		border-color: #667eea;
+		transform: scale(1.05);
+	}
+
+	.user-info {
+		flex: 1;
+		cursor: pointer;
+		min-width: 0;
+	}
+
+	.user-name {
+		font-size: 0.9rem;
+		font-weight: 600;
+		color: #2c3e50;
+		margin-bottom: 0;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	.user-actions {
+		flex-shrink: 0;
+	}
+
+	.dropdown-btn {
+		background: none;
+		border: none;
+		padding: 0.5rem;
+		border-radius: 6px;
+		cursor: pointer;
+		transition: all 0.2s ease;
+		color: #6c757d;
+		font-size: 0.8rem;
+		width: 32px;
+		height: 32px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.dropdown-btn:hover {
+		background: #f8f9fa;
+		color: #495057;
+	}
+
+	.user-dropdown-menu {
+		position: absolute;
+		bottom: 100%;
+		left: 0;
+		right: 0;
+		background: white;
+		border: 1px solid #e9ecef;
+		border-radius: 8px 8px 0 0;
+		box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.15);
+		z-index: 1000;
+		overflow: hidden;
+	}
+
+	.dropdown-item {
+		padding: 0.75rem 1rem;
+		cursor: pointer;
+		transition: all 0.2s ease;
+		font-size: 0.9rem;
+		display: flex;
+		align-items: center;
+		color: #495057;
+	}
+
+	.dropdown-item:hover {
+		background: #f8f9fa;
+		color: #2c3e50;
+	}
+
+	.dropdown-item.logout-item {
+		color: #dc3545;
+	}
+
+	.dropdown-item.logout-item:hover {
+		background: #f8d7da;
+		color: #721c24;
+	}
+
+	.dropdown-divider {
+		height: 1px;
+		background: #e9ecef;
+		margin: 0;
+	}
 	/* Main Content Styles */
 	.main-content {
 		flex: 1;
@@ -1376,6 +1581,19 @@
 
 		.action-icon i {
 			font-size: 1.2rem;
+		}
+
+		.user-profile-container {
+			padding: 0.75rem;
+		}
+
+		.user-avatar {
+			width: 36px;
+			height: 36px;
+		}
+
+		.user-name {
+			font-size: 0.85rem;
 		}
 	}
 
