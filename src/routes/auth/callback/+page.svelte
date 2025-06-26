@@ -53,10 +53,10 @@
 
 			message = $_('auth.callback.exchanging_tokens');
 			progress = 50;
-			
+
 			// Handle the callback
 			const success = await handleCallback(code, state);
-			
+
 			if (success) {
 				message = $_('auth.callback.success');
 				progress = 100;
@@ -97,16 +97,11 @@
 						<!-- 加载状态 -->
 						{#if loading && !error}
 							<div class="loading-container text-center">
-								<div class="loader-wrapper">
-									<Loader />
-									<div class="loader-overlay"></div>
-								</div>
-								
 								<!-- 进度条 -->
 								<div class="progress-container mt-4">
 									<div class="progress">
-										<div 
-											class="progress-bar" 
+										<div
+											class="progress-bar"
 											style="width: {progress}%"
 											role="progressbar"
 											aria-valuenow={progress}
@@ -179,7 +174,7 @@
 		backdrop-filter: blur(10px);
 		border-radius: 20px;
 		padding: 3rem 2.5rem;
-		box-shadow: 
+		box-shadow:
 			0 20px 60px rgba(0, 0, 0, 0.15),
 			0 8px 32px rgba(102, 126, 234, 0.1);
 		max-width: 440px;
@@ -229,7 +224,8 @@
 	}
 
 	@keyframes pulse {
-		0%, 100% {
+		0%,
+		100% {
 			transform: translate(-50%, -50%) scale(1);
 			opacity: 0.7;
 		}
@@ -248,31 +244,6 @@
 
 	.loading-container {
 		position: relative;
-	}
-
-	.loader-wrapper {
-		position: relative;
-		display: inline-block;
-		padding: 1rem;
-	}
-
-	.loader-overlay {
-		position: absolute;
-		top: 50%;
-		left: 50%;
-		transform: translate(-50%, -50%);
-		width: 80px;
-		height: 80px;
-		border: 3px solid rgba(102, 126, 234, 0.1);
-		border-radius: 50%;
-		border-top-color: #667eea;
-		animation: spin 1s linear infinite;
-	}
-
-	@keyframes spin {
-		to {
-			transform: translate(-50%, -50%) rotate(360deg);
-		}
 	}
 
 	.progress-container {
@@ -302,12 +273,7 @@
 		left: 0;
 		right: 0;
 		bottom: 0;
-		background: linear-gradient(
-			90deg,
-			transparent,
-			rgba(255, 255, 255, 0.4),
-			transparent
-		);
+		background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
 		animation: shimmer 2s infinite;
 	}
 
@@ -346,13 +312,19 @@
 		animation: bounce 1.4s ease-in-out infinite both;
 	}
 
-	.dot:nth-child(1) { animation-delay: -0.32s; }
-	.dot:nth-child(2) { animation-delay: -0.16s; }
+	.dot:nth-child(1) {
+		animation-delay: -0.32s;
+	}
+	.dot:nth-child(2) {
+		animation-delay: -0.16s;
+	}
 
 	@keyframes bounce {
-		0%, 80%, 100% {
+		0%,
+		80%,
+		100% {
 			transform: scale(0);
-		} 
+		}
 		40% {
 			transform: scale(1);
 		}
@@ -478,7 +450,8 @@
 	}
 
 	@keyframes float {
-		0%, 100% {
+		0%,
+		100% {
 			transform: translateY(0px);
 		}
 		50% {
@@ -491,7 +464,7 @@
 		.auth-callback {
 			padding: 1.5rem;
 		}
-		
+
 		.auth-card {
 			padding: 2rem 1.5rem;
 			margin: 0 1rem;
