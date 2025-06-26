@@ -1,9 +1,21 @@
 <script>
 	import Link from 'svelte-link';
 	import { fade, fly } from 'svelte/transition';
-	import { Container, Row, Col, Button, Card, CardBody } from '@sveltestrap/sveltestrap';
+	import {
+		Container,
+		Row,
+		Col,
+		Button,
+		Card,
+		CardBody,
+		Dropdown,
+		DropdownToggle,
+		DropdownMenu,
+		DropdownItem
+	} from '@sveltestrap/sveltestrap';
 	import HeadTitle from '$lib/common/HeadTitle.svelte';
 	import LanguageDropdown from '$lib/common/LanguageDropdown.svelte';
+	import Swal from 'sweetalert2';
 	import { _ } from 'svelte-i18n';
 	import {
 		PUBLIC_LOGO_URL,
@@ -13,10 +25,23 @@
 		PUBLIC_HOME_IMAGE
 	} from '$env/static/public';
 	import { onMount, onDestroy } from 'svelte';
-	import { initiateLogin, isAuthenticated } from '$lib/services/oidc-auth-service.js';
+	import {
+		initiateLogin,
+		isAuthenticated,
+		logout as oidcLogout
+	} from '$lib/services/oidc-auth-service.js';
+	import { resetLocalStorage, userStore } from '$lib/helpers/store';
+	import { browser } from '$app/environment';
+	import { buildUrl } from '$lib/helpers/utils/common';
+	import { myInfo } from '$lib/services/auth-service';
+	import { PUBLIC_SERVICE_URL } from '$env/static/public';
 
 	let mounted = false;
 	let userAuthenticated = false;
+	let userName = '';
+	let userAvatar = '';
+	/** @type {import('$userTypes').UserModel | null} */
+	let currentUser = null;
 	/** @type {(() => void) | undefined} */
 	let cleanup;
 	onMount(async () => {
@@ -25,11 +50,55 @@
 		// Check authentication status
 		userAuthenticated = isAuthenticated();
 
+		// Get user info if authenticated
+		if (userAuthenticated) {
+			try {
+				// Try to get user info from API
+				const userInfo = await myInfo();
+				if (userInfo) {
+					currentUser = userInfo;
+					// Extract first name or use fallback
+					const fullName = userInfo.full_name || '';
+					userName = fullName || '用户';
+
+					// Set user avatar if available
+					if (userInfo.avatar && $userStore?.token) {
+						userAvatar = `${buildUrl(PUBLIC_SERVICE_URL, userInfo.avatar).href}?access_token=${$userStore.token}`;
+					}
+				} else {
+					// Fallback to localStorage
+					const userStoreData = localStorage.getItem('userStore');
+					if (userStoreData) {
+						const userData = JSON.parse(userStoreData);
+						const fullName = userData.user?.full_name || userData.user?.name || '';
+						userName = fullName || '用户';
+					} else {
+						userName = '用户';
+					}
+				}
+			} catch (error) {
+				console.error('Failed to load user info:', error);
+				// Fallback to localStorage
+				try {
+					const userStoreData = localStorage.getItem('userStore');
+					if (userStoreData) {
+						const userData = JSON.parse(userStoreData);
+						const fullName = userData.user?.full_name || userData.user?.name || '';
+						userName = fullName || '用户';
+					} else {
+						userName = '用户';
+					}
+				} catch (fallbackError) {
+					userName = '用户';
+				}
+			}
+		}
+
 		// Add scroll effect to navigation
 		if (typeof window !== 'undefined') {
 			const nav = document.querySelector('.top-nav');
 			const handleScroll = () => {
-				if (window.scrollY > 100) { 
+				if (window.scrollY > 100) {
 					nav?.classList.add('scrolled');
 				} else {
 					nav?.classList.remove('scrolled');
@@ -87,7 +156,7 @@
 			labelKey: 'homepage.stats.available',
 			icon: 'fas fa-clock'
 		}
-	];	/**
+	]; /**
 	 * Handle login button click
 	 */
 	function handleLogin() {
@@ -110,6 +179,45 @@
 			initiateLogin();
 		}
 	}
+
+	/**
+	 * Handle logout
+	 */
+	function logout() {
+		if (browser) {
+			resetLocalStorage(true);
+		}
+		// Call OIDC logout for complete session cleanup
+		oidcLogout();
+	}
+
+	/**
+	 * Confirm logout with user
+	 */
+	function confirmLogout() {
+		Swal.fire({
+			title: $_('logout_confirm_title'),
+			text: $_('logout_confirm_message'),
+			icon: 'warning',
+			showCancelButton: true,
+			confirmButtonText: $_('logout_confirm_yes'),
+			cancelButtonText: $_('logout_confirm_no'),
+			confirmButtonColor: '#dc3545',
+			cancelButtonColor: '#6c757d'
+		}).then((result) => {
+			if (result.value) {
+				logout();
+			}
+		});
+	}
+
+	/**
+	 * Handle avatar load error
+	 * @param {any} e
+	 */
+	function handleAvatarError(e) {
+		e.target.src = 'images/users/user-dummy.jpg';
+	}
 </script>
 
 <HeadTitle title="{PUBLIC_BRAND_NAME} - AI Agent IoT Platform" />
@@ -129,32 +237,69 @@
 					<img src={PUBLIC_LOGO_URL} alt="logo" class="brand-logo" />
 					<span class="brand-name">{PUBLIC_BRAND_NAME}</span>
 				</a>
-			</div>			<!-- Navigation Actions -->
-			<div class="nav-actions">				<!-- Workspace Button (only show if authenticated) -->
-				{#if userAuthenticated}
-					<Button
-						on:click={goToWorkspace}
-						color="secondary"
-						class="workspace-btn me-2"
-						title={$_('navigation.personal_workspace')}
-					>
-						<i class="fas fa-workspace me-2"></i>
-						{$_('navigation.workspace')}
-					</Button>
-				{/if}
+			</div>
+			<!-- Navigation Actions -->
+			<div class="nav-actions">
 				<!-- Custom Language Selector -->
 				<div class="language-selector" title="Select Language / 选择语言">
 					<LanguageDropdown />
-				</div>				<!-- Login Button -->
-				<Button
-					on:click={handleLogin}
-					color="primary"
-					class="login-btn"
-					title={userAuthenticated ? $_('navigation.dashboard') : $_('navigation.login')}
-				>
-					<i class="fas fa-user-circle me-2"></i>
-					{userAuthenticated ? $_('navigation.dashboard') : $_('navigation.login')}
-				</Button>
+				</div>
+
+				{#if userAuthenticated}
+					<!-- User Profile Menu -->
+					<div class="user-menu">
+						<Dropdown>
+							<DropdownToggle class="user-menu-toggle" caret={false}>
+								<div class="user-avatar">
+									{#if userAvatar}
+										<img
+											src={userAvatar}
+											alt="User Avatar"
+											class="avatar-image"
+											on:error={handleAvatarError}
+										/>
+									{:else}
+										<i class="fas fa-user-circle"></i>
+									{/if}
+								</div>
+								<span class="user-text d-none d-md-inline">{userName}</span>
+								<i class="fas fa-chevron-down ms-2 dropdown-arrow"></i>
+							</DropdownToggle>
+							<DropdownMenu end class="user-dropdown-menu">
+								<DropdownItem header class="user-info-simple">
+									<div class="user-greeting">
+										<small class="text-muted">{$_('navigation.welcome')}, {userName}!</small>
+									</div>
+								</DropdownItem>
+								<DropdownItem divider />
+								<DropdownItem on:click={goToWorkspace} class="menu-item">
+									<i class="fas fa-briefcase menu-icon"></i>
+									{$_('navigation.workspace')}
+								</DropdownItem>
+								<DropdownItem on:click={handleLogin} class="menu-item">
+									<i class="fas fa-tachometer-alt menu-icon"></i>
+									{$_('navigation.dashboard')}
+								</DropdownItem>
+								<DropdownItem divider />
+								<DropdownItem on:click={confirmLogout} class="menu-item logout-item">
+									<i class="fas fa-sign-out-alt menu-icon"></i>
+									{$_('navigation.logout')}
+								</DropdownItem>
+							</DropdownMenu>
+						</Dropdown>
+					</div>
+				{:else}
+					<!-- Login Button for non-authenticated users -->
+					<Button
+						on:click={handleLogin}
+						color="primary"
+						class="login-btn"
+						title={$_('navigation.login')}
+					>
+						<i class="fas fa-sign-in-alt me-2"></i>
+						{$_('navigation.login')}
+					</Button>
+				{/if}
 			</div>
 		</div>
 	</Container>
@@ -186,7 +331,8 @@
 						</h1>
 						<p class="hero-description">
 							{$_('homepage.description')}
-						</p>						<div class="hero-actions">
+						</p>
+						<div class="hero-actions">
 							{#if userAuthenticated}
 								<Button
 									on:click={goToWorkspace}
@@ -217,7 +363,14 @@
 									<i class="fas fa-rocket me-2"></i>
 									{$_('homepage.get_started')}
 								</Button>
-								<Button href="/docs" outline color="light" size="lg" class="hero-btn-secondary">
+								<Button
+									href="https://botsharp.verdure-hiro.cn/"
+									target="_blank"
+									outline
+									color="light"
+									size="lg"
+									class="hero-btn-secondary"
+								>
 									<i class="fas fa-book me-2"></i>
 									{$_('homepage.documentation')}
 								</Button>
@@ -321,7 +474,8 @@
 						<h2 class="cta-title">{$_('homepage.cta.title')}</h2>
 						<p class="cta-description">
 							{$_('homepage.cta.description')}
-						</p>						<div class="cta-actions">
+						</p>
+						<div class="cta-actions">
 							{#if userAuthenticated}
 								<Button on:click={goToWorkspace} color="primary" size="lg" class="me-3">
 									<i class="fas fa-workspace me-2"></i>
@@ -514,6 +668,159 @@
 
 	.login-btn:active {
 		transform: translateY(-1px);
+	}
+
+	/* User Menu Styles */
+	.user-menu {
+		position: relative;
+	}
+
+	.user-menu :global(.user-menu-toggle) {
+		background: rgba(255, 255, 255, 0.1);
+		backdrop-filter: blur(10px);
+		border: 1px solid rgba(255, 255, 255, 0.2);
+		border-radius: 25px;
+		padding: 8px 16px;
+		color: #333;
+		font-weight: 500;
+		font-size: 14px;
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		transition: all 0.3s ease;
+		box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+		text-decoration: none;
+		cursor: pointer;
+	}
+
+	.user-menu :global(.user-menu-toggle:hover) {
+		background: rgba(255, 255, 255, 0.2);
+		border-color: rgba(255, 255, 255, 0.3);
+		transform: translateY(-2px);
+		box-shadow: 0 6px 25px rgba(0, 0, 0, 0.15);
+		text-decoration: none;
+		color: #333;
+	}
+
+	.user-avatar {
+		width: 28px;
+		height: 28px;
+		border-radius: 50%;
+		background: linear-gradient(45deg, #667eea, #764ba2);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		color: white;
+		font-size: 14px;
+		overflow: hidden;
+		position: relative;
+	}
+
+	.user-avatar .avatar-image {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		border-radius: 50%;
+		position: absolute;
+		top: 0;
+		left: 0;
+		border: 2px solid rgba(255, 255, 255, 0.3);
+		transition: all 0.3s ease;
+	}
+
+	.user-menu:hover .user-avatar .avatar-image {
+		border-color: rgba(255, 255, 255, 0.5);
+		transform: scale(1.05);
+	}
+
+	.user-avatar i {
+		font-size: 14px;
+		z-index: 1;
+	}
+
+	.user-text {
+		font-weight: 500;
+		color: #333;
+	}
+
+	.dropdown-arrow {
+		font-size: 12px;
+		color: #667eea;
+		transition: transform 0.3s ease;
+	}
+
+	.user-menu :global(.show .dropdown-arrow) {
+		transform: rotate(180deg);
+	}
+
+	/* User Dropdown Menu */
+	.user-menu :global(.user-dropdown-menu) {
+		background: rgba(255, 255, 255, 0.98);
+		backdrop-filter: blur(20px);
+		border: 1px solid rgba(255, 255, 255, 0.2);
+		border-radius: 15px;
+		box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+		margin-top: 8px;
+		padding: 8px 0;
+		min-width: 200px;
+		overflow: hidden;
+	}
+
+	/* Simple User Info Header */
+	.user-menu :global(.user-info-simple) {
+		padding: 12px 20px 8px;
+		background: linear-gradient(45deg, rgba(102, 126, 234, 0.05), rgba(118, 75, 162, 0.05));
+		border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+		margin-bottom: 4px;
+	}
+
+	.user-greeting {
+		text-align: center;
+		font-weight: 500;
+	}
+
+	.user-greeting .text-muted {
+		color: #667eea !important;
+		font-size: 13px;
+	}
+
+	/* Menu Items */
+	.user-menu :global(.menu-item) {
+		padding: 12px 20px;
+		font-weight: 500;
+		transition: all 0.3s ease;
+		display: flex;
+		align-items: center;
+		gap: 12px;
+		color: #2c3e50;
+		border-radius: 12px;
+		margin: 2px 8px;
+		cursor: pointer;
+	}
+
+	.user-menu :global(.menu-item:hover) {
+		background: linear-gradient(45deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+		color: #667eea;
+		transform: translateX(2px);
+	}
+
+	.menu-icon {
+		width: 18px;
+		text-align: center;
+		color: #667eea;
+	}
+
+	.user-menu :global(.logout-item) {
+		color: #dc3545;
+	}
+
+	.user-menu :global(.logout-item:hover) {
+		background: rgba(220, 53, 69, 0.1);
+		color: #dc3545;
+	}
+
+	.user-menu :global(.logout-item .menu-icon) {
+		color: #dc3545;
 	}
 
 	/* Hero Section */
@@ -914,6 +1221,32 @@
 			padding: 8px 16px;
 			font-size: 14px;
 		}
+
+		/* User menu mobile adjustments */
+		.user-menu :global(.user-menu-toggle) {
+			padding: 6px 12px;
+			font-size: 14px;
+		}
+
+		.user-avatar {
+			width: 24px;
+			height: 24px;
+			font-size: 12px;
+		}
+
+		.user-avatar i {
+			font-size: 12px;
+		}
+
+		.user-text {
+			display: none !important;
+		}
+
+		.user-menu :global(.user-dropdown-menu) {
+			min-width: 180px;
+			right: 0;
+		}
+
 		.hero-section {
 			padding-top: 80px;
 		}
@@ -969,14 +1302,46 @@
 
 	/* Enhanced button interactions */
 	.login-btn,
-	.language-selector :global(.dropdown-toggle) {
+	.language-selector :global(.dropdown-toggle),
+	.user-menu :global(.user-menu-toggle) {
 		user-select: none;
 		-webkit-tap-highlight-color: transparent;
 	}
 
 	.login-btn:focus,
-	.language-selector :global(.dropdown-toggle:focus) {
+	.language-selector :global(.dropdown-toggle:focus),
+	.user-menu :global(.user-menu-toggle:focus) {
 		outline: none;
 		box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3);
+	}
+
+	/* Improved accessibility */
+	.user-menu :global(.menu-item:focus) {
+		background: linear-gradient(45deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+		color: #667eea;
+		outline: none;
+	}
+
+	/* Subtle animation for dropdown */
+	.user-menu :global(.user-dropdown-menu) {
+		animation: slideDown 0.3s ease-out;
+		transform-origin: top center;
+	}
+
+	@keyframes slideDown {
+		from {
+			opacity: 0;
+			transform: translateY(-10px) scale(0.95);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0) scale(1);
+		}
+	}
+
+	/* Enhanced divider styling */
+	.user-menu :global(.dropdown-divider) {
+		border-color: rgba(0, 0, 0, 0.08);
+		margin: 8px 16px;
 	}
 </style>

@@ -561,7 +561,12 @@
         "workspace": "Workspace",
         "dashboard": "Dashboard",
         "login": "Login",
-        "personal_workspace": "Personal Workspace"
+        "personal_workspace": "Personal Workspace",
+        "account": "Account",
+        "welcome": "Welcome",
+        "online": "Online",
+        "profile": "Profile",
+        "logout": "Logout"
     },
     "loading": {
         "workspace": "Loading workspace..."
