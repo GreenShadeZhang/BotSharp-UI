@@ -1,7 +1,16 @@
 <script>
 	import { onMount } from 'svelte';
-	import { Button, Modal, ModalBody, ModalHeader, Input, Row, Col, Card, CardBody } from '@sveltestrap/sveltestrap';
+	import {
+		Button,
+		Modal,
+		ModalBody,
+		ModalHeader,
+		Input,
+		InputGroup,
+		Badge
+	} from '@sveltestrap/sveltestrap';
 	import { getAgents } from '$lib/services/agent-service.js';
+	import { AgentType } from '$lib/helpers/enums';
 	import { _ } from 'svelte-i18n';
 
 	/** @type {boolean} */
@@ -12,39 +21,177 @@
 
 	/** @type {() => void} */
 	export let onClose = () => {};
-	/** @type {any[]} */
-	let agents = [];
-	/** @type {any[]} */
-	let filteredAgents = [];
-	let searchTerm = '';
-	let isLoading = true;
 
-	$: if (searchTerm) {
-		filteredAgents = agents.filter((agent) => 
-			agent.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-			agent.description?.toLowerCase().includes(searchTerm.toLowerCase())
-		);
-	} else {
-		filteredAgents = agents;
+	/** @type {import('$commonTypes').PagedItems<import('$agentTypes').AgentModel>} */
+	let agents = { items: [], count: 0 };
+
+	/** @type {string} */
+	let searchQuery = '';
+
+	/** @type {string} */
+	let selectedType = 'all';
+
+	/** @type {string} */
+	let sortBy = 'created_desc';
+
+	/** @type {boolean} */
+	let isLoading = false;
+
+	/** @type {boolean} */
+	let isLoadingMore = false;
+
+	/** @type {boolean} */
+	let hasMoreData = true;
+
+	/** @type {boolean} */
+	let showBackToTop = false;
+
+	/** @type {boolean} */
+	let initialized = false;
+
+	const pageSize = 12;
+	const firstPage = 1;
+
+	/** @type {import('$agentTypes').AgentFilter} */
+	const initFilter = {
+		pager: { page: firstPage, size: pageSize, count: 0 },
+		types: [AgentType.Task, AgentType.Routing] // 默认显示任务型和路由型智能体
+	};
+
+	/** @type {import('$agentTypes').AgentFilter} */
+	let filter = { ...initFilter };
+
+	const filterOptions = [
+		{ value: 'all', label: $_('workspace.agents.list.all_types') },
+		{ value: 'single', label: $_('workspace.agents.single_agent') },
+		{ value: 'group', label: $_('workspace.agents.agent_group') }
+	];
+
+	const sortOptions = [
+		{ value: 'created_desc', label: $_('workspace.agents.sort.newest_first') },
+		{ value: 'created_asc', label: $_('workspace.agents.sort.oldest_first') },
+		{ value: 'name_asc', label: $_('workspace.agents.sort.name_asc') },
+		{ value: 'name_desc', label: $_('workspace.agents.sort.name_desc') }
+	];
+
+	// 监听弹窗打开状态，当打开时加载数据
+	$: if (isOpen && !initialized) {
+		initializeModal();
 	}
 
-	onMount(async () => {
+	async function initializeModal() {
+		initialized = true;
 		await loadAgents();
-	});
+	}
 
 	async function loadAgents() {
+		isLoading = true;
 		try {
-			isLoading = true;
-			const filter = {
-				pager: { page: 1, size: 50, count: 0 }
-			};
 			const response = await getAgents(filter, true);
-			agents = response?.items?.map((t) => ({ ...t })) || [];
-			filteredAgents = agents;
+			agents = response;
+			hasMoreData = response.items.length === pageSize && response.count > response.items.length;
 		} catch (error) {
-			console.error('Failed to load agents:', error);
+			console.error('Error loading agents:', error);
+			agents = { items: [], count: 0 };
+			hasMoreData = false;
 		} finally {
 			isLoading = false;
+		}
+	}
+
+	async function loadMoreAgents() {
+		if (isLoadingMore || !hasMoreData) return;
+
+		isLoadingMore = true;
+		try {
+			const nextPage = filter.pager.page + 1;
+			const nextFilter = {
+				...filter,
+				pager: { ...filter.pager, page: nextPage }
+			};
+
+			const response = await getAgents(nextFilter, true);
+
+			if (response.items && response.items.length > 0) {
+				agents = {
+					items: [...agents.items, ...response.items],
+					count: response.count
+				};
+
+				filter.pager.page = nextPage;
+				hasMoreData = response.items.length === pageSize && agents.items.length < response.count;
+			} else {
+				hasMoreData = false;
+			}
+		} catch (error) {
+			console.error('Error loading more agents:', error);
+			hasMoreData = false;
+		} finally {
+			isLoadingMore = false;
+		}
+	}
+
+	function buildFilter() {
+		let filterTypes;
+
+		// 根据选择的类型进行筛选
+		if (selectedType === 'all') {
+			// 全部类型：包含所有智能体类型
+			filterTypes = [AgentType.Task, AgentType.Routing];
+		} else if (selectedType === 'single') {
+			filterTypes = [AgentType.Task];
+		} else if (selectedType === 'group') {
+			filterTypes = [AgentType.Routing];
+		} else {
+			// 默认情况：只显示任务型和路由型智能体
+			filterTypes = [AgentType.Task, AgentType.Routing];
+		}
+
+		return {
+			pager: filter.pager,
+			types: filterTypes,
+			similarName: searchQuery.trim() || undefined
+		};
+	}
+
+	function applyFilters() {
+		filter = {
+			...buildFilter(),
+			pager: { page: firstPage, size: pageSize, count: 0 }
+		};
+		hasMoreData = true;
+		loadAgents();
+	}
+
+	// 防抖搜索
+	/** @type {number} */
+	let searchTimeout;
+
+	// 用于跟踪上次的筛选条件，以便检测变化
+	let lastSearchQuery = '';
+	let lastSelectedType = 'all';
+	let lastSortBy = 'created_desc';
+
+	$: {
+		// 只有在初始化完成后才触发搜索
+		if (initialized) {
+			// 检测筛选条件是否有变化
+			const hasChanged =
+				searchQuery !== lastSearchQuery ||
+				selectedType !== lastSelectedType ||
+				sortBy !== lastSortBy;
+
+			if (hasChanged) {
+				// 更新上次的值
+				lastSearchQuery = searchQuery;
+				lastSelectedType = selectedType;
+				lastSortBy = sortBy;
+
+				clearTimeout(searchTimeout);
+				searchTimeout = setTimeout(() => {
+					applyFilters();
+				}, 300);
+			}
 		}
 	}
 	/**
@@ -52,88 +199,220 @@
 	 */
 	function selectAgent(agent) {
 		onAgentSelected(agent);
-		toggleModal();
-	}
-
-	function toggleModal() {
-		isOpen = !isOpen;
-		if (!isOpen) {
-			onClose();
-		}
+		handleModalClose();
 	}
 
 	function handleModalClose() {
 		isOpen = false;
+		// 重置状态
+		initialized = false;
+		agents = { items: [], count: 0 };
+		searchQuery = '';
+		selectedType = 'all';
+		sortBy = 'created_desc';
+		filter = { ...initFilter };
 		onClose();
+	}
+
+	/**
+	 * 处理滚动事件
+	 * @param {Event} event
+	 */
+	function handleScroll(event) {
+		const container = /** @type {HTMLElement} */ (event.target);
+		if (!container) return;
+
+		const scrollTop = container.scrollTop;
+		const scrollHeight = container.scrollHeight;
+		const clientHeight = container.clientHeight;
+
+		// 增加缓冲区域，提前100px触发加载更多
+		const bufferDistance = 100;
+		const shouldLoadMore =
+			scrollHeight - scrollTop - clientHeight < bufferDistance && hasMoreData && !isLoadingMore;
+
+		// 更新返回顶部按钮状态
+		showBackToTop = scrollTop > 300;
+
+		if (shouldLoadMore) {
+			loadMoreAgents();
+		}
+	}
+
+	function scrollToTop() {
+		const scrollableContainer = document.querySelector('.modal-agents-grid');
+		if (scrollableContainer) {
+			scrollableContainer.scrollTo({
+				top: 0,
+				behavior: 'smooth'
+			});
+		}
+	}
+
+	/**
+	 * @param {any} agent
+	 */
+	function getAgentTypeDisplay(agent) {
+		if (agent.is_router) {
+			return $_('workspace.agents.agent_group');
+		}
+		return $_('workspace.agents.task_agent');
 	}
 </script>
 
-<Modal {isOpen} toggle={handleModalClose} size="lg" class="agent-selection-modal">
+<Modal {isOpen} toggle={handleModalClose} size="xl" class="agent-selection-modal">
 	<ModalHeader toggle={handleModalClose}>
 		<i class="fas fa-robot me-2"></i>
 		{$_('workspace.select_agent.title')}
 	</ModalHeader>
 	<ModalBody>
-		<div class="mb-3">			<Input
-				type="text"
-				placeholder={$_('workspace.select_agent.search_placeholder')}
-				bind:value={searchTerm}
-				class="search-input"
-			/>
+		<!-- 搜索和筛选区域 -->
+		<div class="filters-section mb-4">
+			<div class="row g-3">
+				<div class="col-md-6">
+					<InputGroup>
+						<Input
+							type="text"
+							placeholder={$_('workspace.select_agent.search_placeholder')}
+							bind:value={searchQuery}
+							class="search-input"
+						/>
+						<Button color="light" outline>
+							<i class="fas fa-search"></i>
+						</Button>
+					</InputGroup>
+				</div>
+				<div class="col-md-3">
+					<select bind:value={selectedType} class="form-select filter-select">
+						{#each filterOptions as option}
+							<option value={option.value}>{option.label}</option>
+						{/each}
+					</select>
+				</div>
+				<div class="col-md-3">
+					<select bind:value={sortBy} class="form-select filter-select">
+						{#each sortOptions as option}
+							<option value={option.value}>{option.label}</option>
+						{/each}
+					</select>
+				</div>
+			</div>
 		</div>
 
-		{#if isLoading}
-			<div class="text-center py-4">
-				<div class="spinner-border text-primary" role="status">
+		<!-- 智能体列表区域 -->
+		{#if isLoading && agents.items.length === 0}
+			<div class="text-center py-5">
+				<div class="spinner-border text-primary mb-3" role="status">
 					<span class="visually-hidden">Loading...</span>
 				</div>
-				<p class="mt-2 text-muted">{$_('workspace.select_agent.loading')}</p>
+				<p class="text-muted">{$_('workspace.select_agent.loading')}</p>
 			</div>
-		{:else if filteredAgents.length === 0}
-			<div class="text-center py-4">
+		{:else if agents.items.length === 0}
+			<div class="text-center py-5">
 				<i class="fas fa-robot fa-3x text-muted mb-3"></i>
-				<p class="text-muted">{$_('workspace.select_agent.no_agents')}</p>
+				<h5 class="text-muted">{$_('workspace.select_agent.no_agents')}</h5>
+				<p class="text-muted small">{$_('workspace.agents.list.no_agents_description')}</p>
 			</div>
 		{:else}
-			<Row>				{#each filteredAgents as agent (agent.id)}					<Col md="6" class="mb-4">
+			<!-- 智能体数量显示 -->
+			<div class="agents-header-info mb-3">
+				<div class="agents-count">
+					<i class="fas fa-robot me-2"></i>
+					<span class="count-number">{agents.count}</span>
+					<span class="count-text">{$_('workspace.agents.list.agents_count')}</span>
+				</div>
+			</div>
+
+			<div class="modal-agents-grid" on:scroll={handleScroll}>
+				<div class="agents-grid-container">
+					{#each agents.items as agent (agent.id)}
 						<!-- svelte-ignore a11y-click-events-have-key-events -->
 						<!-- svelte-ignore a11y-no-static-element-interactions -->
-						<div 
-							class="agent-card h-100" 
+						<div
+							class="agent-selection-card"
 							on:click={() => selectAgent(agent)}
 							role="button"
 							tabindex={0}
 						>
-							<div class="card-body d-flex flex-column p-4">
-								<div class="agent-icon mb-3">
+							<div class="agent-card-header">
+								<div class="agent-avatar">
 									{#if agent.icon_url}
 										<img src={agent.icon_url} alt={agent.name} class="agent-image" />
 									{:else}
-										<img src="images/users/bot.png" alt={agent.name} class="agent-image" />
+										<i class="fas fa-robot"></i>
 									{/if}
 								</div>
-								<h6 class="agent-name">{agent.name}</h6>
-								<p class="agent-description text-muted small flex-grow-1">
-									{agent.description || $_('workspace.select_agent.no_description')}
-								</p>
-								<div class="agent-meta">
-									<small class="text-muted">
-										<i class="fas fa-tag me-1"></i>
-										{agent.type || 'General'}
-									</small>
+								<div class="agent-info">
+									<h6 class="agent-name">{agent.name}</h6>
+									<Badge color="light" class="type-badge">
+										{getAgentTypeDisplay(agent)}
+									</Badge>
 								</div>
 							</div>
+
+							<div class="agent-description">
+								<p class="text-muted small">
+									{agent.description || $_('workspace.select_agent.no_description')}
+								</p>
+							</div>
+
+							{#if agent.labels && agent.labels.length > 0}
+								<div class="agent-labels">
+									{#each agent.labels as label}
+										<Badge color="light" pill class="label-badge">{label}</Badge>
+									{/each}
+								</div>
+							{/if}
+
+							<div class="agent-meta">
+								<small class="text-muted">
+									<i class="fas fa-calendar me-1"></i>
+									{new Date(agent.created_datetime).toLocaleDateString()}
+								</small>
+								{#if agent.is_public}
+									<small class="text-muted ms-2">
+										<i class="fas fa-globe me-1"></i>
+										{$_('workspace.agents.create.public_agent')}
+									</small>
+								{/if}
+							</div>
 						</div>
-					</Col>
-				{/each}
-			</Row>
+					{/each}
+
+					<!-- 加载更多指示器 -->
+					{#if isLoadingMore}
+						<div class="loading-more-indicator">
+							<div class="spinner-border spinner-border-sm text-primary me-2" role="status">
+								<span class="visually-hidden">Loading...</span>
+							</div>
+							<span class="text-muted">{$_('workspace.agents.list.loading_more')}</span>
+						</div>
+					{/if}
+
+					<!-- 没有更多数据提示 -->
+					{#if !hasMoreData && agents.items.length >= pageSize}
+						<div class="no-more-data">
+							<i class="fas fa-check-circle text-success me-2"></i>
+							<span class="text-muted small">{$_('workspace.agents.list.all_loaded')}</span>
+						</div>
+					{/if}
+				</div>
+			</div>
+
+			<!-- 返回顶部按钮 -->
+			{#if showBackToTop}
+				<button class="back-to-top-modal" on:click={scrollToTop} title={$_('common.back_to_top')}>
+					<i class="fas fa-arrow-up"></i>
+				</button>
+			{/if}
 		{/if}
 	</ModalBody>
 </Modal>
 
 <style>
+	/* 弹窗样式 */
 	:global(.agent-selection-modal .modal-content) {
-		border-radius: 12px;
+		border-radius: 16px;
 		border: none;
 		box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
 	}
@@ -141,13 +420,25 @@
 	:global(.agent-selection-modal .modal-header) {
 		background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 		color: white;
-		border-radius: 12px 12px 0 0;
+		border-radius: 16px 16px 0 0;
 		border-bottom: none;
+		padding: 1.5rem;
 	}
 
 	:global(.agent-selection-modal .modal-body) {
-		max-height: 70vh;
-		overflow-y: auto;
+		padding: 1.5rem;
+	}
+
+	:global(.agent-selection-modal .modal-dialog) {
+		max-width: 1200px;
+	}
+
+	/* 筛选区域样式 */
+	.filters-section {
+		background: #f8f9fa;
+		border-radius: 12px;
+		padding: 1.5rem;
+		border: 1px solid #e9ecef;
 	}
 
 	:global(.search-input) {
@@ -160,33 +451,92 @@
 		border-color: #667eea;
 		box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
 	}
-	.agent-card {
+
+	.filter-select {
+		border-radius: 8px;
+		border: 2px solid #e9ecef;
+		transition: all 0.3s ease;
+	}
+
+	.filter-select:focus {
+		border-color: #667eea;
+		box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+	}
+
+	/* 智能体列表区域 */
+	.agents-header-info {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: 1rem 0;
+		border-bottom: 1px solid #e9ecef;
+	}
+
+	.agents-count {
+		display: flex;
+		align-items: center;
+		color: #495057;
+		font-weight: 500;
+	}
+
+	.count-number {
+		font-size: 1.25rem;
+		font-weight: 600;
+		color: #667eea;
+		margin: 0 0.5rem;
+	}
+
+	.modal-agents-grid {
+		max-height: 60vh;
+		overflow-y: auto;
+		padding-right: 0.5rem;
+	}
+
+	.agents-grid-container {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+		gap: 1.5rem;
+		padding: 1rem 0;
+	}
+
+	/* 智能体卡片样式 */
+	.agent-selection-card {
 		border: 2px solid #e9ecef;
 		border-radius: 12px;
+		padding: 1.5rem;
+		background: white;
 		transition: all 0.3s ease;
 		cursor: pointer;
 		height: 100%;
-		margin-bottom: 0.75rem;
+		display: flex;
+		flex-direction: column;
 	}
 
-	.agent-card:hover {
+	.agent-selection-card:hover {
 		border-color: #667eea;
 		transform: translateY(-3px);
-		box-shadow: 0 10px 30px rgba(102, 126, 234, 0.2);
+		box-shadow: 0 12px 40px rgba(102, 126, 234, 0.15);
 	}
 
-	.agent-icon {
-		width: 60px;
-		height: 60px;
+	.agent-card-header {
+		display: flex;
+		align-items: center;
+		margin-bottom: 1rem;
+	}
+
+	.agent-avatar {
+		width: 48px;
+		height: 48px;
 		border-radius: 12px;
 		background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 		display: flex;
 		align-items: center;
 		justify-content: center;
 		color: white;
-		font-size: 1.5rem;
+		font-size: 1.25rem;
+		margin-right: 1rem;
 		overflow: hidden;
-		position: relative;
+		flex-shrink: 0;
 	}
 
 	.agent-image {
@@ -196,28 +546,166 @@
 		border-radius: 12px;
 	}
 
+	.agent-info {
+		flex: 1;
+		min-width: 0;
+	}
+
 	.agent-name {
 		font-weight: 600;
 		color: #2c3e50;
-		margin-bottom: 0.75rem;
+		margin: 0 0 0.5rem 0;
 		font-size: 1.1rem;
+		line-height: 1.3;
+	}
+
+	:global(.type-badge) {
+		font-size: 0.75rem;
+		padding: 0.25rem 0.5rem;
+		background: #e9ecef !important;
+		color: #6c757d !important;
+		border: none !important;
 	}
 
 	.agent-description {
-		line-height: 1.5;
 		margin-bottom: 1rem;
-		min-height: 2.5em;
+		flex: 1;
+	}
+
+	.agent-description p {
+		margin: 0;
+		line-height: 1.5;
+		display: -webkit-box;
+		-webkit-line-clamp: 3;
+		line-clamp: 3;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
+	}
+
+	.agent-labels {
+		margin-bottom: 1rem;
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem;
+	}
+
+	:global(.label-badge) {
+		font-size: 0.7rem;
+		padding: 0.2rem 0.5rem;
+		background: #f8f9fa !important;
+		color: #6c757d !important;
+		border: 1px solid #e9ecef !important;
 	}
 
 	.agent-meta {
 		margin-top: auto;
-		padding-top: 0.5rem;
+		padding-top: 1rem;
 		border-top: 1px solid #f8f9fa;
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem;
 	}
 
+	/* 加载状态样式 */
+	.loading-more-indicator {
+		grid-column: 1 / -1;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		padding: 2rem;
+		color: #6c757d;
+	}
+
+	.no-more-data {
+		grid-column: 1 / -1;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		padding: 2rem;
+		color: #6c757d;
+	}
+
+	/* 返回顶部按钮 */
+	.back-to-top-modal {
+		position: fixed;
+		bottom: 2rem;
+		right: 2rem;
+		background: #667eea;
+		color: white;
+		border: none;
+		border-radius: 50%;
+		width: 50px;
+		height: 50px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		cursor: pointer;
+		box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
+		transition: all 0.3s ease;
+		z-index: 1060;
+	}
+
+	.back-to-top-modal:hover {
+		background: #5a6fd8;
+		transform: translateY(-2px);
+		box-shadow: 0 6px 25px rgba(102, 126, 234, 0.4);
+	}
+
+	/* 响应式设计 */
 	@media (max-width: 768px) {
 		:global(.agent-selection-modal .modal-dialog) {
-			margin: 1rem;
+			margin: 0.5rem;
+			max-width: calc(100% - 1rem);
 		}
+
+		.agents-grid-container {
+			grid-template-columns: 1fr;
+			gap: 1rem;
+		}
+
+		.modal-agents-grid {
+			max-height: 50vh;
+		}
+
+		.filters-section {
+			padding: 1rem;
+		}
+
+		.filters-section .row {
+			--bs-gutter-x: 0.75rem;
+		}
+
+		.back-to-top-modal {
+			bottom: 1rem;
+			right: 1rem;
+			width: 45px;
+			height: 45px;
+		}
+	}
+
+	@media (max-width: 576px) {
+		.filters-section .col-md-3,
+		.filters-section .col-md-6 {
+			margin-bottom: 0.75rem;
+		}
+	}
+
+	/* 滚动条样式 */
+	.modal-agents-grid::-webkit-scrollbar {
+		width: 8px;
+	}
+
+	.modal-agents-grid::-webkit-scrollbar-track {
+		background: #f1f1f1;
+		border-radius: 4px;
+	}
+
+	.modal-agents-grid::-webkit-scrollbar-thumb {
+		background: #c1c1c1;
+		border-radius: 4px;
+	}
+
+	.modal-agents-grid::-webkit-scrollbar-thumb:hover {
+		background: #a8a8a8;
 	}
 </style>

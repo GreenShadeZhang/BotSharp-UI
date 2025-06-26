@@ -39,10 +39,16 @@
 		const scrollHeight = container.scrollHeight;
 		const clientHeight = container.clientHeight;
 		
-		// 通知父组件更新返回顶部按钮状态
+		// 增加缓冲区域，提前100px触发加载更多
+		const bufferDistance = 100;
+		const shouldLoadMore = scrollHeight - scrollTop - clientHeight < bufferDistance && 
+							   hasMoreData && 
+							   !isLoadingMore;
+		
+		// 通知父组件更新返回顶部按钮状态和加载更多
 		dispatch('scroll', {
 			showBackToTop: scrollTop > 300,
-			shouldLoadMore: scrollHeight - scrollTop - clientHeight < 50 && hasMoreData && !isLoadingMore
+			shouldLoadMore
 		});
 	}
 
@@ -114,6 +120,9 @@
 				<span>{$_('workspace.agents.list.all_loaded')}</span>
 			</div>
 		{/if}
+		
+		<!-- 底部缓冲区 -->
+		<div class="scroll-buffer"></div>
 	</div>
 
 	<!-- 返回顶部按钮 -->
@@ -214,12 +223,13 @@
 
 	.agents-grid.scrollable {
 		flex: 1;
-		max-height: calc(100vh - 400px);
+		max-height: calc(100vh - 450px);
 		overflow-y: auto;
 		scroll-behavior: smooth;
 		border: 1px solid #e2e8f0;
 		border-radius: 0.75rem;
 		padding: 1.5rem;
+		padding-bottom: 3rem; /* 增加底部内边距 */
 		background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
 		position: relative;
 		margin-bottom: 0;
@@ -249,8 +259,8 @@
 		bottom: -1.5rem;
 		left: -1.5rem;
 		right: -1.5rem;
-		height: 1.5rem;
-		background: linear-gradient(to top, rgba(248, 250, 252, 1) 0%, rgba(248, 250, 252, 0.8) 70%, rgba(248, 250, 252, 0) 100%);
+		height: 2rem; /* 增加渐变高度 */
+		background: linear-gradient(to top, rgba(248, 250, 252, 1) 0%, rgba(248, 250, 252, 0.9) 50%, rgba(248, 250, 252, 0.3) 80%, rgba(248, 250, 252, 0) 100%);
 		z-index: 10;
 		pointer-events: none;
 		grid-column: 1 / -1;
@@ -268,6 +278,7 @@
 		justify-content: center;
 		gap: 0.75rem;
 		margin-top: 2rem;
+		margin-bottom: 2rem; /* 增加底部边距 */
 		padding: 1.5rem;
 		background: rgba(255, 255, 255, 0.9);
 		border: 1px dashed #cbd5e1;
@@ -293,6 +304,7 @@
 		justify-content: center;
 		gap: 0.5rem;
 		margin-top: 2rem;
+		margin-bottom: 2rem; /* 增加底部边距 */
 		padding: 1rem;
 		background: linear-gradient(135deg, #10b981 0%, #059669 100%);
 		color: white;
@@ -300,6 +312,13 @@
 		font-size: 0.875rem;
 		font-weight: 500;
 		box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+	}
+
+	.scroll-buffer {
+		grid-column: 1 / -1;
+		height: 1rem;
+		min-height: 1rem;
+		pointer-events: none;
 	}
 
 	.back-to-top {
@@ -456,7 +475,8 @@
 		}
 
 		.agents-grid.scrollable {
-			max-height: calc(100vh - 380px);
+			max-height: calc(100vh - 420px);
+			padding-bottom: 2.5rem; /* 增加底部内边距 */
 			grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
 			gap: 1.25rem;
 		}
@@ -469,8 +489,9 @@
 		}
 
 		.agents-grid.scrollable {
-			max-height: calc(100vh - 320px);
+			max-height: calc(100vh - 360px);
 			padding: 1rem;
+			padding-bottom: 2rem; /* 增加底部内边距 */
 			grid-template-columns: 1fr;
 			gap: 1rem;
 		}
@@ -492,6 +513,11 @@
 
 		.empty-icon {
 			font-size: 4rem;
+		}
+
+		.loading-more-indicator,
+		.no-more-data {
+			margin-bottom: 1.5rem; /* 移动端减少底部边距 */
 		}
 	}
 

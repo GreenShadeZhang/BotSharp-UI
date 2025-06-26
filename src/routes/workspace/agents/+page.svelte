@@ -51,7 +51,10 @@
 	/** @type {import('$agentTypes').AgentFilter} */
 	const initFilter = {
 		pager: { page: firstPage, size: pageSize, count: 0 },
-		types: [AgentType.Task, AgentType.Routing] // 只筛选任务型和路由型智能体
+		types: [
+			AgentType.Task,
+			AgentType.Routing
+		] // 默认只显示任务型和路由型智能体
 	};
 
 	/** @type {import('$agentTypes').AgentFilter} */
@@ -97,7 +100,7 @@
 
 	async function loadMoreAgents() {
 		if (isLoadingMore || !hasMoreData) return;
-		
+
 		isLoadingMore = true;
 		try {
 			const nextPage = filter.pager.page + 1;
@@ -105,26 +108,25 @@
 				...filter,
 				pager: { ...filter.pager, page: nextPage }
 			};
-			
+
 			const response = await getAgents(nextFilter, true);
-			
+
 			if (response.items && response.items.length > 0) {
 				// 合并新数据到现有数据
 				agents = {
 					items: [...agents.items, ...response.items],
 					count: response.count
 				};
-				
+
 				// 更新过滤器页码
 				filter.pager.page = nextPage;
-				
+
 				// 检查是否还有更多数据
-				hasMoreData = response.items.length === pageSize && 
-							  agents.items.length < response.count;
+				hasMoreData = response.items.length === pageSize && agents.items.length < response.count;
 			} else {
 				hasMoreData = false;
 			}
-			
+
 			refreshPagination();
 		} catch (error) {
 			console.error('Error loading more agents:', error);
@@ -143,13 +145,22 @@
 	}
 
 	function buildFilter() {
-		let filterTypes = [AgentType.Task, AgentType.Routing];
-		
-		// 根据选择的类型进一步筛选
-		if (selectedType === 'single') {
+		let filterTypes;
+
+		// 根据选择的类型进行筛选
+		if (selectedType === 'all') {
+			// 只显示任务型和路由型智能体
+			filterTypes = [
+				AgentType.Task,
+				AgentType.Routing
+			];
+		} else if (selectedType === 'single') {
 			filterTypes = [AgentType.Task];
 		} else if (selectedType === 'group') {
 			filterTypes = [AgentType.Routing];
+		} else {
+			// 默认情况：只显示任务型和路由型智能体
+			filterTypes = [AgentType.Task, AgentType.Routing];
 		}
 
 		// 构建排序参数 - 注意：这取决于后端API是否支持排序
@@ -173,7 +184,7 @@
 		return {
 			pager: filter.pager,
 			types: filterTypes,
-			similarName: searchQuery.trim() || undefined,
+			similarName: searchQuery.trim() || undefined
 			// sort: sortParam // 如果后端支持排序，取消注释这行
 		};
 	}
@@ -195,7 +206,7 @@
 	function handleAgentListScroll(event) {
 		const { showBackToTop: shouldShow, shouldLoadMore } = event.detail;
 		showBackToTop = shouldShow;
-		
+
 		if (shouldLoadMore) {
 			loadMoreAgents();
 		}
@@ -207,7 +218,7 @@
 	 */
 	async function handleDeleteAgent(event) {
 		const { agent } = event.detail;
-		
+
 		const result = await Swal.fire({
 			title: $_('workspace.agents.delete.confirm_title'),
 			text: $_('workspace.agents.delete.confirm_message'),
@@ -222,14 +233,14 @@
 			try {
 				await deleteAgent(agent.id);
 				isComplete = true;
-				
+
 				// 本地删除智能体，避免重新加载
 				agents = {
 					...agents,
-					items: agents.items.filter(a => a.id !== agent.id),
+					items: agents.items.filter((a) => a.id !== agent.id),
 					count: Math.max(0, agents.count - 1)
 				};
-				
+
 				// 如果当前页没有数据了且不是第一页，则加载上一页
 				if (agents.items.length === 0 && filter.pager.page > firstPage) {
 					filter.pager.page -= 1;
@@ -238,13 +249,12 @@
 					// 如果当前页数据不足且还有更多数据，尝试加载更多
 					await loadMoreAgents();
 				}
-				
+
 				refreshPagination();
-				
+
 				setTimeout(() => {
 					isComplete = false;
 				}, 2000);
-				
 			} catch (error) {
 				console.error('Failed to delete agent:', error);
 				Swal.fire({
@@ -267,15 +277,32 @@
 	// 监听筛选条件变化，使用防抖处理
 	/** @type {number} */
 	let searchTimeout;
-	
+
+	// 用于跟踪上次的筛选条件，以便检测变化
+	let lastSearchQuery = '';
+	let lastSelectedType = 'all';
+	let lastSortBy = 'created_desc';
+
 	$: {
-		// 只有在初始化完成后才触发搜索，避免重复调用
-		// 并且确保不是初始化时的默认值触发
-		if (initialized && (searchQuery !== '' || selectedType !== 'all' || sortBy !== 'created_desc')) {
-			clearTimeout(searchTimeout);
-			searchTimeout = setTimeout(() => {
-				applyFilters();
-			}, 300);
+		// 只有在初始化完成后才触发搜索
+		if (initialized) {
+			// 检测筛选条件是否有变化
+			const hasChanged =
+				searchQuery !== lastSearchQuery ||
+				selectedType !== lastSelectedType ||
+				sortBy !== lastSortBy;
+
+			if (hasChanged) {
+				// 更新上次的值
+				lastSearchQuery = searchQuery;
+				lastSelectedType = selectedType;
+				lastSortBy = sortBy;
+
+				clearTimeout(searchTimeout);
+				searchTimeout = setTimeout(() => {
+					applyFilters();
+				}, 300);
+			}
 		}
 	}
 </script>
@@ -289,12 +316,7 @@
 	<div class="agents-header" in:fly={{ y: -20, duration: 500 }}>
 		<div class="header-content">
 			<div class="header-left">
-				<Button 
-					color="light" 
-					size="sm" 
-					on:click={goBack}
-					class="me-3"
-				>
+				<Button color="light" size="sm" on:click={goBack} class="me-3">
 					<i class="fas fa-arrow-left me-2"></i>
 					{$_('workspace.title')}
 				</Button>
@@ -304,10 +326,7 @@
 				</div>
 			</div>
 			<div class="header-actions">
-				<Button 
-					color="primary" 
-					on:click={goToCreateAgent}
-				>
+				<Button color="primary" on:click={goToCreateAgent}>
 					<i class="fas fa-plus me-2"></i>
 					{$_('workspace.agents.create.title')}
 				</Button>
@@ -346,12 +365,7 @@
 								<i class="fas fa-filter me-2"></i>
 								{$_('workspace.agents.list.type_filter')}
 							</label>
-							<Input
-								id="type-filter"
-								type="select"
-								bind:value={selectedType}
-								class="filter-select"
-							>
+							<Input id="type-filter" type="select" bind:value={selectedType} class="filter-select">
 								{#each filterOptions as option}
 									<option value={option.value}>{option.label}</option>
 								{/each}
@@ -364,12 +378,7 @@
 								<i class="fas fa-sort me-2"></i>
 								{$_('workspace.agents.list.sort_by')}
 							</label>
-							<Input
-								id="sort-select"
-								type="select"
-								bind:value={sortBy}
-								class="filter-select"
-							>
+							<Input id="sort-select" type="select" bind:value={sortBy} class="filter-select">
 								{#each sortOptions as option}
 									<option value={option.value}>{option.label}</option>
 								{/each}
@@ -383,7 +392,7 @@
 
 	<!-- Content -->
 	<div class="agents-content" in:fly={{ y: 30, duration: 500, delay: 200 }}>
-		<AgentList 
+		<AgentList
 			agents={agents.items}
 			totalCount={agents.count}
 			{isLoading}
@@ -410,21 +419,16 @@
 			</svelte:fragment>
 			<svelte:fragment slot="empty-action">
 				{#if !searchQuery && selectedType === 'all'}
-					<Button 
-						color="primary" 
-						size="lg"
-						on:click={goToCreateAgent}
-						class="empty-action-btn"
-					>
+					<Button color="primary" size="lg" on:click={goToCreateAgent} class="empty-action-btn">
 						<i class="fas fa-plus me-2"></i>
 						{$_('workspace.agents.create.title')}
 					</Button>
 				{:else}
-					<Button 
-						color="outline-primary" 
+					<Button
+						color="outline-primary"
 						size="lg"
-						on:click={() => { 
-							searchQuery = ''; 
+						on:click={() => {
+							searchQuery = '';
 							selectedType = 'all';
 							sortBy = 'created_desc';
 						}}
@@ -448,6 +452,7 @@
 		background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
 		display: flex;
 		flex-direction: column;
+		box-sizing: border-box;
 	}
 
 	.agents-header {
@@ -533,6 +538,7 @@
 		display: flex;
 		flex-direction: column;
 		flex: 1;
+		margin-bottom: 2rem; /* 增加底部边距 */
 	}
 
 	/* 响应式设计 */
@@ -559,11 +565,23 @@
 		.page-title {
 			font-size: 2rem;
 		}
+
+		.agents-content {
+			margin-bottom: 1rem; /* 移动端减少底部边距 */
+		}
 	}
 
 	@media (max-width: 576px) {
 		.filter-label {
 			font-size: 0.8rem;
+		}
+
+		.agents-management {
+			padding: 0.75rem;
+		}
+
+		.agents-content {
+			margin-bottom: 0.5rem; /* 小屏设备进一步减少底部边距 */
 		}
 	}
 </style>
