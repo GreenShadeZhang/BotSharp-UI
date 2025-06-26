@@ -388,6 +388,7 @@
 
 		const savedMessages = conversationUserMessageStore.get();
 		// @ts-ignore
+		// @ts-ignore
 		const otherConvMessages =
 			savedMessages?.messages?.filter((x) => x.conversationId !== params.conversationId) || [];
 		const allMessages = [...otherConvMessages, ...curConvMessages];
@@ -441,7 +442,9 @@
 		// 合并常规对话和流式消息进行显示
 		const allMessages = [...dialogs, ...streamingMessages];
 		// 按创建时间排序
-		allMessages.sort((a, b) => new Date(a.created_at || 0) - new Date(b.created_at || 0));
+		allMessages.sort(
+			(a, b) => new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime()
+		);
 
 		// trigger UI render - 使用合并后的消息进行显示
 		lastBotMsg = null;
@@ -516,7 +519,7 @@
 		});
 		refresh();
 		text = '';
-	} 
+	}
 	/** @param {import('$conversationTypes').ChatResponseModel} message */
 	function onMessageReceivedFromAssistant(message) {
 		// 只处理 AI 助手的消息
@@ -564,6 +567,9 @@
 			console.log(`[Chat] 添加新助手消息，ID: ${message.message_id}`);
 		}
 
+		// 重要：关闭发送状态和思考状态并刷新界面
+		isSendingMsg = false;
+		isThinking = false;
 		refresh();
 	}
 	/** @param {import('$conversationTypes').ChatResponseModel} message */
@@ -584,35 +590,36 @@
 		if (streamingMessageCache.has(messageId)) {
 			// 更新现有的流式消息 - 进行增量拼接
 			const existingMessage = streamingMessageCache.get(messageId);
-			const updatedMessage = {
-				...existingMessage,
-				// 进行增量拼接文本内容
-				text: (existingMessage.text || '') + (message.text || ''),
-				// 合并其他可能的字段
-				rich_content: message.rich_content || existingMessage.rich_content,
-				updated_at: message.updated_at || existingMessage.updated_at,
-				created_at: existingMessage.created_at || message.created_at,
-				sender: existingMessage.sender || message.sender,
-				conversation_id: existingMessage.conversation_id || message.conversation_id,
-				is_chat_message: true,
-				is_streaming: true // 标记为流式消息
-			};
+			if (existingMessage) {
+				const updatedMessage = {
+					...existingMessage,
+					// 进行增量拼接文本内容
+					text: (existingMessage.text || '') + (message.text || ''),
+					// 合并其他可能的字段
+					rich_content: message.rich_content || existingMessage.rich_content,
+					created_at: existingMessage.created_at || message.created_at,
+					sender: existingMessage.sender || message.sender,
+					conversation_id: existingMessage.conversation_id || message.conversation_id,
+					is_chat_message: true,
+					is_streaming: true // 标记为流式消息
+				};
 
-			// 更新缓存
-			streamingMessageCache.set(messageId, updatedMessage);
+				// 更新缓存
+				streamingMessageCache.set(messageId, updatedMessage);
 
-			// 更新显示数组中的对应消息
-			const existingIndex = streamingMessages.findIndex((m) => m.message_id === messageId);
-			if (existingIndex !== -1) {
-				streamingMessages[existingIndex] = updatedMessage;
+				// 更新显示数组中的对应消息
+				const existingIndex = streamingMessages.findIndex((m) => m.message_id === messageId);
+				if (existingIndex !== -1) {
+					streamingMessages[existingIndex] = updatedMessage;
+				}
+
+				console.log(
+					`[Chat] 更新流式消息，ID: ${messageId}, 累积长度: ${updatedMessage.text?.length || 0}`
+				);
 			}
-
-			console.log(
-				`[Chat] 更新流式消息，ID: ${messageId}, 累积长度: ${updatedMessage.text?.length || 0}`
-			);
-		} 
-		else {
-			// 新的流式消息
+		} else {
+			// 新的流式消息 - 当开始接收流式消息时，关闭独立的思考状态
+			// 因为思考状态将被集成到流式消息泡泡中
 			const newStreamingMessage = {
 				...message,
 				text: message.text || '',
@@ -625,11 +632,15 @@
 
 			// 添加到显示数组
 			streamingMessages.push(newStreamingMessage);
+
+			// 开始流式消息后，关闭独立的思考指示器，因为现在思考状态会显示在流式消息泡泡中
+			// 但保持 isThinking 状态，用于在流式消息中显示 indication
+			// isSendingMsg 保持 true 直到最终消息到达
+
 			console.log(`[Chat] 添加新流式消息，ID: ${messageId}`);
 		}
 
 		streamingMessages = [...streamingMessages];
-
 		refresh();
 	}
 
@@ -688,6 +699,8 @@
 			isThinking = false;
 			indication = '';
 		}
+		// 刷新界面以更新思考状态和indication显示
+		refresh();
 	}
 
 	/** @param {import('$conversationTypes').ConversationMessageDeleteModel} data */
@@ -1567,6 +1580,12 @@
 		const width = header.getBoundingClientRect().width;
 		isLite = width < chatWidthThreshold;
 	}
+
+	function clearStreamingMessages() {
+		streamingMessages = [];
+		streamingMessageCache.clear();
+		console.log('[Chat] 清理所有流式消息');
+	}
 </script>
 
 <svelte:window on:resize={() => resizeChatWindow()} />
@@ -1949,6 +1968,8 @@
 															containerClasses={'bot-msg'}
 															markdownClasses={'markdown-dark text-dark'}
 															{message}
+															{isThinking}
+															{indication}
 														/>
 														{#if message?.message_id === lastBotMsg?.message_id && message?.uuid === lastBotMsg?.uuid}
 															<div
@@ -2040,7 +2061,7 @@
 									{/each}
 								{/each}
 
-								{#if isThinking}
+								{#if isThinking && streamingMessages.length === 0}
 									<li>
 										<div class="conv-msg-container">
 											<div class="cicon-wrap float-start">
