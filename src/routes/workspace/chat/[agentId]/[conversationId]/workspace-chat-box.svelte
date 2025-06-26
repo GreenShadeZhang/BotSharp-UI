@@ -234,7 +234,8 @@
 				);
 			}
 		} else {
-			// 新的流式消息
+			// 新的流式消息 - 当开始接收流式消息时，关闭独立的思考状态
+			// 因为思考状态将被集成到流式消息泡泡中
 			const newStreamingMessage = {
 				...message,
 				text: message.text || '',
@@ -247,6 +248,11 @@
 
 			// 添加到显示数组
 			streamingMessages.push(newStreamingMessage);
+
+			// 开始流式消息后，关闭独立的思考指示器，因为现在思考状态会显示在流式消息泡泡中
+			// 但保持 isThinking 状态，用于在流式消息中显示 indication
+			// isSendingMsg 保持 true 直到最终消息到达
+
 			console.log(`[WorkspaceChat] 添加新流式消息，ID: ${messageId}`);
 		}
 
@@ -269,6 +275,8 @@
 			isThinking = false;
 			indication = '';
 		}
+		// 刷新界面以更新思考状态和indication显示
+		refresh();
 	}
 
 	/** @param {import('$conversationTypes').ChatResponseModel} message */
@@ -478,16 +486,23 @@
 		</div>
 	</div>
 	<!-- Chat Messages -->
-	<div class="chat-messages" bind:this={chatContainer}>		{#if isLoading}
+	<div class="chat-messages" bind:this={chatContainer}>
+		{#if isLoading}
 			<div class="loading-container">
 				<div class="spinner-border text-primary" role="status">
 					<span class="visually-hidden">{$_('common.loading')}</span>
 				</div>
 				<p class="mt-2 text-muted">{$_('workspace.chat.loading_conversation')}</p>
-			</div>		{:else if Object.keys(groupedDialogs).length === 0}
+			</div>
+		{:else if Object.keys(groupedDialogs).length === 0}
 			<div class="empty-chat">
 				<i class="fas fa-comments fa-3x text-muted mb-3"></i>
-				<p class="text-muted">{$_('workspace.chat.start_conversation_with').replace('{agentName}', agent?.name || $_('workspace.chat.assistant'))}</p>
+				<p class="text-muted">
+					{$_('workspace.chat.start_conversation_with').replace(
+						'{agentName}',
+						agent?.name || $_('workspace.chat.assistant')
+					)}
+				</p>
 			</div>
 		{:else}
 			{#each Object.entries(groupedDialogs) as [date, messages]}
@@ -511,25 +526,47 @@
 								class="message-bubble {message.text?.includes('Sorry, there was an error')
 									? 'error-message'
 									: ''} {message.is_streaming ? 'streaming-message' : ''}"
-							>							{#if message.rich_content}
-								<!-- Handle rich content if needed -->
-								<div class="rich-content">
-									<Markdown 
-										text={message.text || message.rich_content?.message?.text || ''} 
-										containerClasses={isUserMessage(message) ? 'text-white markdown-lite' : 'text-dark markdown-dark'}
+							>
+								<!-- 思考状态指示 - 只在流式消息且有indication时显示 -->
+								{#if message.is_streaming && indication}
+									<div class="thinking-text">{indication}</div>
+								{/if}
+
+								{#if message.rich_content}
+									<!-- Handle rich content if needed -->
+									<div class="rich-content">
+										<Markdown
+											text={message.text || message.rich_content?.message?.text || ''}
+											containerClasses={isUserMessage(message)
+												? 'text-white markdown-lite'
+												: 'text-dark markdown-dark'}
+											rawText
+										/>
+									</div>
+								{:else}
+									<Markdown
+										text={message.text || ''}
+										containerClasses={isUserMessage(message)
+											? 'text-white markdown-lite'
+											: 'text-dark markdown-dark'}
 										rawText
 									/>
-								</div>
-							{:else}
-								<Markdown 
-									text={message.text || ''} 
-									containerClasses={isUserMessage(message) ? 'text-white markdown-lite' : 'text-dark markdown-dark'}
-									rawText
-								/>
-							{/if}{#if message.is_streaming}
-									<span class="streaming-indicator">
-										<LoadingDots size="8" gap="4" color="#6c757d" />
-									</span>
+								{/if}
+
+								{#if message.is_streaming}
+									<!-- 如果没有文本内容，显示思考指示器 -->
+									{#if !message.text || message.text.trim() === ''}
+										<div class="typing-indicator">
+											<span></span>
+											<span></span>
+											<span></span>
+										</div>
+									{:else}
+										<!-- 有文本内容时显示流式指示器 -->
+										<span class="streaming-indicator">
+											<LoadingDots size="8" gap="4" color="#6c757d" />
+										</span>
+									{/if}
 								{/if}
 							</div>
 							<div class="message-time">
@@ -546,7 +583,8 @@
 			{/each}
 		{/if}
 
-		{#if isSendingMsg || isThinking}
+		<!-- 只有在没有流式消息时才显示独立的思考泡泡 -->
+		{#if (isSendingMsg || isThinking) && streamingMessages.length === 0}
 			<div class="message-container assistant-message" in:fade>
 				<div class="message-avatar">
 					<i class="fas fa-robot"></i>
@@ -579,7 +617,8 @@
 
 	<!-- Input Area -->
 	<div class="chat-input-area">
-		<div class="input-container">			<textarea
+		<div class="input-container">
+			<textarea
 				bind:value={messageInput}
 				on:keydown={handleKeyPress}
 				placeholder={$_('workspace.chat.input_placeholder')}
@@ -626,7 +665,8 @@
 		display: flex;
 		align-items: center;
 		gap: 1rem;
-	}	.back-btn {
+	}
+	.back-btn {
 		background: rgba(255, 255, 255, 0.15);
 		border: 1px solid rgba(255, 255, 255, 0.2);
 		color: white;
@@ -784,7 +824,8 @@
 		display: flex;
 		flex-direction: column;
 		gap: 0.25rem;
-	}	.message-bubble {
+	}
+	.message-bubble {
 		padding: 1rem 1.25rem;
 		border-radius: 1.5rem;
 		background: white;
@@ -828,6 +869,17 @@
 		animation: pulse 2s infinite;
 	}
 
+	/* 流式消息中的思考状态样式 */
+	.message-bubble.streaming-message .thinking-text {
+		color: #6c757d;
+		font-style: italic;
+		margin-bottom: 0.5rem;
+		font-size: 0.9rem;
+		padding: 0.5rem;
+		background: rgba(108, 117, 125, 0.1);
+		border-radius: 0.5rem;
+	}
+
 	@keyframes pulse {
 		0% {
 			border-left-color: #667eea;
@@ -865,6 +917,7 @@
 		display: flex;
 		gap: 0.25rem;
 		align-items: center;
+		padding: 0.5rem 0;
 	}
 
 	.typing-indicator span {
@@ -893,6 +946,16 @@
 			transform: scale(1);
 			opacity: 1;
 		}
+	}
+
+	/* 在流式消息中的打字指示器样式 */
+	.streaming-message .typing-indicator {
+		margin-top: 0.5rem;
+		justify-content: flex-start;
+	}
+
+	.streaming-message .typing-indicator span {
+		background: #667eea;
 	}
 
 	/* Notification Banner */
@@ -981,7 +1044,7 @@
 		cursor: not-allowed;
 		transform: none;
 		box-shadow: 0 2px 4px rgba(102, 126, 234, 0.2);
-	}/* Rich Content Styles */
+	} /* Rich Content Styles */
 	.rich-content {
 		width: 100%;
 	}
@@ -1135,11 +1198,11 @@
 		.workspace-chat-container {
 			max-width: 1000px;
 		}
-		
+
 		.chat-messages {
 			margin: 0 0.5rem;
 		}
-		
+
 		.chat-input-area {
 			margin: 0 0.5rem 0.5rem;
 		}
@@ -1151,36 +1214,36 @@
 			margin: 0;
 			box-shadow: none;
 		}
-		
+
 		.chat-header {
 			padding: 1rem 1.5rem;
 			border-radius: 0;
 		}
-		
+
 		.chat-messages {
 			margin: 0;
 			border-radius: 0;
 			padding: 1.5rem 1rem;
 		}
-		
+
 		.chat-input-area {
 			margin: 0;
 			border-radius: 0;
 			padding: 1rem 1.5rem;
 		}
-		
+
 		.agent-details h3 {
 			font-size: 1.1rem;
 		}
-		
+
 		.agent-details p {
 			font-size: 0.8rem;
 		}
-		
+
 		.message-container {
 			max-width: 90%;
 		}
-		
+
 		.message-bubble {
 			padding: 0.875rem 1rem;
 		}
@@ -1189,47 +1252,47 @@
 		.chat-header {
 			padding: 0.875rem 1rem;
 		}
-		
+
 		.header-left {
 			gap: 0.75rem;
 		}
-		
+
 		.back-btn {
 			width: 40px;
 			height: 40px;
 			font-size: 1.1rem;
 		}
-		
+
 		.agent-avatar {
 			width: 40px;
 			height: 40px;
 		}
-		
+
 		.agent-details h3 {
 			font-size: 1rem;
 		}
-		
+
 		.agent-details p {
 			display: none; /* 在小屏幕上隐藏智能体描述 */
 		}
-		
+
 		.chat-messages {
 			padding: 1rem 0.75rem;
 		}
-		
+
 		.message-container {
 			max-width: 95%;
 		}
-		
+
 		.input-container {
 			gap: 0.5rem;
 		}
-		
+
 		.message-input {
 			padding: 0.75rem 1rem;
 			font-size: 0.9rem;
 		}
-		
+
 		.send-btn {
 			width: 44px;
 			height: 44px;
