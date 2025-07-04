@@ -34,9 +34,9 @@ const config = {
             // these options are set automatically — see below
             pages: 'build',
             assets: 'build',
-            fallback: undefined,
+            fallback: 'index.html',
             precompress: false,
-            strict: true
+            strict: false
 		}),
 
 		prerender: {
@@ -67,12 +67,25 @@ const config = {
 				"/page/user/me",
 				"/page/users",
 				"/page/roles",
+				"/workspace",
+				"/workspace/agents",
+				"/workspace/agents/create",
+				"/workspace/agents/create/single",
+				"/workspace/agents/create/group",
+				"/workspace/agents/edit/[id]",
+				"/workspace/agents/[id]",
+				"/workspace/agents/[id]/group",
+				"/workspace/chat",
+				"/workspace/chat/[id]",
+				"/workspace/chat/[agentId]/[conversationId]",
 				"/chat",
 				"/chat/[agentId]",
 				"/chat/[agentId]/[conversationId]",
 				"/page/knowledge-base/question-answer",
 				"/page/knowledge-base/relationships",
-				"/page/knowledge-base/documents"
+				"/page/knowledge-base/documents",
+				"/auth/callback",
+				"/profile"
 			]
 		}
 	},

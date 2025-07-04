@@ -18,7 +18,7 @@
 	} from '@sveltestrap/sveltestrap';
 	import HeadTitle from '$lib/common/HeadTitle.svelte';
 	import LoadingToComplete from '$lib/common/LoadingToComplete.svelte';
-	import { getAgent, getAgents, updateAgent } from '$lib/services/agent-service.js';
+	import { getAgent, getAgents } from '$lib/services/agent-service.js';
 
 	/** @type {string} */
 	let agentId = '';
