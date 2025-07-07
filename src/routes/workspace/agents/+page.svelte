@@ -83,7 +83,10 @@
 	});
 
 	async function loadAgents() {
-		isLoading = true;
+		// 只有在首次加载且没有数据时才显示全局加载状态
+		if (agents.items.length === 0) {
+			isLoading = true;
+		}
 		try {
 			const response = await getAgents(filter, true);
 			agents = response;
@@ -196,6 +199,8 @@
 			pager: { page: firstPage, size: pageSize, count: 0 }
 		};
 		hasMoreData = true; // 重置状态
+		// 清空当前数据以便显示加载状态
+		agents = { items: [], count: 0 };
 		loadAgents();
 	}
 
@@ -392,54 +397,55 @@
 
 	<!-- Content -->
 	<div class="agents-content" in:fly={{ y: 30, duration: 500, delay: 200 }}>
-		<AgentList
-			agents={agents.items}
-			totalCount={agents.count}
-			{isLoading}
-			{isLoadingMore}
-			{hasMoreData}
-			{showBackToTop}
-			{pageSize}
-			on:scroll={handleAgentListScroll}
-			on:delete={handleDeleteAgent}
-		>
-			<svelte:fragment slot="empty-title">
-				{#if searchQuery || selectedType !== 'all'}
-					{$_('workspace.agents.list.no_results')}
-				{:else}
-					{$_('workspace.agents.list.no_agents')}
-				{/if}
-			</svelte:fragment>
-			<svelte:fragment slot="empty-description">
-				{#if searchQuery || selectedType !== 'all'}
-					{$_('workspace.agents.list.no_results_description')}
-				{:else}
-					{$_('workspace.agents.list.no_agents_description')}
-				{/if}
-			</svelte:fragment>
-			<svelte:fragment slot="empty-action">
-				{#if !searchQuery && selectedType === 'all'}
-					<Button color="primary" size="lg" on:click={goToCreateAgent} class="empty-action-btn">
-						<i class="fas fa-plus me-2"></i>
-						{$_('workspace.agents.create.title')}
-					</Button>
-				{:else}
-					<Button
-						color="outline-primary"
-						size="lg"
-						on:click={() => {
-							searchQuery = '';
-							selectedType = 'all';
-							sortBy = 'created_desc';
-						}}
-						class="empty-action-btn"
-					>
-						<i class="fas fa-times me-2"></i>
-						{$_('workspace.agents.list.clear_filters')}
-					</Button>
-				{/if}
-			</svelte:fragment>
-		</AgentList>
+		{#if !isLoading || agents.items.length > 0}
+			<AgentList
+				agents={agents.items}
+				totalCount={agents.count}
+				{isLoadingMore}
+				{hasMoreData}
+				{showBackToTop}
+				{pageSize}
+				on:scroll={handleAgentListScroll}
+				on:delete={handleDeleteAgent}
+			>
+				<svelte:fragment slot="empty-title">
+					{#if searchQuery || selectedType !== 'all'}
+						{$_('workspace.agents.list.no_results')}
+					{:else}
+						{$_('workspace.agents.list.no_agents')}
+					{/if}
+				</svelte:fragment>
+				<svelte:fragment slot="empty-description">
+					{#if searchQuery || selectedType !== 'all'}
+						{$_('workspace.agents.list.no_results_description')}
+					{:else}
+						{$_('workspace.agents.list.no_agents_description')}
+					{/if}
+				</svelte:fragment>
+				<svelte:fragment slot="empty-action">
+					{#if !searchQuery && selectedType === 'all'}
+						<Button color="primary" size="lg" on:click={goToCreateAgent} class="empty-action-btn">
+							<i class="fas fa-plus me-2"></i>
+							{$_('workspace.agents.create.title')}
+						</Button>
+					{:else}
+						<Button
+							color="outline-primary"
+							size="lg"
+							on:click={() => {
+								searchQuery = '';
+								selectedType = 'all';
+								sortBy = 'created_desc';
+							}}
+							class="empty-action-btn"
+						>
+							<i class="fas fa-times me-2"></i>
+							{$_('workspace.agents.list.clear_filters')}
+						</Button>
+					{/if}
+				</svelte:fragment>
+			</AgentList>
+		{/if}
 	</div>
 </div>
 

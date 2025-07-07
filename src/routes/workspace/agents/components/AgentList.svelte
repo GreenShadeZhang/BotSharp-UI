@@ -14,9 +14,6 @@
 	export let totalCount = 0;
 
 	/** @type {boolean} */
-	export let isLoading = false;
-
-	/** @type {boolean} */
 	export let isLoadingMore = false;
 
 	/** @type {boolean} */
@@ -71,13 +68,7 @@
 	}
 </script>
 
-{#if isLoading && agents.length === 0}
-	<!-- 初始加载指示器 -->
-	<div class="agents-loading">
-		<div class="loading-spinner-large"></div>
-		<p class="loading-text">{$_('workspace.agents.list.loading')}</p>
-	</div>
-{:else if agents && agents.length > 0}
+{#if agents && agents.length > 0}
 	<!-- 智能体数量显示 -->
 	<div class="agents-header-info">
 		<div class="agents-count">
@@ -183,35 +174,6 @@
 	.count-text {
 		font-size: 0.9rem;
 		opacity: 0.9;
-	}
-
-	/* 加载指示器样式 */
-	.agents-loading {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-		padding: 4rem 2rem;
-		text-align: center;
-		background: white;
-		border-radius: 0.75rem;
-		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-	}
-
-	.loading-spinner-large {
-		width: 48px;
-		height: 48px;
-		border: 4px solid #e5e7eb;
-		border-left-color: #3b82f6;
-		border-radius: 50%;
-		animation: spin 1s linear infinite;
-		margin-bottom: 1rem;
-	}
-
-	.loading-text {
-		color: #6b7280;
-		font-size: 0.875rem;
-		margin: 0;
 	}
 
 	.agents-grid {
@@ -426,19 +388,6 @@
 	.count-text {
 		font-size: 0.9rem;
 		opacity: 0.9;
-	}
-
-	/* 加载指示器样式 */
-	.agents-loading {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-		padding: 4rem 2rem;
-		text-align: center;
-		background: white;
-		border-radius: 0.75rem;
-		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 	}
 
 	/* 滚动条样式 */

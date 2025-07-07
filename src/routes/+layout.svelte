@@ -34,10 +34,12 @@
 
 		loaderUnsubscriber = loaderStore.subscribe((value) => {
 			isLoading = value;
+			console.log('Loader state changed:', isLoading);
 		});
 
 		errorUnsubscriber = globalErrorStore.subscribe((value) => {
 			hasError = value;
+			console.log('Error state changed:', hasError);
 		});
 	});
 
