@@ -80,7 +80,9 @@ function skipLoader(config) {
         new RegExp('http(s*)://(.*?)/knowledge/vector/(.*?)/create', 'g'),
         new RegExp('http(s*)://(.*?)/knowledge/document/(.*?)/page', 'g'),
         new RegExp('http(s*)://(.*?)/users', 'g'),
-        new RegExp('http(s*)://(.*?)/instruct/chat-completion', 'g')
+        new RegExp('http(s*)://(.*?)/instruct/chat-completion', 'g'),
+        // 聊天相关POST API - 防止触发全局加载器
+        new RegExp('http(s*)://(.*?)/conversation/(.*?)$', 'g') // 会话初始化API
     ];
 
     /** @type {RegExp[]} */
@@ -118,9 +120,16 @@ function skipLoader(config) {
         new RegExp('http(s*)://(.*?)/logger/conversation/(.*?)/state-log', 'g'),
         new RegExp('http(s*)://(.*?)/mcp/server-configs', 'g'),
         new RegExp('http(s*)://(.*?)/conversations', 'g'), // 添加会话列表API
-        new RegExp('http(s*)://(.*?)/agents', 'g') // 添加代理列表API
+        new RegExp('http(s*)://(.*?)/agents', 'g'), // 添加代理列表API，
+        new RegExp('http(s*)://(.*?)/agent/(.*?)', 'g'), // 智能体详情API
+        // 聊天相关API - 防止触发全局加载器
+        new RegExp('http(s*)://(.*?)/conversation/(.*?)', 'g'), // 会话详情API
+        new RegExp('http(s*)://(.*?)/conversation/(.*?)/dialogs', 'g'), // 对话历史API
+        new RegExp('http(s*)://(.*?)/conversation/(.*?)/user', 'g'), // 会话用户API
+        new RegExp('http(s*)://(.*?)/agent/options', 'g'), // 代理选项API
+        new RegExp('http(s*)://(.*?)/user/me', 'g') // 用户信息API
     ];
-
+    
     if (config.method === 'post' && postRegexes.some(regex => regex.test(config.url || ''))) {
         return true;
     }

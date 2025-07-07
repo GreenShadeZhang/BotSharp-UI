@@ -47,7 +47,7 @@
 	let lastMsg;
 
 	let messageInput = '';
-	let isLoading = false;
+	let isChatLoading = false; // 使用局部聊天加载状态，避免与全局 loaderStore 冲突
 	let isSendingMsg = false;
 	let isThinking = false;
 	/** @type {HTMLElement} */
@@ -71,7 +71,7 @@
 
 	async function initializeChat() {
 		try {
-			isLoading = true;
+			isChatLoading = true; // 使用局部状态
 			if (conversationId === 'new') {
 				// Create new conversation
 				conversation = await newConversation(agentId);
@@ -123,7 +123,7 @@
 			// Redirect back to workspace on error
 			goto('/workspace');
 		} finally {
-			isLoading = false;
+			isChatLoading = false; // 使用局部状态
 		}
 	}
 	/** @param {import('$conversationTypes').ChatResponseModel} message */
@@ -373,7 +373,7 @@
 		streamingMessageCache.clear();
 	}
 	async function sendMessage() {
-		if (!messageInput.trim() || isLoading || isSendingMsg || !conversation) return;
+		if (!messageInput.trim() || isChatLoading || isSendingMsg || !conversation) return;
 
 		isSendingMsg = true;
 		const currentInput = messageInput.trim();
@@ -487,7 +487,7 @@
 	</div>
 	<!-- Chat Messages -->
 	<div class="chat-messages" bind:this={chatContainer}>
-		{#if isLoading}
+		{#if isChatLoading}
 			<div class="loading-container">
 				<div class="spinner-border text-primary" role="status">
 					<span class="visually-hidden">{$_('common.loading')}</span>
@@ -624,12 +624,12 @@
 				placeholder={$_('workspace.chat.input_placeholder')}
 				rows="1"
 				class="message-input"
-				disabled={isLoading || isSendingMsg}
+				disabled={isChatLoading || isSendingMsg}
 			></textarea>
 			<button
 				class="send-btn"
 				on:click={sendMessage}
-				disabled={!messageInput.trim() || isLoading || isSendingMsg}
+				disabled={!messageInput.trim() || isChatLoading || isSendingMsg}
 			>
 				<i class="fas fa-paper-plane"></i>
 			</button>
