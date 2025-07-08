@@ -22,7 +22,7 @@ export async function getAgents(filter, checkAuth = false) {
     const response = await axios.get(url, {
         params: {
             ...filter,
-            checkAuth : checkAuth
+            checkAuth: checkAuth
         },
         paramsSerializer: {
             dots: true,
@@ -120,4 +120,14 @@ export async function getAgentLabels() {
     const url = endpoints.agentLabelsUrl;
     const response = await axios.get(url);
     return response.data;
+}
+
+/**
+ * @param {string} agentId
+ * @param {import('$fileTypes').FileModel} file
+ * @returns {Promise<string>}
+ */
+export async function uploadAgentIcon(agentId, file) {
+    const response = await axios.post(endpoints.agentIconUrl.replace("{agentId}", agentId), { ...file });
+    return response?.data;
 }

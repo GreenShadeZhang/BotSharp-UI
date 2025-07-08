@@ -5,6 +5,8 @@
   import { _ } from 'svelte-i18n';
 	import { LEARNER_ID } from "$lib/helpers/constants";
 	import { AgentExtensions } from "$lib/helpers/utils/agent";
+	import { PUBLIC_SERVICE_URL } from '$env/static/public';
+	import { buildUrl, isExternalUrl } from '$lib/helpers/utils/common';
 
   /** @type {import('$agentTypes').AgentModel[]} */
   export let agents;
@@ -19,7 +21,7 @@
           <div class="avatar-md">
             <span class="avatar-title rounded-circle bg-light text-danger font-size-16">
               {#if agent.icon_url}
-              <img src={agent.icon_url} alt="" height="60" />
+              <img src={agent.icon_url && !agent.icon_url.startsWith('http') ? `${PUBLIC_SERVICE_URL}/${agent.icon_url}` : agent.icon_url} alt="" height="60" />
               {:else}
               <img src="images/users/bot.png" alt="" height="60" />
               {/if}

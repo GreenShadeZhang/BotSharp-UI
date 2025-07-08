@@ -18,7 +18,10 @@
 	} from '@sveltestrap/sveltestrap';
 	import HeadTitle from '$lib/common/HeadTitle.svelte';
 	import LoadingToComplete from '$lib/common/LoadingToComplete.svelte';
-	import { getAgent, saveAgent } from '$lib/services/agent-service.js';
+	import FileDropZone from '$lib/common/FileDropZone.svelte';
+	import { getAgent, saveAgent, uploadAgentIcon } from '$lib/services/agent-service.js';
+	import { PUBLIC_SERVICE_URL } from '$env/static/public';
+	import { buildUrl } from '$lib/helpers/utils/common';
 	import Swal from 'sweetalert2';
 
 	/** @type {string} */
@@ -57,6 +60,14 @@
 	/** @type {number} */
 	let maxRecursionDepth = 10;
 
+	/** @type {string} */
+	let agentIconUrl = '';
+
+	/** @type {import('$fileTypes').FileModel | null} */
+	let selectedIconFile = null;
+
+	const fileMaxSize = 10 * 1024 * 1024;
+
 	let hasChanges = false;
 
 	onMount(async () => {
@@ -84,6 +95,7 @@
 				agentInstruction = agent.instruction || '';
 				isPublic = agent.is_public || false;
 				isEnabled = !agent.disabled; // disabled 字段的逆向映射
+				agentIconUrl = agent.icon_url || '';
 				
 				// 安全地访问 llm_config 属性
 				if (agent.llm_config) {
@@ -132,6 +144,35 @@
 		}
 	}
 
+	/** @param {any} e */
+	async function handleIconDrop(e) {
+		const { acceptedFiles } = e.detail;
+		const fileModel = acceptedFiles[0];
+		if (!fileModel) return;
+
+		// 保存选择的文件并预览图片
+		selectedIconFile = fileModel;
+		agentIconUrl = fileModel.file_data;
+		hasChanges = true;
+	}
+
+	/** @param {any} e */
+	function handleIconLoad(e) {
+		e.target.src = 'images/bot.png';
+	}
+
+	/**
+	 * Build icon URL with proper prefix
+	 * @param {string} iconUrl
+	 * @returns {string}
+	 */
+	function buildIconUrl(iconUrl) {
+		if (!iconUrl) return 'images/bot.png';
+		if (iconUrl.startsWith('http')) return iconUrl;
+		if (iconUrl.startsWith('data:')) return iconUrl; // Base64 预览图片
+		return buildUrl(PUBLIC_SERVICE_URL, iconUrl).href;
+	}
+
 	async function handleSaveAgent() {
 		if (!agentName.trim()) {
 			Swal.fire({
@@ -144,6 +185,24 @@
 
 		isLoading = true;
 		try {
+			// 如果有选择的图标文件，先上传图标
+			let finalIconUrl = agentIconUrl;
+			if (selectedIconFile) {
+				try {
+					const uploadedIconUrl = await uploadAgentIcon(agentId, selectedIconFile);
+					if (uploadedIconUrl) {
+						finalIconUrl = uploadedIconUrl;
+					}
+				} catch (iconError) {
+					console.error('Error uploading agent icon:', iconError);
+					await Swal.fire({
+						title: $_('common.warning'),
+						text: 'Icon upload failed, but agent will be updated without new icon.',
+						icon: 'warning'
+					});
+				}
+			}
+
 			const updatedAgent = {
 				...agent,
 				id: agent?.id || agentId,
@@ -152,6 +211,7 @@
 				instruction: agentInstruction.trim(),
 				is_public: isPublic,
 				disabled: !isEnabled, // enabled 映射到 disabled 字段
+				icon_url: finalIconUrl,
 				llm_config: {
 					is_inherit: agent?.llm_config?.is_inherit || false,
 					provider: agent?.llm_config?.provider || null,
@@ -163,6 +223,10 @@
 			};
 
 			await saveAgent(/** @type {import('$agentTypes').AgentModel} */ (updatedAgent));
+			
+			// 更新当前agent数据和图标URL
+			agentIconUrl = finalIconUrl;
+			selectedIconFile = null;
 			
 			hasChanges = false;
 			isComplete = true;
@@ -294,13 +358,38 @@
 						<CardBody>
 							<div class="agent-header">
 								<div class="agent-avatar">
-									<i class="fas fa-robot"></i>
+									<FileDropZone
+										accept="image/*"
+										disableDefaultStyles
+										containerStyles={'width: 100%; height: 100%;'}
+										noDrag
+										multiple={false}
+										fileLimit={1}
+										maxSize={fileMaxSize}
+										on:drop={(e) => handleIconDrop(e)}
+									>
+										<div class="avatar-content">
+											<img
+												src={buildIconUrl(agentIconUrl)}
+												alt="Agent Icon"
+												class="agent-icon-image"
+												on:error={(e) => handleIconLoad(e)}
+											/>
+											<div class="icon-overlay">
+												<i class="fas fa-camera"></i>
+											</div>
+										</div>
+									</FileDropZone>
 								</div>
 								<div class="agent-details">
 									<h5 class="agent-name">{agent.name}</h5>
 									<Badge color={agent.is_router ? 'success' : 'primary'} class="type-badge">
 										{getAgentTypeDisplay()}
 									</Badge>
+									<small class="text-muted icon-upload-hint">
+										<i class="fas fa-info-circle me-1"></i>
+										Click to upload new icon
+									</small>
 								</div>
 							</div>
 							
@@ -595,6 +684,58 @@
 		justify-content: center;
 		color: white;
 		font-size: 1.5rem;
+		position: relative;
+		overflow: hidden;
+		cursor: pointer;
+		transition: all 0.3s ease;
+	}
+
+	.agent-avatar:hover {
+		transform: scale(1.05);
+		box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+	}
+
+	.avatar-content {
+		width: 100%;
+		height: 100%;
+		position: relative;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.agent-icon-image {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		border-radius: 50%;
+	}
+
+	.icon-overlay {
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		background: rgba(0, 0, 0, 0.5);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		opacity: 0;
+		transition: opacity 0.3s ease;
+		border-radius: 50%;
+		font-size: 1rem;
+		color: white;
+	}
+
+	.agent-avatar:hover .icon-overlay {
+		opacity: 1;
+	}
+
+	.icon-upload-hint {
+		display: block;
+		margin-top: 0.5rem;
+		font-size: 0.75rem;
 	}
 
 	.agent-details {

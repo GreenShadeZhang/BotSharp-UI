@@ -4,6 +4,7 @@
 	import { Card, CardBody, Badge, Button } from '@sveltestrap/sveltestrap';
 	import { AgentExtensions } from '$lib/helpers/utils/agent';
 	import { createEventDispatcher } from 'svelte';
+	import { PUBLIC_SERVICE_URL } from '$env/static/public';
 
 	/** @type {import('$agentTypes').AgentModel} */
 	export let agent; // 路由智能体
@@ -52,7 +53,15 @@
 	<CardBody>
 		<div class="agent-header">
 			<div class="agent-avatar group">
-				<i class="fas fa-sitemap"></i>
+				{#if agent.icon_url}
+					<img 
+						src={agent.icon_url && !agent.icon_url.startsWith('http') ? `${PUBLIC_SERVICE_URL}/${agent.icon_url}` : agent.icon_url} 
+						alt={agent.name} 
+						class="avatar-image group-avatar-image"
+					/>
+				{:else}
+					<i class="fas fa-sitemap"></i>
+				{/if}
 			</div>
 			<div class="agent-info">
 				<h5 class="agent-name">{agent.name}</h5>
@@ -97,7 +106,15 @@
 					{#each groupMembers.slice(0, 3) as member}
 						<div class="member-item">
 							<div class="member-avatar">
-								<i class="fas fa-robot"></i>
+								{#if member.icon_url}
+									<img 
+										src={member.icon_url && !member.icon_url.startsWith('http') ? `${PUBLIC_SERVICE_URL}/${member.icon_url}` : member.icon_url} 
+										alt={member.name} 
+										class="member-avatar-image"
+									/>
+								{:else}
+									<i class="fas fa-robot"></i>
+								{/if}
 							</div>
 							<span class="member-name">{member.name}</span>
 						</div>
@@ -240,6 +257,14 @@
 		font-size: 1.3rem;
 		box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
 		transition: all 0.3s ease;
+		overflow: hidden;
+	}
+
+	.group-avatar-image {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		border-radius: 50%;
 	}
 
 	:global(.group-card:hover) .agent-avatar.group {
@@ -453,6 +478,15 @@
 		color: white;
 		font-size: 0.7rem;
 		box-shadow: 0 2px 4px rgba(34, 197, 94, 0.2);
+		overflow: hidden;
+		flex-shrink: 0;
+	}
+
+	.member-avatar-image {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		border-radius: 50%;
 	}
 
 	.member-name {
@@ -590,6 +624,11 @@
 			width: 48px;
 			height: 48px;
 			font-size: 1.1rem;
+		}
+
+		.group-avatar-image {
+			width: 100%;
+			height: 100%;
 		}
 
 		.agent-name {

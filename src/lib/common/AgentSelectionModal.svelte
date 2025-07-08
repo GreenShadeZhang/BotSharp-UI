@@ -12,6 +12,7 @@
 	import { getAgents } from '$lib/services/agent-service.js';
 	import { AgentType } from '$lib/helpers/enums';
 	import { _ } from 'svelte-i18n';
+	import { PUBLIC_SERVICE_URL } from '$env/static/public';
 
 	/** @type {boolean} */
 	export let isOpen = false;
@@ -337,7 +338,11 @@
 							<div class="agent-card-header">
 								<div class="agent-avatar">
 									{#if agent.icon_url}
-										<img src={agent.icon_url} alt={agent.name} class="agent-image" />
+										<img 
+											src={agent.icon_url && !agent.icon_url.startsWith('http') ? `${PUBLIC_SERVICE_URL}/${agent.icon_url}` : agent.icon_url} 
+											alt={agent.name} 
+											class="agent-image" 
+										/>
 									{:else}
 										<i class="fas fa-robot"></i>
 									{/if}

@@ -4,6 +4,7 @@
 	import { Card, CardBody, Badge, Button } from '@sveltestrap/sveltestrap';
 	import { AgentExtensions } from '$lib/helpers/utils/agent';
 	import { createEventDispatcher } from 'svelte';
+	import { PUBLIC_SERVICE_URL } from '$env/static/public';
 
 	/** @type {import('$agentTypes').AgentModel} */
 	export let agent;
@@ -31,7 +32,15 @@
 	<CardBody>
 		<div class="agent-header">
 			<div class="agent-avatar">
-				<i class="fas fa-robot"></i>
+				{#if agent.icon_url}
+					<img 
+						src={agent.icon_url && !agent.icon_url.startsWith('http') ? `${PUBLIC_SERVICE_URL}/${agent.icon_url}` : agent.icon_url} 
+						alt={agent.name} 
+						class="avatar-image"
+					/>
+				{:else}
+					<i class="fas fa-robot"></i>
+				{/if}
 			</div>
 			<div class="agent-info">
 				<h5 class="agent-name">{agent.name}</h5>
@@ -160,6 +169,14 @@
 		font-size: 1.3rem;
 		box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
 		transition: all 0.3s ease;
+		overflow: hidden;
+	}
+
+	.avatar-image {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		border-radius: 50%;
 	}
 
 	:global(.agent-card:hover) .agent-avatar {
@@ -325,6 +342,11 @@
 			width: 48px;
 			height: 48px;
 			font-size: 1.1rem;
+		}
+
+		.avatar-image {
+			width: 100%;
+			height: 100%;
 		}
 
 		.agent-name {

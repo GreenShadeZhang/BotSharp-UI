@@ -37,7 +37,8 @@ export const endpoints = {
     agentUtilityOptionsUrl: `${host}/agent/utility/options`,
     agentRuleOptionsUrl: `${host}/rule/triggers`,
     agentLabelsUrl: `${host}/agent/labels`,
-    
+    agentIconUrl: `${host}/agent/{agentId}/icon`,
+
     // agent task
     agentTaskListUrl: `${host}/agent/tasks`,
     agentTaskDetailUrl: `${host}/agent/{agentId}/task/{taskId}`,

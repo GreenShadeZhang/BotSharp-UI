@@ -7,6 +7,7 @@
 	import { v4 as uuidv4 } from 'uuid';
 	import moment from 'moment';
 	import { _ } from 'svelte-i18n';
+	import { PUBLIC_SERVICE_URL } from '$env/static/public';
 	import {
 		newConversation,
 		sendMessageToHub,
@@ -472,7 +473,15 @@
 			<div class="agent-info">
 				{#if agent}
 					<div class="agent-avatar">
-						<i class="fas fa-robot"></i>
+						{#if agent.icon_url}
+							<img 
+								src={agent.icon_url && !agent.icon_url.startsWith('http') ? `${PUBLIC_SERVICE_URL}/${agent.icon_url}` : agent.icon_url} 
+								alt={agent.name} 
+								class="agent-avatar-image"
+							/>
+						{:else}
+							<i class="fas fa-robot"></i>
+						{/if}
 					</div>
 					<div class="agent-details">
 						<h3 class="agent-name">{agent.name}</h3>
@@ -518,7 +527,15 @@
 					>
 						{#if !isUserMessage(message)}
 							<div class="message-avatar">
-								<i class="fas fa-robot"></i>
+								{#if agent?.icon_url}
+									<img 
+										src={agent.icon_url && !agent.icon_url.startsWith('http') ? `${PUBLIC_SERVICE_URL}/${agent.icon_url}` : agent.icon_url} 
+										alt={agent.name} 
+										class="message-avatar-image"
+									/>
+								{:else}
+									<i class="fas fa-robot"></i>
+								{/if}
 							</div>
 						{/if}
 						<div class="message-content">
@@ -587,7 +604,15 @@
 		{#if (isSendingMsg || isThinking) && streamingMessages.length === 0}
 			<div class="message-container assistant-message" in:fade>
 				<div class="message-avatar">
-					<i class="fas fa-robot"></i>
+					{#if agent?.icon_url}
+						<img 
+							src={agent.icon_url && !agent.icon_url.startsWith('http') ? `${PUBLIC_SERVICE_URL}/${agent.icon_url}` : agent.icon_url} 
+							alt={agent.name} 
+							class="message-avatar-image"
+						/>
+					{:else}
+						<i class="fas fa-robot"></i>
+					{/if}
 				</div>
 				<div class="message-content">
 					<div class="message-bubble thinking">
@@ -707,6 +732,14 @@
 		color: white;
 		font-size: 1.2rem;
 		backdrop-filter: blur(10px);
+		overflow: hidden;
+	}
+
+	.agent-avatar-image {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		border-radius: 50%;
 	}
 
 	.agent-details h3 {
@@ -808,6 +841,14 @@
 		font-size: 0.8rem;
 		flex-shrink: 0;
 		margin-top: auto;
+		overflow: hidden;
+	}
+
+	.message-avatar-image {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		border-radius: 50%;
 	}
 
 	.message-avatar:not(.user-avatar) {
@@ -1266,6 +1307,11 @@
 		.agent-avatar {
 			width: 40px;
 			height: 40px;
+		}
+
+		.agent-avatar-image {
+			width: 100%;
+			height: 100%;
 		}
 
 		.agent-details h3 {
