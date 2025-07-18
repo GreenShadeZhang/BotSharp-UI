@@ -8,7 +8,7 @@
 	import { Button, Card, CardBody, Col, Input, Row, Table } from '@sveltestrap/sveltestrap';
 	import AgentSelectionModal from '$lib/common/AgentSelectionModal.svelte';
 	import UserProfileModal from '$lib/common/UserProfileModal.svelte';
-	import { getAgentOptions } from '$lib/services/agent-service';
+	import { getAgentsByUser } from '$lib/services/agent-service';
 	import { getConversations, deleteConversation } from '$lib/services/conversation-service.js';
 	import { myInfo } from '$lib/services/auth-service';
 	import { resetLocalStorage, userStore } from '$lib/helpers/store';
@@ -165,7 +165,7 @@
 
 	function loadAgentOptions() {
 		return new Promise((resolve, reject) => {
-			getAgentOptions()
+			getAgentsByUser()
 				.then((res) => {
 					agentOptions =
 						res?.map((x) => {

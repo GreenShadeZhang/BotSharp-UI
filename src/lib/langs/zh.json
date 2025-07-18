@@ -754,6 +754,30 @@
         "update_failed": "更新智能体时发生错误，请重试",
         "update_success": "智能体更新成功！",
         "group_update_success": "智能体组更新成功！"
+      },
+      "marketplace": {
+        "title": "智能体广场",
+        "subtitle": "发现并使用社区创建的公开智能体",
+        "search_placeholder": "按名称或描述搜索智能体...",
+        "total_count": "共 {count} 个智能体",
+        "no_agents_found": "未找到智能体",
+        "no_agents_description": "尝试调整您的搜索条件或筛选器",
+        "no_description": "暂无描述",
+        "start_chat": "开始对话",
+        "created_by": "创建者：{author}",
+        "last_updated": "最后更新：{time}",
+        "filter": {
+          "all_types": "全部类型",
+          "single_agent": "单个智能体",
+          "agent_group": "智能体组"
+        },
+        "sort": {
+          "newest_first": "最新优先",
+          "oldest_first": "最旧优先",
+          "name_asc": "名称A-Z",
+          "name_desc": "名称Z-A",
+          "popular": "最受欢迎"
+        }
       }
     }
   },
@@ -835,6 +859,8 @@
     "previous": "上一步",
     "open": "打开",
     "loading": "加载中...",
+    "loading_more": "加载更多...",
+    "no_more_data": "没有更多数据了",
     "search": "搜索",
     "filter": "筛选",
     "apply": "应用",

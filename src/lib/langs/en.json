@@ -628,6 +628,8 @@
         "save": "Save",
         "open": "Open",
         "loading": "Loading...",
+        "loading_more": "Loading more...",
+        "no_more_data": "No more data to load",
         "search": "Search",
         "filter": "Filter",
         "apply": "Apply",
@@ -778,6 +780,30 @@
             "add_agent_to_group": "Add agents to this group to start collaboration",
             "no_available_agents": "No available agents to add",
             "manage_group_subtitle": "Manage agent group members and configuration"
+        },
+        "marketplace": {
+            "title": "Agent Marketplace",
+            "subtitle": "Discover and use public agents created by the community",
+            "search_placeholder": "Search agents by name or description...",
+            "total_count": "Total {count} agents",
+            "no_agents_found": "No agents found",
+            "no_agents_description": "Try adjusting your search criteria or filters",
+            "no_description": "No description available",
+            "start_chat": "Start Chat",
+            "created_by": "Created by {author}",
+            "last_updated": "Last updated {time}",
+            "filter": {
+                "all_types": "All Types",
+                "single_agent": "Single Agent",
+                "agent_group": "Agent Group"
+            },
+            "sort": {
+                "newest_first": "Newest First",
+                "oldest_first": "Oldest First", 
+                "name_asc": "Name A-Z",
+                "name_desc": "Name Z-A",
+                "popular": "Most Popular"
+            }
         }
     },
     "auth": {

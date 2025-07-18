@@ -33,6 +33,16 @@ export async function getAgents(filter, checkAuth = false) {
 }
 
 /**
+ * Get user agent list
+ * @returns {Promise<import('$agentTypes').AgentModel[]>}
+ */
+export async function getAgentsByUser() {
+    let url = endpoints.agentUserAgentListUrl;
+    const response = await axios.get(url);
+    return response.data;
+}
+
+/**
  * Get agent list
  * @returns {Promise<import('$commonTypes').IdName[]>}
  */

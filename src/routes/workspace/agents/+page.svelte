@@ -6,7 +6,7 @@
 	import { Button, Card, CardBody, Col, Row, Input, InputGroup } from '@sveltestrap/sveltestrap';
 	import HeadTitle from '$lib/common/HeadTitle.svelte';
 	import LoadingToComplete from '$lib/common/LoadingToComplete.svelte';
-	import { getAgents, deleteAgent } from '$lib/services/agent-service.js';
+	import { getAgentsByUser, deleteAgent } from '$lib/services/agent-service.js';
 	import { AgentType } from '$lib/helpers/enums';
 	import { myInfo } from '$lib/services/auth-service';
 	import AgentList from './components/AgentList.svelte';
@@ -88,12 +88,59 @@
 			isLoading = true;
 		}
 		try {
-			const response = await getAgents(filter, true);
-			agents = response;
-			hasMoreData = response.items.length === pageSize && response.count > response.items.length;
+			const response = await getAgentsByUser();
+			// 将用户的智能体数据转换为分页格式
+			let filteredAgents = response || [];
+			
+			// 应用搜索过滤
+			if (searchQuery) {
+				filteredAgents = filteredAgents.filter(agent => 
+					agent.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+					agent.description?.toLowerCase().includes(searchQuery.toLowerCase())
+				);
+			}
+			
+			// 应用类型过滤
+			if (selectedType !== 'all') {
+				if (selectedType === 'single') {
+					filteredAgents = filteredAgents.filter(agent => 
+						agent.type === AgentType.Task || agent.type === AgentType.Routing
+					);
+				} else if (selectedType === 'group') {
+					filteredAgents = filteredAgents.filter(agent => agent.type === AgentType.Evaluator);
+				}
+			}
+			
+			// 应用排序
+			filteredAgents.sort((a, b) => {
+				switch (sortBy) {
+					case 'created_asc':
+						return new Date(a.createdTime) - new Date(b.createdTime);
+					case 'created_desc':
+						return new Date(b.createdTime) - new Date(a.createdTime);
+					case 'name_asc':
+						return a.name.localeCompare(b.name);
+					case 'name_desc':
+						return b.name.localeCompare(a.name);
+					default:
+						return new Date(b.createdTime) - new Date(a.createdTime);
+				}
+			});
+			
+			// 应用分页
+			const startIndex = (filter.pager.page - 1) * pageSize;
+			const endIndex = startIndex + pageSize;
+			const paginatedItems = filteredAgents.slice(startIndex, endIndex);
+			
+			agents = {
+				items: paginatedItems,
+				count: filteredAgents.length
+			};
+			
+			hasMoreData = endIndex < filteredAgents.length;
 			refreshPagination();
 		} catch (error) {
-			console.error('Error loading agents:', error);
+			console.error('Error loading user agents:', error);
 			agents = { items: [], count: 0 };
 			hasMoreData = false;
 		} finally {
@@ -106,31 +153,11 @@
 
 		isLoadingMore = true;
 		try {
-			const nextPage = filter.pager.page + 1;
-			const nextFilter = {
-				...filter,
-				pager: { ...filter.pager, page: nextPage }
-			};
-
-			const response = await getAgents(nextFilter, true);
-
-			if (response.items && response.items.length > 0) {
-				// 合并新数据到现有数据
-				agents = {
-					items: [...agents.items, ...response.items],
-					count: response.count
-				};
-
-				// 更新过滤器页码
-				filter.pager.page = nextPage;
-
-				// 检查是否还有更多数据
-				hasMoreData = response.items.length === pageSize && agents.items.length < response.count;
-			} else {
-				hasMoreData = false;
-			}
-
-			refreshPagination();
+			// 更新页码
+			filter.pager.page = filter.pager.page + 1;
+			
+			// 重新加载智能体（会自动应用新的分页）
+			await loadAgents();
 		} catch (error) {
 			console.error('Error loading more agents:', error);
 			hasMoreData = false;
@@ -148,59 +175,19 @@
 	}
 
 	function buildFilter() {
-		let filterTypes;
-
-		// 根据选择的类型进行筛选
-		if (selectedType === 'all') {
-			// 只显示任务型和路由型智能体
-			filterTypes = [
-				AgentType.Task,
-				AgentType.Routing
-			];
-		} else if (selectedType === 'single') {
-			filterTypes = [AgentType.Task];
-		} else if (selectedType === 'group') {
-			filterTypes = [AgentType.Routing];
-		} else {
-			// 默认情况：只显示任务型和路由型智能体
-			filterTypes = [AgentType.Task, AgentType.Routing];
-		}
-
-		// 构建排序参数 - 注意：这取决于后端API是否支持排序
-		// 如果后端不支持排序，可以移除这部分
-		let sortParam = {};
-		switch (sortBy) {
-			case 'created_desc':
-				sortParam = { field: 'created_datetime', order: 'desc' };
-				break;
-			case 'created_asc':
-				sortParam = { field: 'created_datetime', order: 'asc' };
-				break;
-			case 'name_asc':
-				sortParam = { field: 'name', order: 'asc' };
-				break;
-			case 'name_desc':
-				sortParam = { field: 'name', order: 'desc' };
-				break;
-		}
-
+		// 现在使用客户端过滤，所以不需要构建服务器端过滤器
+		// 重置分页到第一页
 		return {
-			pager: filter.pager,
-			types: filterTypes,
-			similarName: searchQuery.trim() || undefined
-			// sort: sortParam // 如果后端支持排序，取消注释这行
+			pager: { page: firstPage, size: pageSize, count: 0 },
+			types: [AgentType.Task, AgentType.Routing] // 保持默认类型
 		};
 	}
 
 	function applyFilters() {
 		// 重置分页到第一页
-		filter = {
-			...buildFilter(),
-			pager: { page: firstPage, size: pageSize, count: 0 }
-		};
+		filter = buildFilter();
 		hasMoreData = true; // 重置状态
-		// 清空当前数据以便显示加载状态
-		agents = { items: [], count: 0 };
+		// 重新加载智能体数据
 		loadAgents();
 	}
 
