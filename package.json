@@ -6,9 +6,9 @@
 		"node": ">=18.0.0"
 	},
 	"scripts": {
-		"start": "npm run open-browser && vite",
-		"dev": "npm run open-browser && vite dev",
-		"open-browser": "start http://localhost:5015/",
+		"start": "npm run open-browser && vite --port 5242",
+		"dev": "npm run open-browser && vite dev --port 5242",
+		"open-browser": "start http://localhost:5242/",
 		"build": "vite build",
 		"preview": "vite preview",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./jsconfig.json",
